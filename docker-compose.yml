@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  webserver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/var/www/html  # Mapeia a pasta atual para /var/www/html no container
+      - ./apache-config.conf:/etc/apache2/conf-available/apache-config.conf  # Mapeia a configuração do Apache
+      # - ./php-fpm.conf:/usr/local/etc/php-fpm.d/www.conf  # Mapeia a configuração do PHP-FPM
+    depends_on:
+      - db
+    networks:
+      - app-network
+    environment:
+      - PHP_FPM_PM=dynamic
+      - PHP_FPM_PM_MAX_CHILDREN=50
+      - PHP_FPM_PM_START_SERVERS=5
+      - PHP_FPM_PM_MIN_SPARE_SERVERS=5
+      - PHP_FPM_PM_MAX_SPARE_SERVERS=35
+
+  db:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: app_db
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: app_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql_data: 
