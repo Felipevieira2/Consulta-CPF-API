@@ -1,20 +1,21 @@
 <?php
 
+use App\Models\Plan;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UsageController;
 use App\Http\Controllers\ApiKeyController;
 use App\Http\Controllers\BillingController;
-use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\Admin\ApiLogController;
+use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Admin\PlanController;
-use App\Http\Controllers\Admin\ApiLogController;
-use App\Http\Controllers\Admin\SettingsController;
-use App\Http\Controllers\Admin\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,7 +42,8 @@ Route::get('/features', function () {
 })->name('features');
 
 Route::get('/pricing', function () {
-    return view('pricing');
+    $plans = Plan::where('is_active', true)->get();
+    return view('pricing', compact('plans'));
 })->name('pricing');
 
 Route::get('/contact', function () {
@@ -114,7 +116,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Gerenciamento de perfil
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.preferences'); 
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit'); 
     Route::get('/profile/password', [ProfileController::class, 'password'])->name('profile.password');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.updatePassword');
     // API Keys

@@ -19,8 +19,8 @@ class Plan extends Model
         'description',
         'price',
         'credits',
-        'status',
-        'features',
+        'is_active',
+        'is_featured',
     ];
 
     /**
@@ -29,8 +29,10 @@ class Plan extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'features' => 'array',
-        'price' => 'decimal:2',
+        'price' => 'float',
+        'credits' => 'integer',
+        'is_active' => 'boolean',
+        'is_featured' => 'boolean',
     ];
 
     /**

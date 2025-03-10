@@ -36,11 +36,13 @@
                 <h2 class="text-2xl font-semibold mt-8 mb-4 text-gray-900 dark:text-white">Endpoints</h2>
                 
                 <h3 class="text-xl font-medium mt-6 mb-3 text-gray-900 dark:text-white">Consultar CPF</h3>
-                <p class="text-gray-700 dark:text-gray-300"><strong>URL:</strong> <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-gray-800 dark:text-gray-200">https://api.consultacpf.com.br/v1/cpf/{cpf}</code></p>
+                <p class="text-gray-700 dark:text-gray-300"><strong>URL:</strong> <code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-gray-800 dark:text-gray-200">https://api.consultacpf.com.br/v1/cpf?cpf={cpf}&date_birth={date_birth}&token={token}</code></p>
                 <p class="text-gray-700 dark:text-gray-300"><strong>Método:</strong> GET</p>
                 <p class="text-gray-700 dark:text-gray-300"><strong>Parâmetros:</strong></p>
                 <ul class="list-disc pl-6 mb-4 text-gray-700 dark:text-gray-300">
                     <li><code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-gray-800 dark:text-gray-200">cpf</code> (obrigatório) - CPF a ser consultado (apenas números)</li>
+                    <li><code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-gray-800 dark:text-gray-200">date_birth</code> (obrigatório) - Data de nascimento (formato: YYYYMMDD)</li>
+                    <li><code class="bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-gray-800 dark:text-gray-200">token</code> (obrigatório) - Token de API válido</li>
                 </ul>
                 
                 <p class="text-gray-700 dark:text-gray-300"><strong>Exemplo de Requisição:</strong></p>

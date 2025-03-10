@@ -29,24 +29,24 @@ Route::prefix('v1')->group(function () {
         ->name('api.cpf');
 });
 
-Route::post('/generate-token', function (Request $request) {
-    // Validar a requisição
-    $request->validate([
-        'user_id' => 'required|exists:users,id',
-        'token_name' => 'required|string',
-    ]);
+// Route::post('/generate-token', function (Request $request) {
+//     // Validar a requisição
+//     $request->validate([
+//         'user_id' => 'required|exists:users,id',
+//         'token_name' => 'required|string',
+//     ]);
     
-    // Buscar o usuário
-    $user = \App\Models\User::find($request->user_id);
+//     // Buscar o usuário
+//     $user = \App\Models\User::find($request->user_id);
     
-    // Gerar um token permanente (sem expiração)
-    $token = $user->createToken($request->token_name)->plainTextToken;
+//     // Gerar um token permanente (sem expiração)
+//     $token = $user->createToken($request->token_name)->plainTextToken;
     
-    return response()->json([
-        'token' => $token,
-        'message' => 'Token gerado com sucesso'
-    ]);
-})->middleware('auth:sanctum'); // Proteger este endpoint
+//     return response()->json([
+//         'token' => $token,
+//         'message' => 'Token gerado com sucesso'
+//     ]);
+// })->middleware('auth:sanctum'); // Proteger este endpoint
 
 Route::get('/test-token', function (Request $request) {
     $tokenFromRequest = $request->query('api_token') ?? $request->bearerToken();

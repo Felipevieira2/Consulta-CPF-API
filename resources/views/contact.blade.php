@@ -1,10 +1,8 @@
 @extends('layouts.home')
 
 @section('content')
-<div class="py-12 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-    <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900 transition-colors duration-200 dark:bg-gray-900 transition-colors duration-200">
-
-        <x-card>
+<div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900 transition-colors duration-200 dark:bg-gray-900 transition-colors duration-200">
+    <x-card class="w-full sm:max-w-md ">
             <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">Entre em Contato</h1>
             
             {{-- <div class="grid grid-cols-1 md:grid-cols-2 gap-8"> --}}
@@ -114,6 +112,6 @@
                 </div> --}}
             </div>
         </x-card>
-    </div>
+        
 </div>
 @endsection 
