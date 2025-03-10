@@ -80,4 +80,18 @@ return [
         'verify_csrf_token' => App\Http\Middleware\VerifyCsrfToken::class,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Token Retrieval Methods
+    |--------------------------------------------------------------------------
+    |
+    | This configuration option determines how the API token is retrieved from
+    | the request. By default, it will check the Authorization header, but
+    | you may configure additional retrieval methods as needed.
+    */
+    'token_retrieval' => [
+        'headers' => ['Authorization'],
+        'query_params' => ['api_token'],
+    ],
+
 ];

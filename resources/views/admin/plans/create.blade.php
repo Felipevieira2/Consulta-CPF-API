@@ -34,7 +34,7 @@
                 
                 <x-forms.input
                     type="number"
-                    name="queries_limit"
+                    name="credits"
                     label="Limite de Consultas"
                     placeholder="Ex: 1000"
                     min="1"

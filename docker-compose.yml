@@ -21,7 +21,17 @@ services:
       - PHP_FPM_PM_START_SERVERS=5
       - PHP_FPM_PM_MIN_SPARE_SERVERS=5
       - PHP_FPM_PM_MAX_SPARE_SERVERS=35
-
+  receita-scraper:
+    image: buildkite/puppeteer:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./receita-scraper:/app
+    working_dir: /app
+    # command: sh -c "npm install && node server.js" #prod
+    command: sh -c "npm install && npm run dev" # Alterado para usar npm run dev
+    networks:
+      - app-network
   db:
     image: mysql:8.0
     ports:

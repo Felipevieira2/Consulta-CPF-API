@@ -30,7 +30,7 @@ use App\Http\Controllers\Admin\ProfileController;
 // Rotas públicas
 Route::get('/', function () {
     return view('home');
-})->name('home');
+})->name('landing');
 
 Route::get('/home', function () {
     return redirect()->route('admin.dashboard');    
@@ -114,7 +114,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     // Gerenciamento de perfil
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit'); 
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.preferences'); 
     Route::get('/profile/password', [ProfileController::class, 'password'])->name('profile.password');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.updatePassword');
     // API Keys

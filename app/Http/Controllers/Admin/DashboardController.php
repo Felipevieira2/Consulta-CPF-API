@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use Carbon\Carbon;
+use App\Models\Plan;
 use App\Models\User;
 use App\Models\Query;
-use App\Models\Plan;
-use App\Models\Transaction;
+use App\Models\ApiLog;
 use App\Models\Payment;
-use Carbon\Carbon;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class DashboardController extends Controller
 {
@@ -17,9 +18,9 @@ class DashboardController extends Controller
     {
         // Estatísticas para os cards
         $totalUsers = User::count();
-        $totalQueries = Query::count();
+        $totalQueries = ApiLog::count();
         $activePlans = Plan::where('is_active', 1)->count();
-        $monthlyRevenue = Payment::whereMonth('created_at', Carbon::now()->month)
+        $monthlyRevenue = Transaction::whereMonth('created_at', Carbon::now()->month)
             ->whereYear('created_at', Carbon::now()->year)
             ->sum('amount');
 
@@ -31,12 +32,12 @@ class DashboardController extends Controller
             $date = Carbon::now()->subDays($i);
             $chartLabels[] = $date->format('d/m');
             
-            $count = Query::whereDate('created_at', $date->toDateString())->count();
+            $count = ApiLog::whereDate('created_at', $date->toDateString())->count();
             $chartData[] = $count;
         }
 
         // Últimas consultas realizadas com paginação
-        $latestQueries = Query::with('user')
+        $latestQueries = ApiLog::with('user')
             ->latest()
             ->paginate(5);
         

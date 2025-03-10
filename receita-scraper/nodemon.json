@@ -1,0 +1,12 @@
+{
+  "watch": [
+    "server.js",
+    "scraper.js"
+  ],
+  "ext": "js",
+  "ignore": [
+    "screenshots/*",
+    "node_modules/*"
+  ],
+  "legacy-watch": true
+} 

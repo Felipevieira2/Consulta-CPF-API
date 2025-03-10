@@ -30,7 +30,7 @@
                     
                     <div class="sm:col-span-1">
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Limite de Consultas</dt>
-                        <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ number_format($plan->queries_limit, 0, ',', '.') }}</dd>
+                        <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ number_format($plan->credits, 0, ',', '.') }}</dd>
                     </div>
                     
                     <div class="sm:col-span-1">
@@ -124,7 +124,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ $subscription->user->name }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ $subscription->user->email }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ $subscription->created_at->format('d/m/Y') }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ $subscription->queries_count }} / {{ $plan->queries_limit }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ $subscription->queries_count }} / {{ $plan->credits }}</td>
                         </tr>
                         @empty
                         <tr>

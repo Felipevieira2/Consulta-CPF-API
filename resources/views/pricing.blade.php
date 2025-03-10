@@ -39,7 +39,7 @@
 
                 <div class="p-6 bg-gray-50 dark:bg-gray-800 rounded-b-xl mt-auto">
                     <x-forms.button variant="primary" class="w-full">
-                        Começar Agora
+                        Escolher Plano
                     </x-forms.button>
                 </div>
             </x-card>

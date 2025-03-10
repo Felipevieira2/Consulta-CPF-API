@@ -18,7 +18,7 @@ class Plan extends Model
         'name',
         'description',
         'price',
-        'query_limit',
+        'credits',
         'status',
         'features',
     ];

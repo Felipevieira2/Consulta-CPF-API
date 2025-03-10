@@ -8,7 +8,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
                 <h1 class="text-4xl tracking-tight font-extrabold text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
-                    <span class="block">Consulta CPF API</span>
+                    <span class="block">API de Consulta CPF</span>
                     <span class="block text-indigo-600 dark:text-indigo-400">Rápida, Segura e Confiável</span>
                 </h1>
                 <p class="mt-3 max-w-md mx-auto text-base text-gray-500 dark:text-gray-300 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
@@ -51,7 +51,7 @@
                             <p class="ml-16 text-lg leading-6 font-medium text-gray-900 dark:text-white">Alta Performance</p>
                         </dt>
                         <dd class="mt-2 ml-16 text-base text-gray-500 dark:text-gray-300">
-                            Respostas em milissegundos, com alta disponibilidade e baixa latência.
+                            Respostas em segundos, com alta disponibilidade e baixa latência.
                         </dd>
                     </div>
 
@@ -115,16 +115,15 @@
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
                 <div class="flex flex-col md:flex-row">
-                    <div class="w-full md:w-1/2 p-6 md:p-8">
+                    <div class="w-full md:w-2/3 p-6 md:p-8">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Exemplo de Requisição</h3>
                         <div class="bg-gray-800 dark:bg-gray-900 rounded-lg p-4 overflow-x-auto">
                             <pre class="text-sm text-gray-300"><code>
 curl -X GET 
-"https://api.cpfapi.com.br/v1/cpf?cpf=12345678900&date_birth=19800101" \
--H "Authorization: Bearer seu_token"</code></pre>
+"https://api.cpfapi.com.br/v1/cpf?cpf=12345678900&date_birth=19800101&token=seu_token"</code></pre>
                         </div>
                     </div>
-                    <div class="p-6 md:p-8 bg-gray-50 dark:bg-gray-700">
+                    <div class="w-full md:w-1/3 p-6 md:p-8 bg-gray-50 dark:bg-gray-700">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Resposta</h3>
                         <div class="bg-gray-800 dark:bg-gray-900 rounded-lg p-4 overflow-x-auto">
                             <pre class="text-sm text-gray-300"><code>{
@@ -185,15 +184,15 @@ curl -X GET
         }
         
         // Adiciona evento de clique para alternar o tema
-        themeToggle.addEventListener('click', function() {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
-        });
+        // themeToggle.addEventListener('click', function() {
+        //     if (document.documentElement.classList.contains('dark')) {
+        //         document.documentElement.classList.remove('dark');
+        //         localStorage.setItem('theme', 'light');
+        //     } else {
+        //         document.documentElement.classList.add('dark');
+        //         localStorage.setItem('theme', 'dark');
+        //     }
+        // });
     });
 </script>
 @endsection 

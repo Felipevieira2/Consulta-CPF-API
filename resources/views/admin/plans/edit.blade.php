@@ -34,9 +34,9 @@
                 
                 <x-forms.input
                     type="number"
-                    name="queries_limit"
+                    name="credits"
                     label="Limite de Consultas"
-                    value="{{ old('queries_limit', $plan->queries_limit) }}"
+                    value="{{ old('credits', $plan->credits) }}"
                     min="1"
                     required
                 />

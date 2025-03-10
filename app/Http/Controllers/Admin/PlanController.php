@@ -24,7 +24,15 @@ class PlanController extends Controller
 
     public function store(Request $request)
     {
-        $plan = Plan::create($request->all());
+        // dd($request->all());
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'credits' => 'required|integer|min:1',
+            'description' => 'required|string',
+        ]);
+        
+        $plan = Plan::create($validated);
         return redirect()->route('admin.plans.index')->with('success', 'Plano criado com sucesso');
     }
 
@@ -32,6 +40,17 @@ class PlanController extends Controller
     {
         $plan = Plan::find($id);
         return view('admin.plans.show', compact('plan'));
+    }
+    public function edit($id)
+    {
+        $plan = Plan::find($id);
+        return view('admin.plans.edit', compact('plan'));
+    }
+    public function update(Request $request, $id)
+    {
+        $plan = Plan::find($id);
+        $plan->update($request->all());
+        return redirect()->route('admin.plans.index')->with('success', 'Plano atualizado com sucesso');
     }
 
 
