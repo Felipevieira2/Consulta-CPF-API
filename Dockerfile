@@ -9,8 +9,7 @@ RUN echo "deb http://deb.debian.org/debian bullseye main" > /etc/apt/sources.lis
 # Atualiza os pacotes e instala o Apache e outras dependências necessárias
 RUN apt-get update && apt-get install -y \
     apache2 \
-    libapache2-mod-fcgid \
-    && rm -rf /var/lib/apt/lists/*
+    libapache2-mod-fcgid
 
 # Configurar o Apache para usar o MPM Worker (mais seguro com PHP-FPM)
 RUN a2dismod mpm_event && a2enmod mpm_worker
