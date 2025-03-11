@@ -1,6 +1,11 @@
 # Usando uma imagem base do PHP-FPM
 FROM php:8.2-fpm
 
+# Cria o arquivo /etc/apt/sources.list com repositórios corretos
+RUN echo "deb http://deb.debian.org/debian bullseye main" > /etc/apt/sources.list && \
+    echo "deb http://deb.debian.org/debian-security bullseye-security main" >> /etc/apt/sources.list && \
+    echo "deb http://deb.debian.org/debian bullseye-updates main" >> /etc/apt/sources.list
+
 # Atualiza os pacotes e instala o Apache e outras dependências necessárias
 RUN apt-get update && apt-get install -y \
     apache2 \
