@@ -1,11 +1,13 @@
 # Usando uma imagem base do PHP-FPM
 FROM php:8.2-fpm
 
-# Atualiza os pacotes e instala o Apache e outras dependências necessárias
-RUN apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    mkdir -p /var/lib/apt/lists/partial && \
-    apt-get update --fix-missing && \
+# Corrigir possíveis problemas com o APT
+RUN set -e; \
+    mkdir -p /var/lib/apt/lists/partial; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*; \
+    rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin; \
+    apt-get update --fix-missing || (sleep 2 && apt-get update --fix-missing); \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     apache2 \
     libapache2-mod-fcgid
