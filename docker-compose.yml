@@ -24,10 +24,11 @@ services:
     container_name: db-consultacpf
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_USER: ${DB_USERNAME}
+    
+      MYSQL_DATABASE: consultacpf_db
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: dsasd3a231
+      MYSQL_USER: consultacpf_user
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
     volumes:
