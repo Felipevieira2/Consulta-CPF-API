@@ -1,46 +1,51 @@
-# Usando uma imagem base do PHP-FPM
-FROM php:8.2-fpm
+# Usar Alpine como base - muito mais leve
+FROM alpine:3.18
 
-# Remover configurações problemáticas do APT
-RUN rm -f /etc/apt/apt.conf.d/docker-clean || true
-RUN echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
-RUN echo 'APT::Update::Post-Invoke { "true"; };' > /etc/apt/apt.conf.d/no-clean
-
-# Atualiza os pacotes e instala o Apache e outras dependências necessárias
-RUN apt-get update && apt-get install -y \
+# Instalar PHP e Apache
+RUN apk add --no-cache \
+    php82 \
+    php82-fpm \
+    php82-gd \
+    php82-mysqli \
+    php82-pdo \
+    php82-pdo_mysql \
+    php82-mbstring \
+    php82-exif \
+    php82-bcmath \
+    php82-zip \
+    php82-opcache \
+    php82-xml \
+    php82-curl \
+    php82-redis \
     apache2 \
-    libapache2-mod-fcgid \
-    && rm -rf /var/lib/apt/lists/*
+    nodejs \
+    npm \
+    mysql-client \
+    git \
+    curl \
+    unzip \
+    zip
 
-# Configurar o Apache para usar o MPM Worker (mais seguro com PHP-FPM)
-RUN a2dismod mpm_event && a2enmod mpm_worker
+# Configurar o Apache
+RUN mkdir -p /run/apache2
 
-# Habilita os módulos necessários do Apache
-RUN a2enmod proxy_fcgi rewrite headers expires deflate setenvif
+# Configurar e rodar PHP-FPM
+RUN mkdir -p /run/php
 
-# Configurar o Apache para usar o PHP-FPM
-RUN echo '<FilesMatch "\.php$">\n\
-    SetHandler "proxy:fcgi://127.0.0.1:9000"\n\
-</FilesMatch>' > /etc/apache2/conf-available/php-fpm.conf \
-    && a2enconf php-fpm
+# Instalar Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Instalar dependências do sistema
-RUN apt-get update && apt-get install -y \
+RUN apk add --no-cache \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
     libzip-dev \
     libonig-dev \
     libxml2-dev \
-    zip \
-    unzip \
-    git \
-    curl \
-    nodejs \
-    npm \
     default-mysql-client \
     mariadb-client \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/cache/apk/*
 
 # Configurar e instalar extensões PHP
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -55,9 +60,6 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     bcmath \
     zip \
     opcache
-
-# Instalar Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Copiar a configuração do Apache
 COPY apache-config.conf /etc/apache2/conf-available/apache-config.conf
@@ -87,9 +89,6 @@ RUN php artisan key:generate
 # Copiar o script de inicialização
 COPY init.sh /usr/local/bin/init.sh
 RUN chmod +x /usr/local/bin/init.sh
-
-# Instalar o módulo Redis
-RUN pecl install redis && docker-php-ext-enable redis
 
 # Expor portas
 EXPOSE 80 9000
