@@ -1,8 +1,11 @@
 # Usando uma imagem base do PHP-FPM
 FROM php:8.2-fpm
 
+# Criar diretórios que podem estar faltando
+RUN mkdir -p /var/cache/apt/archives/partial
+
 # Atualiza os pacotes e instala o Apache e outras dependências necessárias
-RUN apt-get update && apt-get install -y \
+RUN apt-get update --fix-missing && apt-get install -y \
     apache2 \
     libapache2-mod-fcgid \
     && rm -rf /var/lib/apt/lists/*
