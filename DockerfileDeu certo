@@ -60,10 +60,29 @@ RUN mkdir -p /var/www/storage/logs && \
 RUN mkdir -p /home/$user/.composer && \
     chown -R $user:$user /home/$user
 
-
+# Criar script de inicialização
+RUN echo '#!/bin/sh\n\
+mkdir -p /var/www/storage/logs\n\
+mkdir -p /var/www/storage/framework/cache\n\
+mkdir -p /var/www/storage/framework/sessions\n\
+mkdir -p /var/www/storage/framework/views\n\
+mkdir -p /var/www/bootstrap/cache\n\
+chmod -R 777 /var/www/storage\n\
+chmod -R 777 /var/www/bootstrap/cache\n\
+chown -R www-data:www-data /var/www/storage\n\
+chown -R www-data:www-data /var/www/bootstrap/cache\n\
+# Otimizações para produção\n\
+if [ "$APP_ENV" = "production" ]; then\n\
+  php artisan config:cache || true\n\
+  php artisan route:cache || true\n\
+  php artisan view:cache || true\n\
+  php artisan event:cache || true\n\
+fi\n\
+exec php-fpm\n\
+' > /usr/local/bin/start-container && \
+    chmod +x /usr/local/bin/start-container
 
 WORKDIR /var/www
-COPY start-container.sh /usr/local/bin/start-container
 
 # Definir o script de inicialização como ponto de entrada
 CMD ["/usr/local/bin/start-container"]
