@@ -28,9 +28,9 @@ class CpfService implements CpfServiceInterface
      *
      * @param string $cpf
      * @param string|null $birthDate
-     * @return CpfResponseDTO|null
+     * 
      */
-    public function getDadosCpf(string $cpf, ?string $birthDate = null): ?CpfResponseDTO
+    public function getDadosCpf(string $cpf, ?string $birthDate = null)
     {
         // Valida o CPF antes de consultar
         if (!$this->validarCpf($cpf)) {
@@ -43,11 +43,11 @@ class CpfService implements CpfServiceInterface
         
         // Consulta os dados
         // $result = $this->cpfRepository->consultarCpf($cpf, $birthDate);
-        $result = $this->receitaFederalService->getDadosCpf($cpf, $birthDate);
+        $result = $this->receitaFederalService->postReceitaFederal($cpf, $birthDate);
 
-        
-        if (!$result) {
-            return null;
+        if(isset($result['error'])){
+            Log::error('Erro ao consultar Receita Federal: ' . $result['error']);
+            return $result;
         }
        
         // Converte para DTO

@@ -11,17 +11,18 @@ class ApiKey extends Model
 
     protected $fillable = [
         'user_id',
-        'key',
         'name',
-        'last_used_at',
-        'expires_at',
+        'key',
         'is_active',
+        'expires_at',
+        'last_used_at',
+        
     ];
 
     protected $casts = [
-        'last_used_at' => 'datetime',
+        'active' => 'boolean',
         'expires_at' => 'datetime',
-        'is_active' => 'boolean',
+        'last_used_at' => 'datetime',
     ];
 
     public function user()
@@ -46,5 +47,10 @@ class ApiKey extends Model
     public function isExpired()
     {
         return $this->expires_at && $this->expires_at->isPast();
+    }
+
+    public function isValid()
+    {
+        return $this->active && !$this->isExpired();
     }
 } 

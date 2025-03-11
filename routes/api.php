@@ -62,7 +62,7 @@ Route::get('/test-token', function (Request $request) {
         // Tentar encontrar o token apenas pelo hash
         $hashedToken = hash('sha256', $tokenFromRequest);
         $accessToken = PersonalAccessToken::where('token', $hashedToken)->first();
-        
+     
         if (!$accessToken) {
             return response()->json([
                 'message' => 'Token não encontrado',

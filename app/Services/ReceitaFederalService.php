@@ -2,19 +2,16 @@
 
 namespace App\Services;
 
-use Carbon\Carbon;
+
 use GuzzleHttp\Client;
-use Laravel\Dusk\Browser;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
-use Facebook\WebDriver\Chrome\ChromeOptions;
-use Facebook\WebDriver\Remote\RemoteWebDriver;
-use Facebook\WebDriver\Remote\DesiredCapabilities;
+
 
 class ReceitaFederalService
 {
-    public function getDadosCpf($cpf, $birthDate = null)
+    public function postReceitaFederal($cpf, $birthDate = null)
     {
         $client = new \GuzzleHttp\Client();
         $headers = [
@@ -36,6 +33,14 @@ class ReceitaFederalService
             $responseData = json_decode($response->getBody(), true);
             
             Log::info('Resposta da Receita Federal: ' . json_encode($responseData));
+           
+            if($response->getStatusCode() != 200){
+                return ['error' => 'Erro ao consultar Receita Federal'];
+            }
+
+            if(isset($responseData['error'])){
+                return ['error' => $responseData['error']];
+            }
             
             return $responseData;
         } catch (\Exception $e) {

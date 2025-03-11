@@ -39,7 +39,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($key->is_active)
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-white">
                                         Ativa
                                     </span>
                                 @else

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Http\Controllers\Controller;
-use App\Services\CpfService\CpfServiceInterface;
-use Illuminate\Http\JsonResponse;
+use App\Models\ApiKey;
+use App\Models\UserPlan;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
+use App\Services\CpfService\CpfServiceInterface;
 
 class CpfController extends Controller
 {
@@ -57,19 +59,80 @@ class CpfController extends Controller
         }
         
      
+        //verificar se o user tem saldo
+        $user = auth()->user();
+        $userPlan = UserPlan::where('user_id', $user->id)->first();
+
+      
+        if($userPlan->credits_remaining <= 0){
+            return response()->json([
+                'success' => false,
+                'message' => "sem saldo"
+            ], 400);
+        }
         // Consulta os dados
         $result = $this->cpfService->getDadosCpf($cpf, $birthDate);
         
-        if (!$result) {
-            return response()->json([
-                'success' => false,
-                'message' => __('messages.cpf_not_found'),
-            ], 404);
-        }
+       
         
+        if ($result->hasError()) {
+            return response()->json([
+                'error' => $result->error
+            ], 400);
+        }
+
+        
+        $apiKey = ApiKey::where('key', $request->api_token)->first();
+
+        $user = auth()->user();
+        $user->apiLogs()->create([
+            'user_id' => $user->id,
+            'api_key_id' => $apiKey->id,
+            'endpoint' => 'get-cpf',
+            'method' => 'GET',
+            'ip_address' => $request->ip(),
+            'request_data' => $request->all(),
+            'response_data' => $result->toArray(),
+            'status_code' => 200,
+            'credits_used' => 1,
+
+        ]);
+
+        //descontar saldo do userPlan
+        $userPlan = UserPlan::where('user_id', $user->id)->first();
+        $userPlan->update([
+            'balance' => $userPlan->credits_remaining - 1,
+        ]);
+
+       
+
         return response()->json([
             'success' => true,
             'data' => $result->toArray(),
         ]);
+    }
+
+    public function consultar(Request $request)
+    {
+        try {
+            $cpf = $request->input('cpf');
+            $result = $this->cpfService->consultarCpf($cpf);
+
+            if ($result->hasError()) {
+                return response()->json([
+                    'error' => $result->error
+                ], 400);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $result->toArray()
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Erro ao consultar CPF: ' . $e->getMessage()
+            ], 500);
+        }
     }
 } 

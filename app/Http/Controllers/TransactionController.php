@@ -67,7 +67,7 @@ class TransactionController extends Controller
     
     public function processPayment(Request $request, Transaction $transaction)
     {
-        $this->authorize('update', $transaction);
+        // $this->authorize('update', $transaction);
         
         // Simulação de processamento de pagamento
         // Em um cenário real, você receberia um callback do gateway de pagamento
@@ -85,6 +85,8 @@ class TransactionController extends Controller
         $user = auth()->user();
         $activePlan = $user->activePlan();
         
+        
+        dd($activePlan);
         if ($activePlan && $activePlan->id === $transaction->plan_id) {
             // Adicionar créditos ao plano existente
             $user->plans()->updateExistingPivot($activePlan->id, [
@@ -99,7 +101,7 @@ class TransactionController extends Controller
             ]);
         }
         
-        return redirect()->route('admin.billing')
+        return redirect()->route('billing.customer.currentPlan')
             ->with('success', 'Pagamento processado com sucesso! ' . $transaction->credits . ' créditos foram adicionados à sua conta.');
     }
     

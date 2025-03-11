@@ -19,8 +19,8 @@ class Plan extends Model
         'description',
         'price',
         'credits',
-        'is_active',
-        'is_featured',
+        'features',
+        'active',
     ];
 
     /**
@@ -31,8 +31,7 @@ class Plan extends Model
     protected $casts = [
         'price' => 'float',
         'credits' => 'integer',
-        'is_active' => 'boolean',
-        'is_featured' => 'boolean',
+        'active' => 'boolean',
     ];
 
     /**
@@ -43,8 +42,27 @@ class Plan extends Model
         return $this->hasMany(User::class);
     }
 
+    /**
+     * Relacionamento com UserPlan
+     */
+    public function userPlans()
+    {
+        return $this->hasMany(UserPlan::class);
+    }
+
+    /**
+     * Relacionamento com Transaction
+     */
     public function transactions()
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    /**
+     * Formata o preço para exibição
+     */
+    public function getFormattedPriceAttribute()
+    {
+        return 'R$ ' . number_format($this->price, 2, ',', '.');
     }
 } 

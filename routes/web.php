@@ -4,7 +4,6 @@ use App\Models\Plan;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UsageController;
 use App\Http\Controllers\ApiKeyController;
-use App\Http\Controllers\BillingController;
 use App\Http\Controllers\Admin\PlanController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
@@ -14,8 +13,17 @@ use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\PermissionController;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Customer\CustomerDocumentationController;
+use App\Http\Controllers\Customer\CustomerApiLogController;
+use App\Http\Controllers\Customer\CustomerProfileController;
+use App\Http\Controllers\Customer\CustomerSettingsController;
+use App\Http\Controllers\Customer\BillingController as CustomerBillingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,11 +38,30 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 
 // Rotas públicas
 Route::get('/', function () {
+    if (Auth::check()) {
+        $user = Auth::user();
+        
+        if ($user->hasRole('admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+        
+        return redirect()->route('customer.dashboard');
+    }
+    
     return view('home');
 })->name('landing');
 
 Route::get('/home', function () {
-    return redirect()->route('admin.dashboard');    
+    if (Auth::check()) {
+        $user = Auth::user();
+        
+        if ($user->hasRole('admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+        
+        return redirect()->route('customer.dashboard');
+    }
+  
 })->name('home');
 
 Route::get('/features', function () {
@@ -82,7 +109,7 @@ Route::middleware('guest')->group(function () {
 });
 
 // Rotas do Dashboard (protegidas por autenticação)
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     // Dashboard principal
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
@@ -124,6 +151,43 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     
     // Transações
     Route::resource('transactions', TransactionController::class)->only(['index', 'show']);
+
+    // Gerenciamento de roles
+    Route::resource('roles', RoleController::class);
+    Route::get('users/{user}/roles', [UserController::class, 'editRoles'])->name('users.roles');
+    Route::put('users/{user}/roles', [UserController::class, 'updateRoles'])->name('users.roles.update');
+
+    // Gerenciamento de permissões
+    Route::resource('permissions', PermissionController::class);
+
+    // Rotas de planos
+    Route::resource('plans', PlanController::class);
+});
+
+// Rotas da Área do Cliente (protegidas por autenticação)
+Route::middleware(['auth', 'verified', 'role:customer'])->prefix('customer')->name('customer.')->group(function () {
+    Route::get('/dashboard', [CustomerDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/documentation', [CustomerDocumentationController::class, 'index'])->name('documentation');
+    Route::get('/api-log', [CustomerApiLogController::class, 'index'])->name('api-log.index');
+    Route::get('/api-log/{log}', [CustomerApiLogController::class, 'show'])->name('api-log.show');
+    Route::get('/profile', [CustomerProfileController::class, 'index'])->name('profile');
+    Route::get('/settings', [CustomerSettingsController::class, 'index'])->name('settings');
+    
+    // Gerenciamento de API Keys
+    Route::resource('api-keys', ApiKeyController::class)->except(['edit', 'update']);
+    Route::get('api-keys/{apiKey}/toggle', [ApiKeyController::class, 'toggleStatus'])->name('api-keys.toggle');
+    Route::get('api-documentation', [ApiKeyController::class, 'documentation'])->name('api-documentation');
+    
+    // Faturamento e assinatura
+    Route::prefix('billing')->name('billing.')->group(function () {
+        Route::get('/', [CustomerBillingController::class, 'index'])->name('index');
+        Route::get('/transactions', [CustomerBillingController::class, 'transactions'])->name('transactions');
+        Route::get('/current-plan', [CustomerBillingController::class, 'currentPlan'])->name('current-plan');
+        Route::get('/plans', [CustomerBillingController::class, 'plans'])->name('plans');
+        Route::get('/checkout/{plan}', [CustomerBillingController::class, 'checkout'])->name('checkout');
+        Route::post('/process-payment/{plan}', [CustomerBillingController::class, 'processPayment'])->name('process-payment');
+        Route::post('/cancel-subscription', [TransactionController::class, 'cancelSubscription'])->name('cancel-subscription');
+    });
 });
 
 

@@ -37,7 +37,7 @@
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
                         <dd class="mt-1 text-sm">
                             @if($plan->is_active)
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-white">
                                     Ativo
                                 </span>
                             @else

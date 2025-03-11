@@ -3,7 +3,7 @@
         <div class="flex justify-between h-16">
             <div class="flex items-center">
                 <div class="flex-shrink-0 flex items-center">
-                    <span class="text-indigo-600 dark:text-indigo-400 text-xl font-bold transition duration-300 hover:text-indigo-800 dark:hover:text-indigo-300">CPF API Admin</span>
+                    <span class="text-indigo-600 dark:text-indigo-400 text-xl font-bold transition duration-300 hover:text-indigo-800 dark:hover:text-indigo-300">getcpf Admin</span>
                 </div>
                 <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
                     <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'border-indigo-500 text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-200' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-200">
@@ -18,6 +18,34 @@
                     <a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.*') ? 'border-indigo-500 text-gray-900 dark:text-white' : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 hover:text-gray-700 dark:hover:text-gray-200' }} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition duration-200">
                         Configurações
                     </a>
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" 
+                                type="button"
+                                class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700">
+                            <i class="fas fa-users-cog mr-2"></i>
+                            <span>Gerenciamento de Usuários</span>
+                            <svg class="w-5 h-5 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        
+                        <div x-show="open" 
+                             x-cloak
+                             @click.outside="open = false"
+                             class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <div class="py-1">
+                                <a href="{{ route('admin.users.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+                                    <i class="fas fa-users mr-2"></i>Usuários
+                                </a>
+                                <a href="{{ route('admin.roles.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+                                    <i class="fas fa-user-tag mr-2"></i>Roles
+                                </a>
+                                <a href="{{ route('admin.permissions.index') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700">
+                                    <i class="fas fa-key mr-2"></i>Permissões
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="hidden sm:ml-6 sm:flex sm:items-center space-x-4">

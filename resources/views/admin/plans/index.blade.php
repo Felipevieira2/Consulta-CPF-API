@@ -1,13 +1,13 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="py-6">
+<div class="py-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center">
             <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Planos</h1>
             <x-forms.button variant="primary" class="cursor-pointer" onclick="window.location.href='{{ route('admin.plans.create') }}'">
                 <i class="fas fa-plus mr-2"></i> Novo Plano
-            </x-forms.button>
+            </a>
         </div>
         
         <x-card class="mt-6">
@@ -33,7 +33,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ number_format($plan->credits, 0, ',', '.') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($plan->is_active)
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-white">
                                         Ativo
                                     </span>
                                 @else

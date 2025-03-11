@@ -59,20 +59,25 @@ class RegisterController extends Controller
         ]);
     }
 
-    // /**
-    //  * Create a new user instance after a valid registration.
-    //  *
-    //  * @param  array  $data
-    //  * @return \App\Models\User
-    //  */
-    // protected function create(array $data)
-    // {
-    //     return User::create([
-    //         'name' => $data['name'],
-    //         'email' => $data['email'],
-    //         'password' => Hash::make($data['password']),
-    //     ]);
-    // }
+    /**
+     * Create a new user instance after a valid registration.
+     *
+     * @param  array  $data
+     * @return \App\Models\User
+     */
+    protected function create(array $data)
+    {
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+        ]);
+        
+        // Atribuir o papel de cliente por padrão
+        $user->assignRole('customer');
+        
+        return $user;
+    }
 
     public function register(Request $request)
     {
@@ -87,6 +92,9 @@ class RegisterController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        // Atribuir o papel de cliente
+        $user->assignRole('customer');
 
         // Gerar token de API com Sanctum
         $token = $user->createToken('auth_token')->plainTextToken;

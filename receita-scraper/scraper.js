@@ -145,6 +145,16 @@ async function consultarCPF(cpf, birthDate) {
                     try {
                         await frameHandle.click('#checkbox');
                         console.log('Clicado no checkbox via método click()');
+
+                        // Aguardar até que o checkbox esteja marcado
+                        await frameHandle.waitForFunction(
+                            () => {
+                                const checkbox = document.querySelector('#checkbox');
+                                return checkbox && checkbox.checked === true;
+                            },
+                            { timeout: 5000 }
+                        );
+                        console.log('Checkbox foi marcado com sucesso');
                     } catch (e) {
                         console.log('Falha ao clicar diretamente, tentando via evaluate()...');
                         await frameHandle.evaluate(() => {
@@ -161,13 +171,18 @@ async function consultarCPF(cpf, birthDate) {
 
             // Aguardar tempo para possível resolução manual
             console.log('Aguardando possível resolução manual do captcha...');
-            await page.waitForTimeout(500);
+   
             // await takeScreenshot(page, 'apos_tentativa_captcha');
-
+            // await page.waitForTimeout(1000); // Ajuste o valor conforme necessário
         } catch (error) {
             console.error('Erro na abordagem alternativa para o captcha:', error);
             // await takeScreenshot(page, 'erro_abordagem_alternativa');
         }
+
+        // waiting 'input[value="Consultar"]'
+        await page.waitForSelector('input[value="Consultar"]', {
+            timeout: 30000
+        });
 
         // Clicar no botão Consultar
         console.log('Clicando em Consultar...');
@@ -192,7 +207,7 @@ async function consultarCPF(cpf, birthDate) {
             console.log('Nenhum alerta detectado');
         }
 
-        // await takeScreenshot(page, 'resultado');
+        await takeScreenshot(page, 'resultado');
 
         console.log('Verificando se há mensagem de erro sobre data de nascimento divergente...');
         // Verificar se há mensagem de erro sobre data de nascimento divergente

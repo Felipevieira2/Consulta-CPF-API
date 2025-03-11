@@ -3,6 +3,8 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use App\Models\User;
+use App\Models\ApiKey;
 use Illuminate\Http\Request;
 use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,16 +34,11 @@ class ApiTokenMiddleware
             
             // Verificar se o token está no formato ID|hash ou apenas hash
             $accessToken = null;
+
+         
+            $accessToken = ApiKey::where('key', $tokenFromRequest)->first();
             
-            if (strpos($tokenFromRequest, '|') !== false) {
-                // Token completo (ID|hash)
-                $accessToken = PersonalAccessToken::findToken($tokenFromRequest);
-            } else {
-                // Apenas hash - buscar diretamente na tabela
-                // $hashedToken = hash('sha256', $tokenFromRequest);
-                $accessToken = PersonalAccessToken::where('token', $tokenFromRequest)->first();
-            }
-            
+
             if (!$accessToken) {
                 return response()->json([
                     'status' => 'erro',
@@ -51,7 +48,7 @@ class ApiTokenMiddleware
             }
             
             // Obter o usuário associado ao token
-            $user = $accessToken->tokenable;
+            $user = User::where('id', $accessToken->user_id)->where('is_active', 1)->first();
             
             if (!$user) {
                 return response()->json([

@@ -12,16 +12,19 @@
         
         <x-card class="mt-6">
             <div class="mb-4">
-                <form action="{{ route('admin.users.index') }}" method="GET" class="flex gap-4">
-                    <x-forms.input
-                        name="search"
-                        placeholder="Buscar por nome ou email"
-                        value="{{ request('search') }}"
-                        class="flex-grow"
-                    />
-                    <x-forms.button type="submit" variant="primary" class="cursor-pointer">
-                        <i class="fas fa-search mr-2"></i> Buscar
-                    </x-forms.button>
+                <form action="{{ route('admin.users.index') }}" method="GET" class="flex">
+                    <div class="flex justify-between items-center gap-4">
+                        <x-forms.input
+                            name="search"
+                            placeholder="Buscar "
+                            value="{{ request('search') }}"
+                            class=""
+                            
+                        />
+                        <x-forms.button type="submit" variant="primary" class="cursor-pointer">
+                            <i class="fas fa-search mr-2"></i> Buscar
+                        </x-forms.button>
+                    </div>
                 </form>
             </div>
             
@@ -58,6 +61,9 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <a href="{{ route('admin.users.edit', $user->id) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">
                                     <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ route('admin.users.roles', $user) }}" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3">
+                                    <i class="fas fa-user-tag"></i> Gerenciar Roles
                                 </a>
                                 <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="inline">
                                     @csrf

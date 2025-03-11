@@ -11,9 +11,9 @@ interface CpfServiceInterface
      *
      * @param string $cpf
      * @param string|null $birthDate
-     * @return CpfResponseDTO|null
+     * @return @any
      */
-    public function getDadosCpf(string $cpf, ?string $birthDate = null): ?CpfResponseDTO;
+    public function getDadosCpf(string $cpf, ?string $birthDate = null);
     
     /**
      * Valida um CPF
