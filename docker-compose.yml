@@ -42,9 +42,13 @@ services:
       MYSQL_USER: app_user
       MYSQL_PASSWORD: app_password
     volumes:
-      - mysql_data:/var/lib/mysql
+     - $PWD/database:/var/lib/mysql
     networks:
       - app-network
+    restart: on-failure
+    cpuset: 0-6
+    mem_limit: 1148m
+
 
 networks:
   app-network:

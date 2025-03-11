@@ -5,39 +5,47 @@ namespace App\DTOs;
 class CpfResponseDTO
 {
     public function __construct(
-        public readonly ?string $name = null,
-        public readonly ?string $cpf = null,
-        public readonly ?string $status = null,
-        public readonly ?string $error = null
-    ) {}
-    
-    /**
-     * Cria um DTO a partir de um array
-     *
-     * @param array $data
-     * @return self
-     */
+        public readonly string $cpf,
+        public readonly string $nome,
+        public readonly string $data_nascimento,
+        public readonly string $situacao_cadastral,
+        public readonly string $data_inscricao,
+        public readonly string $digito_verificador,
+        public readonly string $hora_emissao,
+        public readonly string $data_emissao,
+        public readonly string $codigo_controle,
+        public readonly ?string $error = null,
+    ) {
+    }
+
     public static function fromArray(array $data): self
     {
         return new self(
-            name: $data['name'] ?? null,
-            cpf: $data['cpf'] ?? null,
-            status: $data['status'] ?? null,
-            error: $data['error'] ?? null
+            cpf: $data['cpf'] ?? '',
+            nome: $data['nome'] ?? '',
+            data_nascimento: $data['data_nascimento'] ?? '',
+            situacao_cadastral: $data['situacao_cadastral'] ?? '',
+            data_inscricao: $data['data_inscricao'] ?? '',
+            digito_verificador: $data['digito_verificador'] ?? '',
+            hora_emissao: $data['hora_emissao'] ?? '',
+            data_emissao: $data['data_emissao'] ?? '',
+            codigo_controle: $data['codigo_controle'] ?? '',
+            error: $data['error'] ?? null,
         );
     }
-    
-    /**
-     * Converte o DTO para array
-     *
-     * @return array
-     */
+
     public function toArray(): array
     {
         return [
-            'name' => $this->name,
             'cpf' => $this->cpf,
-            'status' => $this->status,
+            'nome' => $this->nome,
+            'data_nascimento' => $this->data_nascimento,
+            'situacao_cadastral' => $this->situacao_cadastral,
+            'data_inscricao' => $this->data_inscricao,
+            'digito_verificador' => $this->digito_verificador,
+            'hora_emissao' => $this->hora_emissao,
+            'data_emissao' => $this->data_emissao,
+            'codigo_controle' => $this->codigo_controle,
             'error' => $this->error,
         ];
     }

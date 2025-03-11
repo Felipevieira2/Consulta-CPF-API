@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { consultarCPF } = require('./scraper');
+
 const path = require('path');
 
 const app = express();
@@ -10,30 +11,6 @@ const PORT = process.env.PORT || 3000;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Adicione esta rota antes da inicialização do servidor
-app.use('/screenshots', express.static(path.join(__dirname, 'screenshots')));
-
-// Adicione uma rota para listar todos os screenshots
-app.get('/listar-screenshots', (req, res) => {
-  const fs = require('fs');
-  const screenshotsDir = path.join(__dirname, 'screenshots');
-  
-  fs.readdir(screenshotsDir, (err, files) => {
-    if (err) {
-      return res.status(500).json({ erro: true, mensagem: 'Erro ao listar screenshots' });
-    }
-    
-    const screenshots = files
-      .filter(file => file.endsWith('.png'))
-      .map(file => ({
-        nome: file,
-        url: `/screenshots/${file}`,
-        data: new Date(file.split('_')[1].split('.')[0].replace(/-/g, ':')).toLocaleString()
-      }));
-    
-    res.json(screenshots);
-  });
-});
 
 // Rota para verificar se o servidor está online
 app.get('/health', (req, res) => {
@@ -63,6 +40,22 @@ app.post('/consultar-cpf', async (req, res) => {
       mensagem: `Erro interno do servidor: ${error.message}`
     });
   }
+});
+
+
+
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM recebido, encerrando servidor...');
+  await finalizarRecursos();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('SIGINT recebido, encerrando servidor...');
+  await finalizarRecursos();
+  process.exit(0);
 });
 
 // Iniciar servidor

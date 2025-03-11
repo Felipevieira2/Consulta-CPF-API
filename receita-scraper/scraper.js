@@ -165,13 +165,16 @@ async function consultarCPF(cpf, birthDate) {
                 const frameHandle = await hcaptchaIframeHandle.contentFrame();
                 
                 if (frameHandle) {
-                    try {
+                    try {  
+
+                        await page.waitForTimeout(300);
                         // Usar evaluate para interação direta com o DOM - mais rápido
                         await frameHandle.evaluate(() => {
                             const checkbox = document.querySelector('#checkbox');
                             if (checkbox) checkbox.click();
                         });
-                        
+                      
+                        await page.waitForTimeout(300);
                         // Verificação mais eficiente do estado do checkbox
                         const checkboxChecked = await frameHandle.waitForFunction(
                             () => {
@@ -230,7 +233,7 @@ async function consultarCPF(cpf, birthDate) {
             console.log('Nenhum alerta detectado');
         }
 
-        await takeScreenshot(page, 'resultado');
+        // await takeScreenshot(page, 'resultado');
 
         console.log('Verificando se há mensagem de erro sobre data de nascimento divergente...');
         // Verificar se há mensagem de erro sobre data de nascimento divergente

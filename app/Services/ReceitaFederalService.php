@@ -7,8 +7,6 @@ use GuzzleHttp\Client;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-
-
 class ReceitaFederalService
 {
     public function postReceitaFederal($cpf, $birthDate = null)
@@ -16,7 +14,7 @@ class ReceitaFederalService
         $client = new \GuzzleHttp\Client();
         $headers = [
             'Content-Type' => 'application/json',
-            'Authorization' => 'Basic anRhZmFyZWxvQGVzdGFibGlzaG1lbnRsYWJzLmNvbS90b2tlbjpwS3hnNm5lREh6N0dDZFFrMVdSREJrUG9LU0M1ajdLRWRwSGJURGw2'
+            
         ];
         
         $host = env('RECEITA_SCRAPER_HOST', 'localhost');
@@ -39,12 +37,12 @@ class ReceitaFederalService
             }
 
             if(isset($responseData['error'])){
-                return ['error' => $responseData['error']];
+                return ['error' => $responseData["message"]];
             }
             
             return $responseData;
         } catch (\Exception $e) {
-            Log::error('Erro ao consultar Receita Federal: ' . $e->getMessage());
+            Log::error('Erro ao consultar Receita Federal: ' . $e->getMessage(). '-' . $e->getFile(). '-' . $e->getLine());
             return ['error' => $e->getMessage()];
         }
     }

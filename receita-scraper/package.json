@@ -9,8 +9,9 @@
     },
     "dependencies": {
         "express": "^4.18.2",
-        "puppeteer-core": "^19.7.5",
-        "body-parser": "^1.20.2"
+        "puppeteer": "^19.7.5",
+        "body-parser": "^1.20.2",
+        "node-cache": "^5.1.2"
     },
     "devDependencies": {
         "nodemon": "^3.0.2"

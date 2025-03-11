@@ -114,17 +114,17 @@
                         <tbody>
                             @forelse($recent_queries as $query)
                                 <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
-                                    <td class="py-4 px-6 font-medium">{{ Mask::apply($query->cpf, '###.###.###-##') }}</td>
+                                    <td class="py-4 px-6 font-medium">{{ Mask::apply($query->request_data['cpf'], '###.###.###-##') }}</td>
                                     <td class="py-4 px-6">{{ $query->created_at->format('d/m/Y H:i') }}</td>
                                     <td class="py-4 px-6">
-                                        <span class="px-3 py-1 text-sm rounded-full inline-flex items-center {{ $query->status === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-white' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' }}">
-                                            <i class="fas {{ $query->status === 'success' ? 'fa-check' : 'fa-times' }} mr-1"></i>
-                                            {{ $query->status === 'success' ? 'Sucesso' : 'Erro' }}
+                                        <span class="px-3 py-1 text-sm rounded-full inline-flex items-center {{ $query->status_code === 200 ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-white' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' }}">
+                                            <i class="fas {{ $query->status_code === 200 ? 'fa-check' : 'fa-times' }} mr-2"></i>
+                                            {{ $query->status_code === 200  ? 'Sucesso' : 'Erro' }}
                                         </span>
                                     </td>
                                     <td class="py-4 px-6">
                                         <a href="{{ route('customer.api-log.show', $query->id) }}" class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium">
-                                            <i class="fas fa-eye mr-1"></i> Ver detalhes
+                                            <i class="fas fa-eye mr-2"></i> Ver detalhes
                                         </a>
                                     </td>
                                 </tr>

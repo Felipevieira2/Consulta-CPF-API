@@ -45,13 +45,13 @@ class CpfService implements CpfServiceInterface
         // $result = $this->cpfRepository->consultarCpf($cpf, $birthDate);
         $result = $this->receitaFederalService->postReceitaFederal($cpf, $birthDate);
 
+       
         if(isset($result['error'])){
-            Log::error('Erro ao consultar Receita Federal: ' . $result['error']);
-            return $result;
+            Log::error('Erro ao consultar CPF: ' . $result['error']);
         }
        
         // Converte para DTO
-        return CpfResponseDTO::fromArray($result);
+        return $result;
     }
     
     /**

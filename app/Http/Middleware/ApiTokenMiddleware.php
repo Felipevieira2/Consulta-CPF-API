@@ -26,9 +26,9 @@ class ApiTokenMiddleware
             
             if (!$tokenFromRequest) {
                 return response()->json([
-                    'status' => 'erro',
-                    'mensagem' => 'Token de API não fornecido',
-                    'codigo' => 401
+                    'success' => false,
+                    'error' => 'Token de API não fornecido',
+                    'statusCode' => 401
                 ], 401);
             }
             
@@ -36,14 +36,14 @@ class ApiTokenMiddleware
             $accessToken = null;
 
          
-            $accessToken = ApiKey::where('key', $tokenFromRequest)->first();
-            
+            $accessToken = ApiKey::where('key', $tokenFromRequest)->where('is_active', 1)->first();
+         
 
             if (!$accessToken) {
                 return response()->json([
-                    'status' => 'erro',
-                    'mensagem' => 'Token de API inválido ou expirado',
-                    'codigo' => 401
+                    'success' => false,
+                    'error' => 'Token de API inválido ou expirado',
+                    'statusCode' => 401
                 ], 401);
             }
             
@@ -52,15 +52,15 @@ class ApiTokenMiddleware
             
             if (!$user) {
                 return response()->json([
-                    'status' => 'erro',
-                    'mensagem' => 'Usuário não encontrado ou desativado',
-                    'codigo' => 401
+                    'success' => false,
+                    'error' => 'Usuário não encontrado ou desativado',
+                    'statusCode' => 401
                 ], 401);
             }
             
             // Autenticar o usuário
             auth()->login($user);
-            
+           
             // Atualizar último uso do token
             $accessToken->last_used_at = now();
             $accessToken->save();
@@ -76,8 +76,8 @@ class ApiTokenMiddleware
             ]);
             
             return response()->json([
-                'status' => 'erro',
-                'mensagem' => 'Erro ao processar autenticação',
+                'success' => false,
+                'error' => 'Erro ao processar autenticação',
                 'codigo' => 500
             ], 500);
         }
