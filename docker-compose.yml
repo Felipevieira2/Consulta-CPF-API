@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "8080:80"
     volumes:
       - ./:/var/www/html  # Mapeia a pasta atual para /var/www/html no container
       - ./apache-config.conf:/etc/apache2/conf-available/apache-config.conf  # Mapeia a configuração do Apache
@@ -24,7 +24,7 @@ services:
   receita-scraper:
     image: buildkite/puppeteer:latest
     ports:
-      - "3000:3000"
+      - "3334:3000"
     volumes:
       - ./receita-scraper:/app
     working_dir: /app
@@ -35,7 +35,7 @@ services:
   db:
     image: mysql:8.0
     ports:
-      - "3306:3306"
+      - "3335:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root_password
       MYSQL_DATABASE: app_db

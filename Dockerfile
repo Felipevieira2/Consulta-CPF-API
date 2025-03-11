@@ -2,9 +2,11 @@
 FROM php:8.2-fpm
 
 # Atualiza os pacotes e instala o Apache e outras dependências necessárias
-RUN apt-get update && apt-get install -y \
+# Adicionando a opção -o Dpkg::Options::="--force-confdef" para evitar problemas com scripts
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     apache2 \
     libapache2-mod-fcgid \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Configurar o Apache para usar o MPM Worker (mais seguro com PHP-FPM)
