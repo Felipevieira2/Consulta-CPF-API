@@ -1,11 +1,19 @@
 # Usando uma imagem base do PHP-FPM
 FROM php:8.2-fpm
 
-# Atualiza os pacotes e instala o Apache e outras dependências necessárias
+#repositórios alternativos ao seu Dockerfile:
+RUN sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list && \
+    sed -i 's|security.debian.org|archive.debian.org/|g' /etc/apt/sources.list && \
+    sed -i '/stretch-updates/d' /etc/apt/sources.list
 RUN apt-get update && apt-get install -y \
     apache2 \
     libapache2-mod-fcgid \
     && rm -rf /var/lib/apt/lists/*
+
+# Atualiza os pacotes e instala o Apache e outras dependências necessárias
+RUN apt-get update
+RUN apt-get install -y apache2 libapache2-mod-fcgid
+RUN rm -rf /var/lib/apt/lists/*
 
 # Configurar o Apache para usar o MPM Worker (mais seguro com PHP-FPM)
 RUN a2dismod mpm_event && a2enmod mpm_worker
