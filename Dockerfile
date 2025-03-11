@@ -1,4 +1,4 @@
-FROM php:8.2-fpm
+FROM php:8.2-fpm-alpine
 
 ARG user=www-data
 ARG uid=1000
@@ -12,42 +12,65 @@ RUN echo "memory_limit=256M" > /usr/local/etc/php/conf.d/memory-limit.ini \
     && echo "opcache.revalidate_freq=60" >> /usr/local/etc/php/conf.d/opcache.ini \
     && echo "opcache.fast_shutdown=1" >> /usr/local/etc/php/conf.d/opcache.ini
 
-# Modificado: Separando a atualização e instalação para evitar problemas com o script de pós-atualização
-RUN apt-get update || true
-RUN apt-get install -y \
+# Instalar dependências usando apk (gerenciador de pacotes do Alpine)
+RUN apk add --no-cache \
     git \
     curl \
     libpng-dev \
-    libonig-dev \
+    oniguruma-dev \
     libxml2-dev \
-    gnupg \
-    lsb-release
+    npm \
+    bash
 
-# Instalar Node.js e npm
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - || true
-RUN apt-get install -y nodejs || true
-RUN npm install -g npm@10.8.2 || true
+# Instalar extensões PHP
+RUN docker-php-ext-install \
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    opcache
 
-# Modificado: Usando comandos separados e ignorando erros
-RUN apt-get clean || true
-RUN rm -rf /var/lib/apt/lists/* || true
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd opcache
+# Instalar Node.js via apk
+RUN apk add --no-cache nodejs
 
+# Atualizar npm para uma versão específica
+RUN npm install -g npm@10.8.2
+
+# Copiar Composer do imagem oficial
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN usermod -u $uid $user && \
-    groupmod -g $uid $user
+# Configurar usuário www-data com UID específico
+RUN deluser www-data || true && \
+    addgroup -g $uid -S www-data && \
+    adduser -u $uid -S -D -H -h /var/www -s /sbin/nologin -G www-data www-data
 
-# Adiciona comandos para configurar permissões do storage
+# Criar diretórios necessários e configurar permissões
 RUN mkdir -p /var/www/storage/logs && \
+    mkdir -p /var/www/storage/framework/cache && \
+    mkdir -p /var/www/storage/framework/sessions && \
+    mkdir -p /var/www/storage/framework/views && \
+    mkdir -p /var/www/bootstrap/cache && \
     chmod -R 775 /var/www/storage && \
-    chown -R $user:$user /var/www/storage
+    chmod -R 775 /var/www/bootstrap/cache && \
+    chown -R www-data:www-data /var/www
 
-# Cria um script de inicialização para configurar permissões a cada inicialização
-RUN echo '#!/bin/bash\n\
+# Criar diretório home para composer
+RUN mkdir -p /home/$user/.composer && \
+    chown -R $user:$user /home/$user
+
+# Criar script de inicialização
+RUN echo '#!/bin/sh\n\
 mkdir -p /var/www/storage/logs\n\
+mkdir -p /var/www/storage/framework/cache\n\
+mkdir -p /var/www/storage/framework/sessions\n\
+mkdir -p /var/www/storage/framework/views\n\
+mkdir -p /var/www/bootstrap/cache\n\
 chmod -R 777 /var/www/storage\n\
+chmod -R 777 /var/www/bootstrap/cache\n\
 chown -R www-data:www-data /var/www/storage\n\
+chown -R www-data:www-data /var/www/bootstrap/cache\n\
 # Otimizações para produção\n\
 if [ "$APP_ENV" = "production" ]; then\n\
   php artisan config:cache || true\n\
@@ -59,10 +82,7 @@ exec php-fpm\n\
 ' > /usr/local/bin/start-container && \
     chmod +x /usr/local/bin/start-container
 
-RUN mkdir -p /home/$user/.composer && \
-    chown -R $user:$user /home/$user
-
 WORKDIR /var/www
 
-# Define o script de inicialização como ponto de entrada
+# Definir o script de inicialização como ponto de entrada
 CMD ["/usr/local/bin/start-container"]
