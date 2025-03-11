@@ -6,6 +6,9 @@ RUN echo "deb http://deb.debian.org/debian bullseye main" > /etc/apt/sources.lis
     echo "deb http://deb.debian.org/debian-security bullseye-security main" >> /etc/apt/sources.list && \
     echo "deb http://deb.debian.org/debian bullseye-updates main" >> /etc/apt/sources.list
 
+# Desativa o script problemático do APT
+RUN echo 'APT::Update::Post-Invoke {"rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin || true";};' > /etc/apt/apt.conf.d/99cleanup
+
 # Atualiza os pacotes e instala o Apache e outras dependências necessárias
 RUN apt-get update && apt-get install -y \
     apache2 \
