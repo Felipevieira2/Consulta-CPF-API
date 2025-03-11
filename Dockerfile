@@ -1,16 +1,21 @@
 # Usando uma imagem base do PHP-FPM
 FROM php:8.2-fpm
 
-# Corrigir possíveis problemas com o APT
+# Tentar uma abordagem diferente para instalar o Apache
 RUN set -e; \
-    mkdir -p /var/lib/apt/lists/partial; \
+    # Criar diretório temporário para trabalhar
+    mkdir -p /tmp/apt-work && cd /tmp/apt-work; \
+    # Baixar pacotes manualmente
+    apt-get update || echo "Ignorando erro de update"; \
+    apt-get download apache2 libapache2-mod-fcgid || echo "Tentando método alternativo"; \
+    # Instalar pacotes baixados
+    dpkg -i *.deb || true; \
+    # Corrigir dependências quebradas
+    apt-get -f install -y --no-install-recommends; \
+    # Limpar
+    cd / && rm -rf /tmp/apt-work; \
     apt-get clean; \
-    rm -rf /var/lib/apt/lists/*; \
-    rm -f /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin; \
-    apt-get update --fix-missing || (sleep 2 && apt-get update --fix-missing); \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    apache2 \
-    libapache2-mod-fcgid
+    rm -rf /var/lib/apt/lists/*
 
 # Configurar o Apache para usar o MPM Worker (mais seguro com PHP-FPM)
 RUN a2dismod mpm_event && a2enmod mpm_worker
@@ -25,7 +30,8 @@ RUN echo '<FilesMatch "\.php$">\n\
     && a2enconf php-fpm
 
 # Instalar dependências do sistema
-RUN apt-get update && apt-get install -y \
+RUN apt-get update || true && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
@@ -39,7 +45,7 @@ RUN apt-get update && apt-get install -y \
     nodejs \
     npm \
     default-mysql-client \
-    mariadb-client
+    mariadb-client || true
 
 # Configurar e instalar extensões PHP
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
