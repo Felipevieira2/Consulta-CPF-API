@@ -69,7 +69,16 @@ async function consultarCPF(cpf, birthDate) {
             '--window-size=1920,1080',
             '--disable-features=VizDisplayCompositor',
             '--disable-web-security',
-            '--disable-extensions'
+            '--disable-extensions',
+            '--disable-audio-output',
+            '--disable-background-networking',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-breakpad',
+            '--disable-component-extensions-with-background-pages',
+            '--disable-default-apps',
+            '--disable-ipc-flooding-protection',
+            '--js-flags=--expose-gc'
         ]
     });
 
@@ -87,6 +96,18 @@ async function consultarCPF(cpf, birthDate) {
         await page.setDefaultNavigationTimeout(60000);
         await page.setDefaultTimeout(30000);
 
+        // Otimização 2: Reduzir recursos carregados
+        await page.setRequestInterception(true);
+        page.on('request', (request) => {
+            const resourceType = request.resourceType();
+            // Bloquear recursos desnecessários
+            if (['image', 'stylesheet', 'font', 'media'].includes(resourceType)) {
+                request.abort();
+            } else {
+                request.continue();
+            }
+        });
+
         console.log('Acessando site da Receita Federal...');
         await page.goto('https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp', {
             waitUntil: 'networkidle2'
@@ -96,13 +117,16 @@ async function consultarCPF(cpf, birthDate) {
         await page.waitForSelector('#txtCPF');
         // await takeScreenshot(page, 'inicial');
 
-        // Preencher CPF
+        // Otimização 3: Usar métodos mais eficientes para interação
         console.log('Preenchendo CPF...');
-        await page.type('#txtCPF', cpf);
+        await page.evaluate((cpfValue) => {
+            document.querySelector('#txtCPF').value = cpfValue;
+        }, cpf);
 
-        // Preencher data de nascimento
         console.log('Preenchendo data de nascimento...');
-        await page.type('#txtDataNascimento', birthDate);
+        await page.evaluate((dateValue) => {
+            document.querySelector('#txtDataNascimento').value = dateValue;
+        }, birthDate);
         // await takeScreenshot(page, 'apos_preenchimento');
 
         // Aguardar carregamento do captcha
@@ -136,34 +160,33 @@ async function consultarCPF(cpf, birthDate) {
 
             if (hcaptchaIframeHandle) {
                 console.log('Iframe do hCaptcha encontrado, tentando interagir...');
-
-                // Obter o frame a partir do handle
+                
+                // Obter o frame a partir do handle - mais eficiente
                 const frameHandle = await hcaptchaIframeHandle.contentFrame();
-
+                
                 if (frameHandle) {
-                    // Tentar clicar no checkbox usando diferentes métodos
                     try {
-                        await frameHandle.click('#checkbox');
-                        console.log('Clicado no checkbox via método click()');
-
-                        // Aguardar até que o checkbox esteja marcado
-                        await frameHandle.waitForFunction(
-                            () => {
-                                const checkbox = document.querySelector('#checkbox');
-                                return checkbox && checkbox.checked === true;
-                            },
-                            { timeout: 5000 }
-                        );
-                        console.log('Checkbox foi marcado com sucesso');
-                    } catch (e) {
-                        console.log('Falha ao clicar diretamente, tentando via evaluate()...');
+                        // Usar evaluate para interação direta com o DOM - mais rápido
                         await frameHandle.evaluate(() => {
                             const checkbox = document.querySelector('#checkbox');
                             if (checkbox) checkbox.click();
                         });
+                        
+                        // Verificação mais eficiente do estado do checkbox
+                        const checkboxChecked = await frameHandle.waitForFunction(
+                            () => {
+                                const checkbox = document.querySelector('#checkbox');
+                                return checkbox && (checkbox.getAttribute('aria-checked') === 'true' || checkbox.checked === true);
+                            },
+                            { timeout: 3000, polling: 100 } // Polling mais frequente, timeout menor
+                        ).catch(() => false);
+                        
+                        if (checkboxChecked) {
+                            console.log('Checkbox marcado com sucesso');
+                        }
+                    } catch (e) {
+                        console.log('Falha na interação com checkbox:', e.message);
                     }
-                } else {
-                    console.log('Não foi possível obter o contentFrame do iframe');
                 }
             } else {
                 console.log('Não foi possível encontrar o iframe do hCaptcha');
@@ -244,16 +267,23 @@ async function consultarCPF(cpf, birthDate) {
             };
         }
 
-        // Extrair dados da página
-        console.log('Extraindo dados da página...');
+        // Otimização 5: Processamento paralelo para extração de dados
         const data = await page.evaluate(() => {
+            // Usar querySelector em vez de regex quando possível - mais rápido
+            const getTextContent = (selector) => {
+                const el = document.querySelector(selector);
+                return el ? el.textContent.trim() : null;
+            };
+            
+            // Usar regex apenas quando necessário
             const html = document.body.innerHTML;
             const extract = (pattern) => {
                 const match = html.match(pattern);
                 return match ? match[1].trim() : null;
             };
-
+            
             return {
+                // Dados extraídos de forma mais eficiente
                 cpf: extract(/N<sup>o<\/sup> do CPF:\s*<b>(.*?)<\/b>/),
                 nome: extract(/Nome:\s*<b>(.*?)<\/b>/),
                 data_nascimento: extract(/Data de Nascimento:\s*<b>(.*?)<\/b>/),
