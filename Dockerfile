@@ -60,10 +60,10 @@ RUN mkdir -p /var/www/storage/logs && \
 RUN mkdir -p /home/$user/.composer && \
     chown -R $user:$user /home/$user
 
-
-
 WORKDIR /var/www
+
 COPY start-container.sh /usr/local/bin/start-container
+RUN chmod +x /usr/local/bin/start-container
 
 # Definir o script de inicialização como ponto de entrada
 CMD ["/usr/local/bin/start-container"]
