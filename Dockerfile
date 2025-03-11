@@ -2,12 +2,13 @@
 FROM php:8.2-fpm
 
 # Atualiza os pacotes e instala o Apache e outras dependências necessárias
-# Adicionando a opção -o Dpkg::Options::="--force-confdef" para evitar problemas com scripts
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    mkdir -p /var/lib/apt/lists/partial && \
+    apt-get update --fix-missing && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     apache2 \
-    libapache2-mod-fcgid \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    libapache2-mod-fcgid
 
 # Configurar o Apache para usar o MPM Worker (mais seguro com PHP-FPM)
 RUN a2dismod mpm_event && a2enmod mpm_worker
