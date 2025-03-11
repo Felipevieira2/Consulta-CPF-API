@@ -62,8 +62,8 @@ RUN mkdir -p /home/$user/.composer && \
 
 WORKDIR /var/www
 
-COPY start-container.sh /usr/local/bin/start-container
-RUN chmod +x /usr/local/bin/start-container
+# COPY start-container.sh /usr/local/bin/start-container
+# RUN chmod +x /usr/local/bin/start-container
 
-# Definir o script de inicialização como ponto de entrada
-CMD ["/usr/local/bin/start-container"]
+# # Definir o script de inicialização como ponto de entrada
+# CMD ["/usr/local/bin/start-container"]
