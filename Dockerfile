@@ -1,21 +1,11 @@
 # Usando uma imagem base do PHP-FPM
 FROM php:8.2-fpm
 
-# Tentar uma abordagem diferente para instalar o Apache
-RUN set -e; \
-    # Criar diretório temporário para trabalhar
-    mkdir -p /tmp/apt-work && cd /tmp/apt-work; \
-    # Baixar pacotes manualmente
-    apt-get update || echo "Ignorando erro de update"; \
-    apt-get download apache2 libapache2-mod-fcgid || echo "Tentando método alternativo"; \
-    # Instalar pacotes baixados
-    dpkg -i *.deb || true; \
-    # Corrigir dependências quebradas
-    apt-get -f install -y --no-install-recommends; \
-    # Limpar
-    cd / && rm -rf /tmp/apt-work; \
-    apt-get clean; \
-    rm -rf /var/lib/apt/lists/*
+# Atualiza os pacotes e instala o Apache e outras dependências necessárias
+RUN apt-get update && apt-get install -y \
+    apache2 \
+    libapache2-mod-fcgid \
+    && rm -rf /var/lib/apt/lists/*
 
 # Configurar o Apache para usar o MPM Worker (mais seguro com PHP-FPM)
 RUN a2dismod mpm_event && a2enmod mpm_worker
@@ -30,8 +20,7 @@ RUN echo '<FilesMatch "\.php$">\n\
     && a2enconf php-fpm
 
 # Instalar dependências do sistema
-RUN apt-get update || true && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
@@ -45,7 +34,7 @@ RUN apt-get update || true && \
     nodejs \
     npm \
     default-mysql-client \
-    mariadb-client || true
+    mariadb-client
 
 # Configurar e instalar extensões PHP
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
