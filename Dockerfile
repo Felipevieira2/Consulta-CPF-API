@@ -1,105 +1,51 @@
-# Usar Alpine como base - muito mais leve
-FROM alpine:3.18
+FROM php:8.2-fpm
 
-# Instalar PHP e Apache
-RUN apk add --no-cache \
-    php82 \
-    php82-fpm \
-    php82-gd \
-    php82-mysqli \
-    php82-pdo \
-    php82-pdo_mysql \
-    php82-mbstring \
-    php82-exif \
-    php82-bcmath \
-    php82-zip \
-    php82-opcache \
-    php82-xml \
-    php82-curl \
-    php82-redis \
-    apache2 \
-    nodejs \
-    npm \
-    mysql-client \
+ARG user=www-data
+ARG uid=1000
+
+RUN apt update && apt install -y \
     git \
     curl \
-    unzip \
-    zip
-
-# Configurar o Apache
-RUN mkdir -p /run/apache2
-
-# Configurar e rodar PHP-FPM
-RUN mkdir -p /run/php
-
-# Instalar Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# Instalar dependências do sistema
-RUN apk add --no-cache \
     libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libzip-dev \
     libonig-dev \
     libxml2-dev \
-    default-mysql-client \
-    mariadb-client \
-    && rm -rf /var/cache/apk/*
+    gnupg \
+    lsb-release
 
-# Configurar e instalar extensões PHP
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
-    gd \
-    mysqli \
-    pdo \
-    pdo_mysql \
-    mbstring \
-    exif \
-    pcntl \
-    bcmath \
-    zip \
-    opcache
+# Instalar Node.js e npm
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt install -y nodejs && \
+    npm install -g npm@10.8.2
 
-# Copiar a configuração do Apache
-COPY apache-config.conf /etc/apache2/conf-available/apache-config.conf
+RUN apt clean && rm -rf /var/lib/apt/lists/*
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-# Habilitar a configuração do Apache
-RUN a2enconf apache-config
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Definir diretório de trabalho
-WORKDIR /var/www/html
+RUN usermod -u $uid $user && \
+    groupmod -g $uid $user
 
-# Copiar a aplicação Laravel
-COPY . /var/www/html
+# Adiciona comandos para configurar permissões do storage
+RUN mkdir -p /var/www/storage/logs && \
+    chmod -R 775 /var/www/storage && \
+    chown -R $user:$user /var/www/storage
 
-# Dar permissões corretas para os diretórios do Laravel
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Instalar dependências do Laravel
-RUN composer install --no-interaction --no-dev --optimize-autoloader
-
-# Copiar o arquivo .env de exemplo (se não existir um .env)
-RUN if [ ! -f .env ]; then cp .env.example .env; fi
-
-# Gerar chave da aplicação
-RUN php artisan key:generate
-
-# Copiar o script de inicialização
-COPY init.sh /usr/local/bin/init.sh
-RUN chmod +x /usr/local/bin/init.sh
-
-# Expor portas
-EXPOSE 80 9000
-
-# Criar script para iniciar tanto o Apache quanto o PHP-FPM
+# Cria um script de inicialização para configurar permissões a cada inicialização
 RUN echo '#!/bin/bash\n\
-service apache2 start\n\
-/usr/local/bin/init.sh\n\
-php-fpm' > /usr/local/bin/start-services.sh \
-    && chmod +x /usr/local/bin/start-services.sh
+mkdir -p /var/www/storage/logs\n\
+chmod -R 777 /var/www/storage\n\
+chown -R www-data:www-data /var/www/storage\n\
+exec php-fpm\n\
+' > /usr/local/bin/start-container && \
+    chmod +x /usr/local/bin/start-container
 
-# Iniciar Apache e PHP-FPM
-CMD ["/usr/local/bin/start-services.sh"] 
+RUN mkdir -p /home/$user/.composer && \
+    chown -R $user:$user /home/$user
 
+WORKDIR /var/www
+
+# Remova a linha USER $user para que o script de inicialização seja executado como root
+# USER $user
+
+# Define o script de inicialização como ponto de entrada
+CMD ["/usr/local/bin/start-container"]

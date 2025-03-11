@@ -1,58 +1,63 @@
-version: '3'
-
+version: "3.7"
 services:
-  webserver:
+  app:
     build:
+      # args:
+      #   user: root
+      #   uid: 1000
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "8080:80"
+      args:
+        user: www-data  # Não use 'root' por questões de segurança
+        uid: 1000
+    image: app-consultacpf
+    container_name: app-consultacpf
+    restart: unless-stopped
+    working_dir: /var/www/
     volumes:
-      - ./:/var/www/html  # Mapeia a pasta atual para /var/www/html no container
-      - ./apache-config.conf:/etc/apache2/conf-available/apache-config.conf  # Mapeia a configuração do Apache
-      # - ./php-fpm.conf:/usr/local/etc/php-fpm.d/www.conf  # Mapeia a configuração do PHP-FPM
-    depends_on:
-      - db
+      - ./:/var/www
+      - ./storage:/var/www/storage:delegated
     networks:
-      - app-network
+      - consultacpf-network   
+  db:
+    image: mysql:8.0
+    container_name: db-consultacpf
+    restart: unless-stopped
     environment:
-      - PHP_FPM_PM=dynamic
-      - PHP_FPM_PM_MAX_CHILDREN=50
-      - PHP_FPM_PM_START_SERVERS=5
-      - PHP_FPM_PM_MIN_SPARE_SERVERS=5
-      - PHP_FPM_PM_MAX_SPARE_SERVERS=35
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+    networks:
+      - consultacpf-network
+    ports:
+      - 3432:3006
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-consultacpf
+    restart: unless-stopped
+    ports:
+      - 3434:80
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - consultacpf-network
   receita-scraper:
     image: buildkite/puppeteer:latest
     ports:
-      - "3334:3000"
+      - "3435:3000"
     volumes:
       - ./receita-scraper:/app
     working_dir: /app
-    command: sh -c "npm install && node server.js" #prod
-    #command: sh -c "npm install && npm run dev" # Alterado para usar npm run dev
+    # command: sh -c "npm install && node server.js" #prod
+    command: sh -c "npm install && npm run dev" # Alterado para usar npm run dev
     networks:
-      - app-network
-  db:
-    image: mysql:8.0
-    ports:
-      - "3335:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: app_db
-      MYSQL_USER: app_user
-      MYSQL_PASSWORD: app_password
-    volumes:
-     - $PWD/database:/var/lib/mysql
-    networks:
-      - app-network
-    restart: on-failure
-    cpuset: 0-6
-    mem_limit: 1148m
-
-
+      - consultacpf-network
 networks:
-  app-network:
+  consultacpf-network:
     driver: bridge
-
-volumes:
-  mysql_data: 
