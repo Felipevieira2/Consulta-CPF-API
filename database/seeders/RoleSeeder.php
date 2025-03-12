@@ -10,21 +10,33 @@ class RoleSeeder extends Seeder
 {
     public function run()
     {
-        // Criar papéis
-        $adminRole = Role::create(['name' => 'admin']);
-        $customerRole = Role::create(['name' => 'customer']);
+        // Criar papéis apenas se não existirem
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $customerRole = Role::firstOrCreate(['name' => 'customer']);
         
-        // Opcionalmente, criar permissões
-        $manageUsers = Permission::create(['name' => 'manage users']);
-        $viewDashboard = Permission::create(['name' => 'view dashboard']);
+        // Criar nova role (se necessário)
+        $novaRole = Role::firstOrCreate(['name' => 'nome_da_sua_nova_role']);
         
-        // Atribuir permissões aos papéis
-        $adminRole->givePermissionTo([
+        // Criar permissões apenas se não existirem
+        $manageUsers = Permission::firstOrCreate(['name' => 'manage users']);
+        $viewDashboard = Permission::firstOrCreate(['name' => 'view dashboard']);
+        
+        // Nova permissão (se necessário)
+        $novaPermissao = Permission::firstOrCreate(['name' => 'nova permissao']);
+        
+        // Atribuir permissões aos papéis (syncPermissions não duplica)
+        $adminRole->syncPermissions([
             'manage users',
+            'view dashboard',
+            'nova permissao'
+        ]);
+        
+        $customerRole->syncPermissions([
             'view dashboard'
         ]);
         
-        $customerRole->givePermissionTo([
+        $novaRole->syncPermissions([
+            'nova permissao',
             'view dashboard'
         ]);
     }
