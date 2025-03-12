@@ -19,23 +19,23 @@ services:
       - ./storage:/var/www/storage:delegated
     networks:
       - consultacpf-network   
-  db:
-    image: mysql:8.0
-    container_name: db-consultacpf
+   db:
+    mysql:
+    image: mariadb:10.4
+    container_name: facegate_db
+    volumes:
+      - $PWD/database:/var/lib/mysql
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: consultacpf_db
-      MYSQL_ROOT_PASSWORD: 12#y3asd12#3rout
-      MYSQL_PASSWORD: 12#y3asd12#3
-      MYSQL_USER: consultacpf_user
-      MYSQL_INITDB_SKIP_TZINFO: 1
-    volumes:
-      - ./docker-compose/mysql:/docker-entrypoint-initdb.d
-      - mysql_data:/var/lib/mysql
+    MYSQL_DATABASE: consultacpf_db
+    MYSQL_ROOT_PASSWORD: 12#y3asd12#3rout
+    MYSQL_PASSWORD: 12#y3asd12#3
+    MYSQL_USER: consultacpf_user
+    MYSQL_INITDB_SKIP_TZINFO: 1
     networks:
       - consultacpf-network
     ports:
-      - 3432:3006
+      - 3432:300
   nginx:
     image: nginx:alpine
     container_name: nginx-consultacpf
