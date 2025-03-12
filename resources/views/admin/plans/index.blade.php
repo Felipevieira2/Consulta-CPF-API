@@ -72,7 +72,9 @@
             </div>
             
             <div class="mt-4">
-                {{ $plans->links() }}
+                @if(method_exists($plans, 'links'))
+                    {{ $plans->links() }}
+                @endif
             </div>
         </x-card>
     </div>
