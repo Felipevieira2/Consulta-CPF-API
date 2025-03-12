@@ -19,7 +19,7 @@ services:
       - ./storage:/var/www/storage:delegated
     networks:
       - consultacpf-network   
-   db:
+  db:
     mysql:
     image: mariadb:10.4
     container_name: facegate_db
