@@ -12,7 +12,7 @@ class UserSeeder extends Seeder
     {
         // Verificar se a role admin existe, se não, criá-la
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $userRole = Role::firstOrCreate(['name' => 'user']);
+        $userRole = Role::firstOrCreate(['name' => 'customer']);
         
         // Criar usuário admin
         $admin = User::factory()->create([
