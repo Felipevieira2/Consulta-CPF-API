@@ -36,7 +36,7 @@
             
             <div class="p-6">
                 <div class="mb-6">
-                    <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Endpoint Base</h4>
+                    <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Endpoint </h4>
                     <div class="flex items-center">
                         <div class="bg-gray-100 dark:bg-gray-700 p-3 rounded font-mono text-sm flex-grow overflow-x-auto">
                             {{ config('app.url') }}/api/v1

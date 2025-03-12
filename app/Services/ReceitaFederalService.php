@@ -17,7 +17,7 @@ class ReceitaFederalService
             
         ];
         
-        $host = env('RECEITA_SCRAPER_HOST', 'localhost');
+        $host = env('RECEITA_SCRAPER_HOST', 'consulta-cpf-api_receita-scraper_1');
         $url = "http://{$host}:3000/consultar-cpf";
         
         $body = json_encode([
