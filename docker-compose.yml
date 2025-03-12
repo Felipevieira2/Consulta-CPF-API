@@ -24,15 +24,13 @@ services:
     container_name: db-consultacpf
     restart: unless-stopped
     environment:
-    
       MYSQL_DATABASE: consultacpf_db
       MYSQL_ROOT_PASSWORD: root
       MYSQL_PASSWORD: dsasd3a231
       MYSQL_USER: consultacpf_user
-      SERVICE_TAGS: dev
-      SERVICE_NAME: mysql
     volumes:
       - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+      - mysql_data:/var/lib/mysql
     networks:
       - consultacpf-network
     ports:
@@ -62,3 +60,5 @@ services:
 networks:
   consultacpf-network:
     driver: bridge
+volumes:
+  mysql_data:
