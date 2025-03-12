@@ -6,7 +6,7 @@
                 <!-- Logo -->
                 <div class="flex-shrink-0 flex items-center">
                     <a href="{{ route('customer.dashboard') }}" class="text-xl font-bold text-indigo-600 dark:text-indigo-400">
-                        {{ config('app.name', 'API de Consulta CPF') }}
+                        {{ env('APP_NAME', 'getcpf') }}
                     </a>
                 </div>
                 
