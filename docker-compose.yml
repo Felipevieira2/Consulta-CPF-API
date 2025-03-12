@@ -25,7 +25,7 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: consultacpf_db
-      MYSQL_ROOT_PASSWORD: app_user342root_senha54323
+      MYSQL_ROOT_PASSWORD: app_user342root_senha51234323
       MYSQL_PASSWORD: app_user342_senha54323
       MYSQL_USER: app_user
       MYSQL_INITDB_SKIP_TZINFO: 1
