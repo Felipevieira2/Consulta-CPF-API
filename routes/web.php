@@ -1,10 +1,13 @@
 <?php
 
 use App\Models\Plan;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UsageController;
 use App\Http\Controllers\ApiKeyController;
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\Admin\PlanController;
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\TransactionController;
@@ -13,17 +16,15 @@ use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
+use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Admin\RoleController;
-use App\Http\Controllers\Admin\PermissionController;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Customer\CustomerDocumentationController;
 use App\Http\Controllers\Customer\CustomerApiLogController;
 use App\Http\Controllers\Customer\CustomerProfileController;
 use App\Http\Controllers\Customer\CustomerSettingsController;
+use App\Http\Controllers\Customer\CustomerDocumentationController;
 use App\Http\Controllers\Customer\BillingController as CustomerBillingController;
+use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
 
 /*
 |--------------------------------------------------------------------------

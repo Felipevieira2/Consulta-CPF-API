@@ -80,7 +80,9 @@ class RegisterController extends Controller
     }
 
     public function register(Request $request)
-    {
+    {   
+        abort(404);
+        
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -119,6 +121,7 @@ class RegisterController extends Controller
         
         // Fazer login do usuário (autenticação web)
         Auth::login($user);
+        //re
         // Caso contrário, redireciona diretamente
         return redirect()->route('home')->with('success', 'Registro realizado com sucesso!');
     }
