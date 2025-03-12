@@ -31,12 +31,12 @@ class UserSeeder extends Seeder
             'name' => 'Usuário Normal',
             'email' => 'user@fcati.com.br',
             'password' => bcrypt('12121212'),
-            'role' => 'user',
+            'role' => 'customer',
             'email_verified_at' => now(),
         ]);
         
         // Atribuir role user
-        $user->assignRole('user');
+        $user->assignRole('customer');
 
         // // Criar mais alguns usuários aleatórios para teste
         // User::factory()->count(5)->create(); // 5 usuários normais
