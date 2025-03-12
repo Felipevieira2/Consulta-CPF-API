@@ -7,7 +7,7 @@
             <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Planos</h1>
             <x-forms.button variant="primary" class="cursor-pointer" onclick="window.location.href='{{ route('admin.plans.create') }}'">
                 <i class="fas fa-plus mr-2"></i> Novo Plano
-            </a>
+            </x-forms.button>
         </div>
         
         <x-card class="mt-6">
