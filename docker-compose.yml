@@ -27,11 +27,11 @@ services:
       - $PWD/database:/var/lib/mysql
     restart: unless-stopped
     environment:
-    MYSQL_DATABASE: consultacpf_db
-    MYSQL_ROOT_PASSWORD: 12#y3asd12#3rout
-    MYSQL_PASSWORD: 12#y3asd12#3
-    MYSQL_USER: consultacpf_user
-    MYSQL_INITDB_SKIP_TZINFO: 1
+      MYSQL_DATABASE: consultacpf_db
+      MYSQL_ROOT_PASSWORD: 12#y3asd12#3rout
+      MYSQL_PASSWORD: 12#y3asd12#3
+      MYSQL_USER: consultacpf_user
+      MYSQL_INITDB_SKIP_TZINFO: 1
     networks:
       - consultacpf-network
     ports:
