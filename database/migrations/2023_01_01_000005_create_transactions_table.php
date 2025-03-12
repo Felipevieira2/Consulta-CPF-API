@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained();
             $table->foreignId('plan_id')->nullable()->constrained();
-            $table->string('transaction_id')->unique();
+            $table->string('transaction_id');
             $table->string('payment_method');
             $table->string('status');
             $table->decimal('amount', 10, 2);

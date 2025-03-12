@@ -25,16 +25,17 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: consultacpf_db
-      MYSQL_ROOT_PASSWORD: 12#y3asd12#3rout
-      MYSQL_PASSWORD: 12#y3asd12#3
-      MYSQL_USER: consultacpf_user
+      MYSQL_ROOT_PASSWORD: app_user342root_senha54323
+      MYSQL_PASSWORD: app_user342_senha54323
+      MYSQL_USER: app_user
       MYSQL_INITDB_SKIP_TZINFO: 1
     volumes:
-      - $PWD/database:/var/lib/mysql
+      # - $PWD/docker-compose/mysql:/var/lib/mysql linux
+      - ./docker-compose/mysql:/var/lib/mysql
     networks:
       - consultacpf-network
     ports:
-      - 3432:3006
+      - 3432:3306
   nginx:
     image: nginx:alpine
     container_name: nginx-consultacpf
@@ -61,4 +62,4 @@ networks:
   consultacpf-network:
     driver: bridge
 volumes:
-  mysql_data:
+  mysql_data_consultacpf:
