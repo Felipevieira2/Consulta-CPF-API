@@ -36,6 +36,22 @@ use App\Http\Controllers\Customer\BillingController as CustomerBillingController
 |
 */
 
+// Adicione esta rota no início do seu arquivo de rotas
+Route::get('/debug-role', function() {
+    if (auth()->check()) {
+        dd([
+            'user' => auth()->user(),
+            'roles' => auth()->user()->roles,
+            'permissions' => auth()->user()->permissions ?? 'N/A',
+            'is_admin' => auth()->user()->hasRole('admin'),
+            'is_customer' => auth()->user()->hasRole('customer'),
+            'all_roles' => auth()->user()->getRoleNames(),
+        ]);
+    } else {
+        return "Usuário não está autenticado";
+    }
+});
+
 // Rotas públicas
 Route::get('/', function () {
     if (Auth::check()) {
