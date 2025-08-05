@@ -263,10 +263,26 @@ async function consultarCPF(cpf, birthDate) {
             console.log('Erro detectado: CPF está com divergente');
 
             // Capturar a mensagem de erro completa
-            return {
+                return {
+                    error: true,
+                    message: 'CPF informado está incorreto',
+                    type: 'cpf_incorreto'
+                };
+        }
+
+        //cpf nao existe 
+        const cpfNaoExiste = await page.evaluate(() => {    
+            const conteudo = document.body.innerText;
+            return conteudo.includes('CPF não encontrado');
+        });
+
+        if (cpfNaoExiste) {
+            
+
+            return {    
                 error: true,
-                message: 'CPF informado está incorreto',
-                type: 'cpf_incorreto'
+                message: 'CPF não encontrado na base de dados da Receita Federal',
+                type: 'cpf_nao_encontrado'
             };
         }
 
