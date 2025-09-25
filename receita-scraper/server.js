@@ -46,19 +46,17 @@ app.post('/consultar-cpf', async (req, res) => {
 
 
 // Graceful shutdown
-process.on('SIGTERM', async () => {
+process.on('SIGTERM', () => {
   console.log('SIGTERM recebido, encerrando servidor...');
-  await finalizarRecursos();
   process.exit(0);
 });
 
-process.on('SIGINT', async () => {
+process.on('SIGINT', () => {
   console.log('SIGINT recebido, encerrando servidor...');
-  await finalizarRecursos();
   process.exit(0);
 });
 
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
-}); 
+});
