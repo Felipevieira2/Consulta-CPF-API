@@ -39,7 +39,7 @@ class PlaywrightWebKitCPFConsultor {
         
         // Configurações otimizadas do WebKit baseadas no scraper.js
         this.browser = await webkit.launch({
-            headless: false,
+            headless: true,
             slowMo: 100,
             args: [
                 '--no-sandbox',
