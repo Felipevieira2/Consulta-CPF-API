@@ -42,7 +42,7 @@ class PlaywrightWebKitCPFConsultor {
             headless: true,
             slowMo: 100,
             args: [
-                '--disable-web-security'
+                
             ]
         });
 
