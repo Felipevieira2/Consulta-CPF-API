@@ -39,7 +39,7 @@ class PlaywrightWebKitCPFConsultor {
         
         // Configurações otimizadas do WebKit
         this.browser = await webkit.launch({
-            headless: false,
+            headless: true,
             slowMo: 50 // Reduzido para acelerar
         });
 
