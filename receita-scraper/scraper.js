@@ -37,13 +37,10 @@ class PlaywrightWebKitCPFConsultor {
     async launch() {
         console.log('🚀 Iniciando Playwright com WebKit (Safari) para consulta CPF...');
         
-        // Configurações otimizadas do WebKit - argumentos compatíveis
+        // Configurações otimizadas do WebKit
         this.browser = await webkit.launch({
             headless: true,
-            slowMo: 100,
-            args: [
-                
-            ]
+            slowMo: 50 // Reduzido para acelerar
         });
 
         // Cria contexto com configurações do scraper.js
@@ -62,9 +59,9 @@ class PlaywrightWebKitCPFConsultor {
 
         this.page = await this.context.newPage();
         
-        // Configurar timeouts (do scraper.js)
-        this.page.setDefaultNavigationTimeout(60000);
-        this.page.setDefaultTimeout(30000);
+        // Configurar timeouts otimizados
+        this.page.setDefaultNavigationTimeout(45000);
+        this.page.setDefaultTimeout(20000);
 
         // Otimização: Reduzir recursos carregados (do scraper.js)
         await this.page.route('**/*', (route) => {
@@ -152,188 +149,69 @@ class PlaywrightWebKitCPFConsultor {
             await this.page.waitForSelector('iframe[title="Widget contendo caixa de seleção para desafio de segurança hCaptcha"]');
             //await takeScreenshot(this.page, 'antes_captcha');
 
-            // TODA a lógica de captcha do scraper.js - VERSÃO MELHORADA
-            console.log('🔍 Iniciando detecção avançada do hCaptcha...');
+            // Lógica otimizada de detecção do hCaptcha
+            console.log('🔍 Detectando hCaptcha...');
             try {
-                // Múltiplos seletores para encontrar o iframe do hCaptcha
+                // Seletores principais do hCaptcha
                 const hcaptchaSelectors = [
                     'iframe[src*="hcaptcha.com"]',
                     'iframe[title*="hCaptcha"]',
-                    'iframe[title*="Widget contendo caixa de seleção para desafio de segurança hCaptcha"]',
-                    'iframe[data-hcaptcha-widget-id]',
                     '.h-captcha iframe'
                 ];
 
                 let hcaptchaIframeHandle = null;
-                let selectorUsed = '';
 
-                // Tentar encontrar o iframe com diferentes seletores
+                // Buscar iframe do hCaptcha
                 for (const selector of hcaptchaSelectors) {
                     try {
-                        console.log(`🔎 Tentando seletor: ${selector}`);
-                        await this.page.waitForSelector(selector, { timeout: 10000 });
-                        
+                        await this.page.waitForSelector(selector, { timeout: 4000 });
                         const iframe = await this.page.$(selector);
                         if (iframe) {
-                            // Verificar se o iframe é realmente do hCaptcha
-                            const iframeInfo = await iframe.evaluate(el => ({
-                                src: el.src,
-                                title: el.title,
-                                id: el.id,
-                                className: el.className,
-                                dataset: Object.keys(el.dataset)
-                            }));
-                            
-                            console.log(`📋 Info do iframe encontrado:`, iframeInfo);
-                            
-                            if (iframeInfo.src.includes('hcaptcha.com') || 
-                                iframeInfo.title.toLowerCase().includes('hcaptcha') ||
-                                iframeInfo.dataset.includes('hcaptcha-widget-id')) {
+                            const src = await iframe.getAttribute('src');
+                            if (src && src.includes('hcaptcha.com')) {
                                 hcaptchaIframeHandle = iframe;
-                                selectorUsed = selector;
-                                console.log(`✅ Iframe do hCaptcha encontrado com seletor: ${selector}`);
+                                console.log(`✅ hCaptcha encontrado: ${selector}`);
                                 break;
                             }
                         }
                     } catch (e) {
-                        console.log(`⚠️ Seletor ${selector} não funcionou: ${e.message}`);
                         continue;
                     }
                 }
 
-                // Se não encontrou com seletores específicos, buscar em todos os iframes
-                if (!hcaptchaIframeHandle) {
-                    console.log('🔍 Buscando em todos os iframes da página...');
-                    const allIframes = await this.page.$$('iframe');
-                    console.log(`📊 Total de iframes encontrados: ${allIframes.length}`);
-
-                    for (let i = 0; i < allIframes.length; i++) {
-                        const iframe = allIframes[i];
-                        try {
-                            const iframeInfo = await iframe.evaluate(el => ({
-                                src: el.src || '',
-                                title: el.title || '',
-                                id: el.id || '',
-                                className: el.className || ''
-                            }));
-                            
-                            console.log(`📋 Iframe ${i + 1}:`, iframeInfo);
-                            
-                            if (iframeInfo.src.includes('hcaptcha.com') || 
-                                iframeInfo.title.toLowerCase().includes('hcaptcha')) {
-                                hcaptchaIframeHandle = iframe;
-                                selectorUsed = `iframe[${i + 1}]`;
-                                console.log(`✅ Iframe do hCaptcha encontrado na posição ${i + 1}`);
-                                break;
-                            }
-                        } catch (e) {
-                            console.log(`⚠️ Erro ao verificar iframe ${i + 1}: ${e.message}`);
-                        }
-                    }
-                }
-
                 if (hcaptchaIframeHandle) {
-                    console.log(`🎯 Iframe do hCaptcha confirmado! Usado: ${selectorUsed}`);
+                    console.log('🎯 Tentando interagir com hCaptcha...');
                     
-                    // Aguardar um pouco para o iframe carregar completamente
-                    await this.page.waitForTimeout(2000);
+                    await this.page.waitForTimeout(1000);
                     
-                    // Obter o frame content com retry
-                    let frameHandle = null;
-                    let retryCount = 0;
-                    const maxRetries = 5;
-                    
-                    while (!frameHandle && retryCount < maxRetries) {
-                        try {
-                            frameHandle = await hcaptchaIframeHandle.contentFrame();
-                            if (frameHandle) {
-                                console.log(`✅ Frame content obtido na tentativa ${retryCount + 1}`);
-                                break;
-                            }
-                        } catch (e) {
-                            console.log(`⚠️ Tentativa ${retryCount + 1} falhou: ${e.message}`);
-                        }
-                        
-                        retryCount++;
-                        await this.page.waitForTimeout(1000);
-                    }
-                    
-                    if (frameHandle) {
-                        console.log('🔧 Tentando interagir com o checkbox do hCaptcha...');
-                        
-                        try {
-                            // Aguardar o checkbox aparecer no frame
-                            await frameHandle.waitForSelector('#checkbox', { timeout: 10000 });
-                            console.log('✅ Checkbox encontrado no frame');
+                    try {
+                        const frameHandle = await hcaptchaIframeHandle.contentFrame();
+                        if (frameHandle) {
+                            await frameHandle.waitForSelector('#checkbox', { timeout: 5000 });
                             
-                            // Verificar estado inicial do checkbox
-                            const initialState = await frameHandle.evaluate(() => {
+                            const isChecked = await frameHandle.evaluate(() => {
                                 const checkbox = document.querySelector('#checkbox');
-                                if (!checkbox) return { found: false };
-                                
-                                return {
-                                    found: true,
-                                    checked: checkbox.checked,
-                                    ariaChecked: checkbox.getAttribute('aria-checked'),
-                                    disabled: checkbox.disabled,
-                                    visible: checkbox.offsetParent !== null,
-                                    className: checkbox.className
-                                };
+                                return checkbox && (checkbox.checked || checkbox.getAttribute('aria-checked') === 'true');
                             });
                             
-                            console.log('📊 Estado inicial do checkbox:', initialState);
-                            
-                            if (initialState.found && !initialState.checked && initialState.ariaChecked !== 'true') {
-                                // Tentar clicar no checkbox
-                                await frameHandle.evaluate(() => {
-                                    const checkbox = document.querySelector('#checkbox');
-                                    if (checkbox && !checkbox.disabled) {
-                                        checkbox.click();
-                                        console.log('Clique executado no checkbox');
-                                    }
-                                });
-                                
+                            if (!isChecked) {
+                                await frameHandle.click('#checkbox');
+                                console.log('✅ Checkbox clicado');
                                 await this.page.waitForTimeout(500);
-                                
-                                // Verificar se o clique funcionou
-                                const afterClickState = await frameHandle.evaluate(() => {
-                                    const checkbox = document.querySelector('#checkbox');
-                                    if (!checkbox) return { found: false };
-                                    
-                                    return {
-                                        found: true,
-                                        checked: checkbox.checked,
-                                        ariaChecked: checkbox.getAttribute('aria-checked'),
-                                        className: checkbox.className
-                                    };
-                                });
-                                
-                                console.log('📊 Estado após clique:', afterClickState);
-                                
-                                if (afterClickState.checked || afterClickState.ariaChecked === 'true') {
-                                    console.log('✅ Checkbox marcado com sucesso!');
-                                } else {
-                                    console.log('⚠️ Checkbox não foi marcado, pode precisar de resolução manual');
-                                }
-                            } else if (initialState.checked || initialState.ariaChecked === 'true') {
-                                console.log('✅ Checkbox já estava marcado!');
                             } else {
-                                console.log('⚠️ Checkbox não está disponível para interação');
+                                console.log('✅ Checkbox já marcado');
                             }
-                            
-                        } catch (frameError) {
-                            console.log('❌ Erro na interação com o frame:', frameError.message);
                         }
-                    } else {
-                        console.log('❌ Não foi possível obter o conteúdo do frame após várias tentativas');
+                    } catch (frameError) {
+                        console.log('⚠️ Erro na interação com hCaptcha:', frameError.message);
                     }
                 } else {
-                    console.log('❌ Iframe do hCaptcha não foi encontrado com nenhum método');
+                    console.log('⚠️ hCaptcha não encontrado');
                 }
 
-                // Aguardar tempo para possível resolução manual
-                console.log('⏳ Aguardando possível resolução manual do captcha (10 segundos)...');
-                await this.page.waitForTimeout(10000);
+                // // Aguardar tempo para possível resolução manual
+                // console.log('⏳ Aguardando possível resolução manual do captcha (2 segundos)...');
+                // await this.page.waitForTimeout(2000);
                 //await takeScreenshot(this.page, 'apos_tentativa_captcha');
                 
             } catch (error) {
@@ -347,49 +225,52 @@ class PlaywrightWebKitCPFConsultor {
                 timeout: 30000
             });
 
-            // Verificar se o botão está habilitado e visível (do scraper.js)
-            const botaoInfo = await this.page.evaluate(() => {
-                const botao = document.querySelector('input[value="Consultar"]');
-                if (!botao) return { existe: false };
+            // // Verificar se o botão está habilitado e visível (do scraper.js)
+            // const botaoInfo = await this.page.evaluate(() => {
+            //     const botao = document.querySelector('input[value="Consultar"]');
+            //     if (!botao) return { existe: false };
                 
-                return {
-                    existe: true,
-                    habilitado: !botao.disabled,
-                    visivel: botao.offsetParent !== null,
-                    style: window.getComputedStyle(botao).display
-                };
-            });
+            //     return {
+            //         existe: true,
+            //         habilitado: !botao.disabled,
+            //         visivel: botao.offsetParent !== null,
+            //         style: window.getComputedStyle(botao).display
+            //     };
+            // });
 
-            console.log('Estado do botão Consultar:', botaoInfo);
+            // console.log('Estado do botão Consultar:', botaoInfo);
 
-            if (!botaoInfo.existe) {
-                throw new Error('Botão Consultar não encontrado');
-            }
+            // if (!botaoInfo.existe) {
+            //     throw new Error('Botão Consultar não encontrado');
+            // }
 
-            if (!botaoInfo.habilitado) {
-                console.log('⚠️ Botão Consultar está desabilitado. Aguardando habilitação...');
+            // if (!botaoInfo.habilitado) {
+            //     console.log('⚠️ Botão Consultar está desabilitado. Aguardando habilitação...');
                 
-                // Aguardar até o botão ficar habilitado (captcha resolvido)
-                await this.page.waitForFunction(
-                    () => {
-                        const botao = document.querySelector('input[value="Consultar"]');
-                        return botao && !botao.disabled;
-                    },
-                    { timeout: 60000, polling: 1000 }
-                ).catch(() => {
-                    throw new Error('Timeout: Botão Consultar não foi habilitado. Verifique se o captcha foi resolvido.');
-                });
+            //     // Aguardar até o botão ficar habilitado (captcha resolvido)
+            //     await this.page.waitForFunction(
+            //         () => {
+            //             const botao = document.querySelector('input[value="Consultar"]');
+            //             return botao && !botao.disabled;
+            //         },
+            //         { timeout: 60000, polling: 1000 }
+            //     ).catch(() => {
+            //         throw new Error('Timeout: Botão Consultar não foi habilitado. Verifique se o captcha foi resolvido.');
+            //     });
                 
-                console.log('✅ Botão Consultar foi habilitado!');
-            }
+            //     console.log('✅ Botão Consultar foi habilitado!');
+            // }
 
             // Aguardar um pouco mais para garantir que tudo está pronto
-            await this.page.waitForTimeout(1000);
+            await this.page.waitForTimeout(500);
 
             // Clicar no botão Consultar com melhor tratamento (do scraper.js)
             console.log('Clicando em Consultar...');
             
             try {
+
+                //espere ate o botao estar habilitado
+              
                 // Tentar clique simples primeiro
                 await this.page.click('input[value="Consultar"]');
                 console.log('✅ Clique realizado com sucesso');
@@ -421,7 +302,7 @@ class PlaywrightWebKitCPFConsultor {
                     
                     // Opção 3: Timeout de segurança
                     new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error('Timeout na resposta')), 45000)
+                        setTimeout(() => reject(new Error('Timeout na resposta')), 30000)
                     )
                 ]);
                 
@@ -761,7 +642,23 @@ async function main() {
     try {
         await consultor.launch();
         await consultor.navigateTo('https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp');
-        await consultor.injectControlPanel();
+        
+        // Verificar se argumentos foram fornecidos para execução automática
+        const args = process.argv.slice(2);
+        if (args.length >= 2) {
+            const cpf = args[0];
+            const birthDate = args[1];
+            
+            console.log(`🚀 Executando consulta automática para CPF: ${cpf} e Data: ${birthDate}`);
+            
+            const resultado = await consultor.consultarCPF(cpf, birthDate);
+            console.log('✅ Resultado da consulta:', resultado);
+            
+            await consultor.close();
+            return;
+        }
+        
+        // await consultor.injectControlPanel();
         
         console.log('🎯 WebKit CPF Consultor ativo com TODA a lógica do scraper.js!');
         console.log('💡 Use o painel visual ou as funções do console para interagir');
