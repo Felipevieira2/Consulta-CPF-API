@@ -37,28 +37,12 @@ class PlaywrightWebKitCPFConsultor {
     async launch() {
         console.log('🚀 Iniciando Playwright com WebKit (Safari) para consulta CPF...');
         
-        // Configurações otimizadas do WebKit baseadas no scraper.js
+        // Configurações otimizadas do WebKit - argumentos compatíveis
         this.browser = await webkit.launch({
             headless: true,
             slowMo: 100,
             args: [
-               
-                '--disable-gpu',
-                '--disable-dev-shm-usage',
-                '--disable-setuid-sandbox',
-                '--window-size=1920,1080',
-                '--disable-features=VizDisplayCompositor',
-                '--disable-web-security',
-                '--disable-extensions',
-                '--disable-audio-output',
-                '--disable-background-networking',
-                '--disable-background-timer-throttling',
-                '--disable-backgrounding-occluded-windows',
-                '--disable-breakpad',
-                '--disable-component-extensions-with-background-pages',
-                '--disable-default-apps',
-                '--disable-ipc-flooding-protection',
-                '--js-flags=--expose-gc'
+                '--disable-web-security'
             ]
         });
 
