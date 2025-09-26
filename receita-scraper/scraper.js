@@ -42,7 +42,7 @@ class PlaywrightWebKitCPFConsultor {
             headless: true,
             slowMo: 100,
             args: [
-                '--no-sandbox',
+               
                 '--disable-gpu',
                 '--disable-dev-shm-usage',
                 '--disable-setuid-sandbox',
