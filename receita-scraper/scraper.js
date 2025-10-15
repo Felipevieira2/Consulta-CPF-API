@@ -38,10 +38,9 @@ class PlaywrightWebKitCPFConsultor {
         console.log('🚀 Iniciando Playwright com WebKit (Safari) para consulta CPF...');
         
         // Configurações do WebKit - modo visual ou headless
-        const isVisual = process.env.VISUAL_MODE === 'true' || process.argv.includes('--visual');
-        
+      
         this.browser = await webkit.launch({
-            headless: !isVisual, // false = mostra navegador, true = oculto
+            headless: true, // false = mostra navegador, true = oculto
             slowMo: 500 // Mais lento para visualizar
         });
         
