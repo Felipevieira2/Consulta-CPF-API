@@ -63,7 +63,7 @@ class CpfController extends Controller
         //verificar se o user tem saldo
         $user = auth()->user();      
         $userPlan = UserPlan::where('user_id', $user->id)->first();
-
+       
         if(!$userPlan){
             return response()->json([
                 'success' => false,

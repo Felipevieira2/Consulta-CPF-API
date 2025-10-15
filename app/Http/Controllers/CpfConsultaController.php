@@ -1,213 +1,169 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const { consultarCPF } = require('./scraper');
-const { consultarCPFComPrints } = require('./servidor-com-prints');
-const fs = require('fs');
-const path = require('path');
+<?php
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+namespace App\Http\Controllers;
 
-// Middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
-// Servir arquivos estáticos da pasta screenshots
-app.use('/screenshots', express.static(path.join(__dirname, 'screenshots')));
-
-// Servir arquivos estáticos para CSS/JS se necessário
-app.use('/static', express.static(path.join(__dirname, 'public')));
-
-
-// Rota para verificar se o servidor está online
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
-});
-
-// Rota para consulta de CPF
-app.post('/consultar-cpf', async (req, res) => {
-  try {
-    const { cpf, birthDate } = req.body;
+class CpfConsultaController extends Controller
+{
+    private $nodeServerUrl = 'http://localhost:3000';
+    private $screenshotsPath;
     
-    if (!cpf || !birthDate) {
-      return res.status(400).json({
-        erro: true,
-        mensagem: 'CPF e data de nascimento são obrigatórios'
-      });
+    public function __construct()
+    {
+        // Caminho para os screenshots do Node.js
+        $this->screenshotsPath = base_path('receita-scraper/screenshots/ultima_consulta');
     }
     
-    console.log(`Recebida requisição para consultar CPF: ${cpf}`);
-    const resultado = await consultarCPF(cpf, birthDate);
-    
-    return res.json(resultado);
-  } catch (error) {
-    console.error('Erro na API:', error);
-    return res.status(500).json({
-      erro: true,
-      mensagem: `Erro interno do servidor: ${error.message}`
-    });
-  }
-});
-
-// Rota para consulta de CPF COM SCREENSHOTS
-app.post('/consultar-cpf-com-prints', async (req, res) => {
-  try {
-    const { cpf, birthDate } = req.body;
-    
-    if (!cpf || !birthDate) {
-      return res.status(400).json({
-        erro: true,
-        mensagem: 'CPF e data de nascimento são obrigatórios'
-      });
+    /**
+     * Exibe a última consulta CPF com screenshots
+     */
+    public function ultimaConsulta()
+    {
+        try {
+            // Ler resultado JSON se existir
+            $resultadoPath = $this->screenshotsPath . '/resultado.json';
+            $resultado = null;
+            
+            if (file_exists($resultadoPath)) {
+                $data = file_get_contents($resultadoPath);
+                $resultado = json_decode($data, true);
+            }
+            
+            // Listar screenshots se existir
+            $screenshots = [];
+            if (is_dir($this->screenshotsPath)) {
+                $files = scandir($this->screenshotsPath);
+                $screenshots = collect($files)
+                    ->filter(function($file) {
+                        return pathinfo($file, PATHINFO_EXTENSION) === 'png';
+                    })
+                    ->sort()
+                    ->map(function($file) {
+                        return [
+                            'nome' => $file,
+                            'url' => route('cpf.screenshot', ['filename' => $file]),
+                            'titulo' => $this->getTituloScreenshot($file)
+                        ];
+                    })
+                    ->values()
+                    ->toArray();
+            }
+            
+            // Gerar HTML (mesmo da rota Node.js)
+            $html = $this->gerarHtmlUltimaConsulta($resultado, $screenshots);
+            
+            return response($html)->header('Content-Type', 'text/html; charset=utf-8');
+            
+        } catch (\Exception $error) {
+            return response()->view('errors.cpf-consulta', [
+                'error' => $error->getMessage()
+            ], 500);
+        }
     }
     
-    console.log(`📸 Recebida requisição para consultar CPF COM SCREENSHOTS: ${cpf}`);
-    const resultado = await consultarCPFComPrints(cpf, birthDate);
-    
-    // Listar screenshots gerados
-    let screenshots = [];
-    if (resultado.screenshotDir && fs.existsSync(resultado.screenshotDir)) {
-      const files = fs.readdirSync(resultado.screenshotDir);
-      screenshots = files
-        .filter(file => file.endsWith('.png'))
-        .map(file => ({
-          nome: file,
-          url: `/screenshots/${path.basename(resultado.screenshotDir)}/${file}`,
-          caminho: path.join(resultado.screenshotDir, file)
-        }));
-    }
-    
-    return res.json({
-      ...resultado,
-      screenshots: screenshots,
-      totalScreenshots: screenshots.length,
-      diretorioScreenshots: resultado.screenshotDir
-    });
-    
-  } catch (error) {
-    console.error('❌ Erro na API com screenshots:', error);
-    return res.status(500).json({
-      erro: true,
-      mensagem: `Erro interno do servidor: ${error.message}`
-    });
-  }
-});
-
-// Rota para listar todas as pastas de screenshots
-app.get('/screenshots-list', (req, res) => {
-  try {
-    const screenshotsDir = path.join(__dirname, 'screenshots');
-    
-    if (!fs.existsSync(screenshotsDir)) {
-      return res.json({ pastas: [], total: 0 });
-    }
-    
-    const pastas = fs.readdirSync(screenshotsDir, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory())
-      .map(dirent => {
-        const pastaPath = path.join(screenshotsDir, dirent.name);
-        const arquivos = fs.readdirSync(pastaPath).filter(file => file.endsWith('.png'));
+    /**
+     * Serve screenshots diretamente
+     */
+    public function screenshot($filename)
+    {
+        $filepath = $this->screenshotsPath . '/' . $filename;
         
-        return {
-          nome: dirent.name,
-          url: `/screenshots/${dirent.name}/`,
-          totalArquivos: arquivos.length,
-          arquivos: arquivos.map(arquivo => ({
-            nome: arquivo,
-            url: `/screenshots/${dirent.name}/${arquivo}`
-          }))
-        };
-      })
-      .sort((a, b) => b.nome.localeCompare(a.nome)); // Mais recentes primeiro
-    
-    return res.json({
-      pastas: pastas,
-      total: pastas.length
-    });
-    
-  } catch (error) {
-    console.error('❌ Erro ao listar screenshots:', error);
-    return res.status(500).json({
-      erro: true,
-      mensagem: `Erro ao listar screenshots: ${error.message}`
-    });
-  }
-});
-
-// Rota HTML para exibir resultado da última consulta
-app.get('/ultima-consulta', (req, res) => {
-  try {
-    const resultadoPath = path.join(__dirname, 'screenshots', 'ultima_consulta', 'resultado.json');
-    const screenshotsDir = path.join(__dirname, 'screenshots', 'ultima_consulta');
-    
-    let resultado = null;
-    let screenshots = [];
-    
-    // Ler resultado se existir
-    if (fs.existsSync(resultadoPath)) {
-      const data = fs.readFileSync(resultadoPath, 'utf8');
-      resultado = JSON.parse(data);
+        if (!file_exists($filepath) || pathinfo($filename, PATHINFO_EXTENSION) !== 'png') {
+            abort(404, 'Screenshot não encontrado');
+        }
+        
+        return response()->file($filepath, [
+            'Content-Type' => 'image/png',
+            'Cache-Control' => 'public, max-age=3600'
+        ]);
     }
     
-    // Listar screenshots se existir
-    if (fs.existsSync(screenshotsDir)) {
-      const files = fs.readdirSync(screenshotsDir);
-      screenshots = files
-        .filter(file => file.endsWith('.png'))
-        .sort()
-        .map(file => ({
-          nome: file,
-          url: `/screenshots/ultima_consulta/${file}`,
-          titulo: getTituloScreenshot(file)
-        }));
+    /**
+     * API para obter dados da última consulta
+     */
+    public function apiUltimaConsulta()
+    {
+        try {
+            $resultadoPath = $this->screenshotsPath . '/resultado.json';
+            
+            if (!file_exists($resultadoPath)) {
+                return response()->json([
+                    'sucesso' => false,
+                    'mensagem' => 'Nenhuma consulta encontrada'
+                ], 404);
+            }
+            
+            $data = file_get_contents($resultadoPath);
+            $resultado = json_decode($data, true);
+            
+            // Listar screenshots
+            $screenshots = [];
+            if (is_dir($this->screenshotsPath)) {
+                $files = scandir($this->screenshotsPath);
+                $screenshots = collect($files)
+                    ->filter(function($file) {
+                        return pathinfo($file, PATHINFO_EXTENSION) === 'png';
+                    })
+                    ->map(function($file) {
+                        return [
+                            'nome' => $file,
+                            'url' => route('cpf.screenshot', ['filename' => $file]),
+                            'titulo' => $this->getTituloScreenshot($file)
+                        ];
+                    })
+                    ->values()
+                    ->toArray();
+            }
+            
+            return response()->json([
+                'resultado' => $resultado,
+                'screenshots' => $screenshots,
+                'total_screenshots' => count($screenshots)
+            ]);
+            
+        } catch (\Exception $error) {
+            return response()->json([
+                'sucesso' => false,
+                'mensagem' => 'Erro ao carregar dados: ' . $error->getMessage()
+            ], 500);
+        }
     }
     
-    // Gerar HTML
-    const html = gerarHtmlUltimaConsulta(resultado, screenshots);
+    /**
+     * Função auxiliar para obter título do screenshot
+     */
+    private function getTituloScreenshot($filename)
+    {
+        $titulos = [
+            '01_inicial.png' => '1. Página Inicial Carregada',
+            '02_apos_preenchimento.png' => '2. Formulário Preenchido',
+            '03_antes_captcha.png' => '3. Captcha Carregado',
+            '04_erro_deteccao_hcaptcha.png' => '4. Erro na Detecção do Captcha',
+            '05_resultado.png' => '5. Resultado da Consulta',
+            '06_final_sucesso.png' => '6. Consulta Finalizada com Sucesso',
+            '07_erro.png' => '7. Erro na Consulta'
+        ];
+        
+        return $titulos[$filename] ?? str_replace(['.png', '_'], ['', ' '], $filename);
+    }
     
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.send(html);
-    
-  } catch (error) {
-    console.error('❌ Erro ao exibir última consulta:', error);
-    res.status(500).send(`
-      <html>
-        <head><title>Erro</title></head>
-        <body>
-          <h1>Erro ao carregar última consulta</h1>
-          <p>${error.message}</p>
-        </body>
-      </html>
-    `);
-  }
-});
-
-// Função auxiliar para obter título do screenshot
-function getTituloScreenshot(filename) {
-  const titulos = {
-    '01_inicial.png': '1. Página Inicial Carregada',
-    '02_apos_preenchimento.png': '2. Formulário Preenchido',
-    '03_antes_captcha.png': '3. Captcha Carregado',
-    '04_erro_deteccao_hcaptcha.png': '4. Erro na Detecção do Captcha',
-    '05_resultado.png': '5. Resultado da Consulta',
-    '06_final_sucesso.png': '6. Consulta Finalizada com Sucesso',
-    '07_erro.png': '7. Erro na Consulta'
-  };
-  
-  return titulos[filename] || filename.replace('.png', '').replace(/_/g, ' ');
-}
-
-// Função para gerar HTML da última consulta
-function gerarHtmlUltimaConsulta(resultado, screenshots) {
-  const timestamp = resultado ? new Date(resultado.timestamp).toLocaleString('pt-BR') : 'N/A';
-  
-  return `
+    /**
+     * Gerar HTML da última consulta (mesmo do Node.js)
+     */
+    private function gerarHtmlUltimaConsulta($resultado, $screenshots)
+    {
+        $timestamp = $resultado ? date('d/m/Y H:i:s', strtotime($resultado['timestamp'])) : 'N/A';
+        
+        ob_start();
+        ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Última Consulta CPF - Resultado</title>
+    <title>Última Consulta CPF - Laravel Integration</title>
     <style>
         * {
             margin: 0;
@@ -257,15 +213,15 @@ function gerarHtmlUltimaConsulta(resultado, screenshots) {
         }
         
         .resultado-card {
-            background: ${resultado && resultado.sucesso ? '#d4edda' : '#f8d7da'};
-            border: 1px solid ${resultado && resultado.sucesso ? '#c3e6cb' : '#f5c6cb'};
+            background: <?= $resultado && ($resultado['sucesso'] ?? false) ? '#d4edda' : '#f8d7da' ?>;
+            border: 1px solid <?= $resultado && ($resultado['sucesso'] ?? false) ? '#c3e6cb' : '#f5c6cb' ?>;
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 20px;
         }
         
         .resultado-card h3 {
-            color: ${resultado && resultado.sucesso ? '#155724' : '#721c24'};
+            color: <?= $resultado && ($resultado['sucesso'] ?? false) ? '#155724' : '#721c24' ?>;
             margin-bottom: 15px;
             font-size: 1.3em;
         }
@@ -391,6 +347,18 @@ function gerarHtmlUltimaConsulta(resultado, screenshots) {
             color: #bbb;
         }
         
+        .laravel-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #ff2d20;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
@@ -415,101 +383,106 @@ function gerarHtmlUltimaConsulta(resultado, screenshots) {
     </style>
 </head>
 <body>
+    <div class="laravel-badge">Laravel Integration</div>
+    
     <div class="container">
         <div class="header">
             <h1>📊 Última Consulta CPF</h1>
             <p>Resultado detalhado com screenshots do processo</p>
-            <p><strong>Última atualização:</strong> ${timestamp}</p>
+            <p><strong>Última atualização:</strong> <?= $timestamp ?></p>
+            <p><small>🚀 Integrado com Laravel</small></p>
         </div>
         
         <div class="content">
             <div class="resultado-section">
-                ${resultado ? `
+                <?php if ($resultado): ?>
                     <div class="resultado-card">
-                        <h3>${resultado.sucesso ? '✅ Consulta Realizada com Sucesso' : '❌ Erro na Consulta'}</h3>
+                        <h3><?= ($resultado['sucesso'] ?? false) ? '✅ Consulta Realizada com Sucesso' : '❌ Erro na Consulta' ?></h3>
                         
-                        ${resultado.sucesso ? `
+                        <?php if ($resultado['sucesso'] ?? false): ?>
                             <div class="info-grid">
                                 <div class="info-item">
                                     <strong>CPF Consultado:</strong>
-                                    ${resultado.cpf || resultado.cpf_consultado || 'N/A'}
+                                    <?= htmlspecialchars($resultado['cpf'] ?? $resultado['cpf_consultado'] ?? 'N/A') ?>
                                 </div>
                                 <div class="info-item">
                                     <strong>Nome:</strong>
-                                    ${resultado.nome || 'N/A'}
+                                    <?= htmlspecialchars($resultado['nome'] ?? 'N/A') ?>
                                 </div>
                                 <div class="info-item">
                                     <strong>Data de Nascimento:</strong>
-                                    ${resultado.data_nascimento || resultado.data_nascimento_consultada || 'N/A'}
+                                    <?= htmlspecialchars($resultado['data_nascimento'] ?? $resultado['data_nascimento_consultada'] ?? 'N/A') ?>
                                 </div>
                                 <div class="info-item">
                                     <strong>Situação Cadastral:</strong>
-                                    ${resultado.situacao_cadastral || 'N/A'}
+                                    <?= htmlspecialchars($resultado['situacao_cadastral'] ?? 'N/A') ?>
                                 </div>
                                 <div class="info-item">
                                     <strong>Data da Inscrição:</strong>
-                                    ${resultado.data_inscricao || 'N/A'}
+                                    <?= htmlspecialchars($resultado['data_inscricao'] ?? 'N/A') ?>
                                 </div>
                                 <div class="info-item">
                                     <strong>Dígito Verificador:</strong>
-                                    ${resultado.digito_verificador || 'N/A'}
+                                    <?= htmlspecialchars($resultado['digito_verificador'] ?? 'N/A') ?>
                                 </div>
                                 <div class="info-item">
                                     <strong>Hora da Emissão:</strong>
-                                    ${resultado.hora_emissao || 'N/A'}
+                                    <?= htmlspecialchars($resultado['hora_emissao'] ?? 'N/A') ?>
                                 </div>
                                 <div class="info-item">
                                     <strong>Data da Emissão:</strong>
-                                    ${resultado.data_emissao || 'N/A'}
+                                    <?= htmlspecialchars($resultado['data_emissao'] ?? 'N/A') ?>
                                 </div>
                                 <div class="info-item">
                                     <strong>Código de Controle:</strong>
-                                    ${resultado.codigo_controle || 'N/A'}
+                                    <?= htmlspecialchars($resultado['codigo_controle'] ?? 'N/A') ?>
                                 </div>
                             </div>
-                        ` : `
+                        <?php else: ?>
                             <div class="info-grid">
                                 <div class="info-item">
                                     <strong>CPF Consultado:</strong>
-                                    ${resultado.cpf_consultado || 'N/A'}
+                                    <?= htmlspecialchars($resultado['cpf_consultado'] ?? 'N/A') ?>
                                 </div>
                                 <div class="info-item">
                                     <strong>Data de Nascimento:</strong>
-                                    ${resultado.data_nascimento_consultada || 'N/A'}
+                                    <?= htmlspecialchars($resultado['data_nascimento_consultada'] ?? 'N/A') ?>
                                 </div>
                                 <div class="info-item">
                                     <strong>Erro:</strong>
-                                    ${resultado.mensagem || 'Erro desconhecido'}
+                                    <?= htmlspecialchars($resultado['mensagem'] ?? 'Erro desconhecido') ?>
                                 </div>
                             </div>
-                        `}
+                        <?php endif; ?>
                     </div>
-                ` : `
+                <?php else: ?>
                     <div class="no-data">
                         <h3>Nenhuma consulta realizada ainda</h3>
                         <p>Execute uma consulta CPF para ver os resultados aqui</p>
                     </div>
-                `}
+                <?php endif; ?>
             </div>
             
             <div class="screenshots-section">
                 <h3>📸 Screenshots do Processo</h3>
                 
-                ${screenshots.length > 0 ? `
+                <?php if (count($screenshots) > 0): ?>
                     <div class="screenshots-grid">
-                        ${screenshots.map(screenshot => `
+                        <?php foreach ($screenshots as $screenshot): ?>
                             <div class="screenshot-card">
-                                <h4>${screenshot.titulo}</h4>
-                                <img src="${screenshot.url}" alt="${screenshot.titulo}" onclick="openModal('${screenshot.url}')">
+                                <h4><?= htmlspecialchars($screenshot['titulo']) ?></h4>
+                                <img src="<?= htmlspecialchars($screenshot['url']) ?>" 
+                                     alt="<?= htmlspecialchars($screenshot['titulo']) ?>" 
+                                     onclick="openModal('<?= htmlspecialchars($screenshot['url']) ?>')">
                             </div>
-                        `).join('')}
+                        <?php endforeach; ?>
                     </div>
-                ` : `
+                <?php else: ?>
                     <div class="no-data">
                         <h3>Nenhum screenshot disponível</h3>
                         <p>Os screenshots aparecerão aqui após uma consulta</p>
                     </div>
-                `}
+                <?php endif; ?>
             </div>
             
             <div style="text-align: center; margin-top: 30px;">
@@ -556,23 +529,7 @@ function gerarHtmlUltimaConsulta(resultado, screenshots) {
     </script>
 </body>
 </html>
-  `;
+        <?php
+        return ob_get_clean();
+    }
 }
-
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM recebido, encerrando servidor...');
-  await finalizarRecursos();
-  process.exit(0);
-});
-
-process.on('SIGINT', async () => {
-  console.log('SIGINT recebido, encerrando servidor...');
-  await finalizarRecursos();
-  process.exit(0);
-});
-
-// Iniciar servidor
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-}); 

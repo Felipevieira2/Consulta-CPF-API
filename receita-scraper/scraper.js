@@ -4,26 +4,44 @@ const path = require('path');
 
 // Função para criar diretório de screenshots (do scraper.js)
 const setupScreenshotDir = () => {
-    const dir = path.join(__dirname, 'screenshots');
+    const dir = path.join(__dirname, 'screenshots', 'ultima_consulta');
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, {
             recursive: true
         });
     }
+    // Limpar screenshots anteriores
+    const files = fs.readdirSync(dir);
+    files.forEach(file => {
+        if (file.endsWith('.png')) {
+            fs.unlinkSync(path.join(dir, file));
+        }
+    });
     return dir;
 };
 
 // Função para capturar screenshots (do scraper.js)
 const takeScreenshot = async (page, name) => {
-    const dir = setupScreenshotDir();
-    const timestamp = new Date().toISOString().replace(/:/g, '-');
-    const filename = `${name}_${timestamp}.png`;
-    const filepath = path.join(dir, filename);
-    await page.screenshot({
-        path: filepath
-    });
-    console.log(`📸 Screenshot salvo: ${filepath}`);
-    return filepath;
+    try {
+        const dir = path.join(__dirname, 'screenshots', 'ultima_consulta');
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        
+        const filename = `${name}.png`;
+        const filepath = path.join(dir, filename);
+        
+        await page.screenshot({
+            path: filepath,
+            fullPage: true
+        });
+        
+        console.log(`📸 Screenshot salvo: ${filename}`);
+        return filepath;
+    } catch (error) {
+        console.log(`❌ Erro ao capturar screenshot ${name}:`, error.message);
+        return null;
+    }
 };
 
 class PlaywrightWebKitCPFConsultor {
@@ -38,23 +56,34 @@ class PlaywrightWebKitCPFConsultor {
         console.log('🚀 Iniciando Playwright com WebKit (Safari) para consulta CPF...');
         
         // Configurações do WebKit - modo visual ou headless
-      
+        const isVisual = process.env.VISUAL_MODE === 'true' || process.argv.includes('--visual');
+        
         this.browser = await webkit.launch({
-            headless: true, // false = mostra navegador, true = oculto
-            slowMo: 500 // Mais lento para visualizar
+            headless: !isVisual, // false = mostra navegador, true = oculto
+            slowMo: isVisual ? 500 : 100, // Mais lento quando visual
+            args: [
+                '--disable-blink-features=AutomationControlled',
+                '--disable-web-security',
+                '--no-sandbox',
+                '--disable-dev-shm-usage'
+            ]
         });
         
-        // if (isVisual) {
-        //     console.log('🖥️ Modo VISUAL ativado - navegador será exibido!');
-        // } else {
-        //     console.log('👻 Modo HEADLESS ativado - navegador oculto');
-        // }
-
-        // Cria contexto com configurações do scraper.js
+        if (isVisual) {
+            console.log('🖥️ Modo VISUAL ativado - navegador será exibido!');
+        } else {
+            console.log('👻 Modo HEADLESS ativado - navegador oculto');
+        }
+        
+        // Cria contexto com configurações otimizadas
         this.context = await this.browser.newContext({
-            viewport: { width: 1920, height: 1080 },
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-            ignoreHTTPSErrors: true
+            viewport: { width: 1366, height: 768 },
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            ignoreHTTPSErrors: true,
+            javaScriptEnabled: true,
+            acceptDownloads: false,
+            locale: 'pt-BR',
+            timezoneId: 'America/Sao_Paulo'
         });
 
         // Remove sinais de automação (do scraper.js)
@@ -71,11 +100,16 @@ class PlaywrightWebKitCPFConsultor {
         this.page.setDefaultNavigationTimeout(45000);
         this.page.setDefaultTimeout(20000);
 
-        // Otimização: Reduzir recursos carregados (do scraper.js)
+        // Otimização: Reduzir recursos carregados de forma mais seletiva
         await this.page.route('**/*', (route) => {
             const resourceType = route.request().resourceType();
-            // Bloquear recursos desnecessários
-            if (['image', 'stylesheet', 'font', 'media'].includes(resourceType)) {
+            const url = route.request().url();
+            
+            // Bloquear apenas recursos realmente desnecessários
+            if (['image', 'media', 'websocket'].includes(resourceType) ||
+                url.includes('analytics') || url.includes('tracking') || 
+                url.includes('ads') || url.includes('facebook') || 
+                url.includes('google-analytics')) {
                 route.abort();
             } else {
                 route.continue();
@@ -134,13 +168,35 @@ class PlaywrightWebKitCPFConsultor {
 
         try {
             console.log('Acessando site da Receita Federal...');
-            await this.page.goto('https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp', {
-                waitUntil: 'networkidle'
-            });
-
+            
+            // Tentar diferentes estratégias de carregamento
+            let carregouSite = false;
+            const tentativas = [
+                { waitUntil: 'domcontentloaded', timeout: 15000 },
+                { waitUntil: 'load', timeout: 20000 },
+                { waitUntil: 'networkidle', timeout: 30000 }
+            ];
+            
+            for (const config of tentativas) {
+                try {
+                    await this.page.goto('https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp', config);
+                    console.log(`✅ Site carregado com estratégia: ${config.waitUntil}`);
+                    carregouSite = true;
+                    break;
+                } catch (error) {
+                    console.log(`⚠️ Falha com ${config.waitUntil}: ${error.message}`);
+                    if (config === tentativas[tentativas.length - 1]) {
+                        throw error;
+                    }
+                }
+            }
+            
+            if (!carregouSite) {
+                throw new Error('Não foi possível carregar o site da Receita Federal');
+            }
             // Aguardar carregamento do formulário
             await this.page.waitForSelector('#txtCPF');
-            //await takeScreenshot(this.page, 'inicial');
+            await takeScreenshot(this.page, '01_inicial');
 
             // Preenchimento otimizado (do scraper.js)
             console.log('Preenchendo CPF...');
@@ -152,12 +208,12 @@ class PlaywrightWebKitCPFConsultor {
             await this.page.evaluate((dateValue) => {
                 document.querySelector('#txtDataNascimento').value = dateValue;
             }, birthDate);
-            //await takeScreenshot(this.page, 'apos_preenchimento');
+            await takeScreenshot(this.page, '02_apos_preenchimento');
 
             // Aguardar carregamento do captcha
             console.log('Aguardando carregamento do captcha...');
             await this.page.waitForSelector('iframe[title="Widget contendo caixa de seleção para desafio de segurança hCaptcha"]');
-            //await takeScreenshot(this.page, 'antes_captcha');
+            await takeScreenshot(this.page, '03_antes_captcha');
 
             // Lógica otimizada de detecção do hCaptcha
             console.log('🔍 Detectando hCaptcha...');
@@ -218,15 +274,10 @@ class PlaywrightWebKitCPFConsultor {
                 } else {
                     console.log('⚠️ hCaptcha não encontrado');
                 }
-
-                // // Aguardar tempo para possível resolução manual
-                // console.log('⏳ Aguardando possível resolução manual do captcha (2 segundos)...');
-                // await this.page.waitForTimeout(2000);
-                //await takeScreenshot(this.page, 'apos_tentativa_captcha');
                 
             } catch (error) {
                 console.error('❌ Erro na detecção avançada do hCaptcha:', error);
-                //await takeScreenshot(this.page, 'erro_deteccao_hcaptcha');
+                await takeScreenshot(this.page, '04_erro_deteccao_hcaptcha');
             }
 
             // Aguardar e verificar o botão Consultar (do scraper.js)
@@ -235,41 +286,7 @@ class PlaywrightWebKitCPFConsultor {
                 timeout: 30000
             });
 
-            // // Verificar se o botão está habilitado e visível (do scraper.js)
-            // const botaoInfo = await this.page.evaluate(() => {
-            //     const botao = document.querySelector('input[value="Consultar"]');
-            //     if (!botao) return { existe: false };
-                
-            //     return {
-            //         existe: true,
-            //         habilitado: !botao.disabled,
-            //         visivel: botao.offsetParent !== null,
-            //         style: window.getComputedStyle(botao).display
-            //     };
-            // });
 
-            // console.log('Estado do botão Consultar:', botaoInfo);
-
-            // if (!botaoInfo.existe) {
-            //     throw new Error('Botão Consultar não encontrado');
-            // }
-
-            // if (!botaoInfo.habilitado) {
-            //     console.log('⚠️ Botão Consultar está desabilitado. Aguardando habilitação...');
-                
-            //     // Aguardar até o botão ficar habilitado (captcha resolvido)
-            //     await this.page.waitForFunction(
-            //         () => {
-            //             const botao = document.querySelector('input[value="Consultar"]');
-            //             return botao && !botao.disabled;
-            //         },
-            //         { timeout: 60000, polling: 1000 }
-            //     ).catch(() => {
-            //         throw new Error('Timeout: Botão Consultar não foi habilitado. Verifique se o captcha foi resolvido.');
-            //     });
-                
-            //     console.log('✅ Botão Consultar foi habilitado!');
-            // }
 
             // Aguardar um pouco mais para garantir que tudo está pronto
             await this.page.waitForTimeout(500);
@@ -341,7 +358,7 @@ class PlaywrightWebKitCPFConsultor {
                 console.log('Nenhum alerta detectado');
             }
 
-            //await takeScreenshot(this.page, 'resultado');
+            await takeScreenshot(this.page, '05_resultado');
 
             console.log('Verificando se há mensagem de erro sobre data de nascimento divergente...');
             // TODOS os tratamentos de erro do scraper.js
@@ -419,10 +436,39 @@ class PlaywrightWebKitCPFConsultor {
             });
 
             console.log('Consulta finalizada com sucesso');
+            await takeScreenshot(this.page, '06_final_sucesso');
+            
+            // Salvar dados da última consulta
+            const resultadoCompleto = {
+                ...data,
+                cpf_consultado: cpf,
+                data_nascimento_consultada: birthDate,
+                timestamp: new Date().toISOString(),
+                sucesso: true
+            };
+            
+            const resultadoPath = path.join(__dirname, 'screenshots', 'ultima_consulta', 'resultado.json');
+            fs.writeFileSync(resultadoPath, JSON.stringify(resultadoCompleto, null, 2));
+            
             return data;
 
         } catch (error) {
             console.error('Erro durante a consulta:', error);
+            await takeScreenshot(this.page, '07_erro');
+            
+            // Salvar dados do erro
+            const resultadoErro = {
+                cpf_consultado: cpf,
+                data_nascimento_consultada: birthDate,
+                timestamp: new Date().toISOString(),
+                sucesso: false,
+                erro: true,
+                mensagem: `Erro ao consultar CPF: ${error.message}`
+            };
+            
+            const resultadoPath = path.join(__dirname, 'screenshots', 'ultima_consulta', 'resultado.json');
+            fs.writeFileSync(resultadoPath, JSON.stringify(resultadoErro, null, 2));
+            
             return {
                 erro: true,
                 mensagem: `Erro ao consultar CPF: ${error.message}`
