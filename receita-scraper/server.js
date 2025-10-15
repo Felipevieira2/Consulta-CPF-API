@@ -1,7 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { consultarCPF } = require('./scraper');
-const { consultarCPFComPrints } = require('./servidor-com-prints');
 const fs = require('fs');
 const path = require('path');
 
@@ -49,49 +48,7 @@ app.post('/consultar-cpf', async (req, res) => {
   }
 });
 
-// Rota para consulta de CPF COM SCREENSHOTS
-app.post('/consultar-cpf-com-prints', async (req, res) => {
-  try {
-    const { cpf, birthDate } = req.body;
-    
-    if (!cpf || !birthDate) {
-      return res.status(400).json({
-        erro: true,
-        mensagem: 'CPF e data de nascimento são obrigatórios'
-      });
-    }
-    
-    console.log(`📸 Recebida requisição para consultar CPF COM SCREENSHOTS: ${cpf}`);
-    const resultado = await consultarCPFComPrints(cpf, birthDate);
-    
-    // Listar screenshots gerados
-    let screenshots = [];
-    if (resultado.screenshotDir && fs.existsSync(resultado.screenshotDir)) {
-      const files = fs.readdirSync(resultado.screenshotDir);
-      screenshots = files
-        .filter(file => file.endsWith('.png'))
-        .map(file => ({
-          nome: file,
-          url: `/screenshots/${path.basename(resultado.screenshotDir)}/${file}`,
-          caminho: path.join(resultado.screenshotDir, file)
-        }));
-    }
-    
-    return res.json({
-      ...resultado,
-      screenshots: screenshots,
-      totalScreenshots: screenshots.length,
-      diretorioScreenshots: resultado.screenshotDir
-    });
-    
-  } catch (error) {
-    console.error('❌ Erro na API com screenshots:', error);
-    return res.status(500).json({
-      erro: true,
-      mensagem: `Erro interno do servidor: ${error.message}`
-    });
-  }
-});
+
 
 // Rota para listar todas as pastas de screenshots
 app.get('/screenshots-list', (req, res) => {
