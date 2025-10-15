@@ -25,6 +25,7 @@ use App\Http\Controllers\Customer\CustomerSettingsController;
 use App\Http\Controllers\Customer\CustomerDocumentationController;
 use App\Http\Controllers\Customer\BillingController as CustomerBillingController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboardController;
+use App\Http\Controllers\CpfConsultaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -207,6 +208,16 @@ Route::middleware(['auth', 'verified', 'role:customer'])->prefix('customer')->na
     });
 });
 
-
+// Rotas para Consulta CPF (integração com Node.js)
+Route::prefix('cpf')->name('cpf.')->group(function () {
+    // Rota principal para exibir última consulta (mesmo HTML do Node.js)
+    Route::get('/ultima-consulta', [CpfConsultaController::class, 'ultimaConsulta'])->name('ultima-consulta');
+    
+    // Rota para servir screenshots
+    Route::get('/screenshot/{filename}', [CpfConsultaController::class, 'screenshot'])->name('screenshot');
+    
+    // API para obter dados da última consulta
+    Route::get('/api/ultima-consulta', [CpfConsultaController::class, 'apiUltimaConsulta'])->name('api.ultima-consulta');
+});
 
 
