@@ -61,12 +61,9 @@ class PlaywrightWebKitCPFConsultor {
         this.browser = await webkit.launch({
             headless: !isVisual, // false = mostra navegador, true = oculto
             slowMo: isVisual ? 500 : 100, // Mais lento quando visual
-            args: [
-                '--disable-blink-features=AutomationControlled',
-                '--disable-web-security',
-                '--no-sandbox',
-                '--disable-dev-shm-usage'
-            ]
+            // WebKit não suporta os mesmos args do Chrome/Chromium
+            // Usar apenas args compatíveis com WebKit
+            args: []
         });
         
         if (isVisual) {
