@@ -310,25 +310,64 @@ class PlaywrightWebKitCPFConsultor {
                         timeout: 30000 
                     }).then(() => 'navigation'),
                     
-                    // Opção 2: Mudança no conteúdo (para casos onde não há navegação)
+                    // Opção 2: Verificar se já estamos na página de resultado
+                    this.page.waitForSelector('.clConteudoDados', { timeout: 5000 })
+                        .then(() => 'resultado_encontrado')
+                        .catch(() => null),
+                    
+                    // Opção 3: Mudança no conteúdo (com verificação de segurança)
                     this.page.waitForFunction(
                         () => {
-                            const body = document.body.innerText;
-                            return body.includes('Situação Cadastral') || 
-                                   body.includes('Data de nascimento informada') ||
-                                   body.includes('CPF incorreto') ||
-                                   body.includes('CPF não encontrado') ||
-                                   body.includes('erro') ||
-                                   body.includes('Erro');
+                            // Verificar se document.body existe antes de acessar innerText
+                            if (!document.body) return false;
+                            
+                            try {
+                                const body = document.body.innerText || '';
+                                const html = document.body.innerHTML || '';
+                                
+                                // Verificar se já temos o resultado na página
+                                return html.includes('Situação Cadastral') || 
+                                       html.includes('Comprovante de Situação Cadastral no CPF') ||
+                                       body.includes('Data de nascimento informada') ||
+                                       body.includes('CPF incorreto') ||
+                                       body.includes('CPF não encontrado') ||
+                                       body.includes('erro') ||
+                                       body.includes('Erro') ||
+                                       // Verificar se já temos dados específicos do resultado
+                                       html.includes('clConteudoDados') ||
+                                       html.includes('N<sup>o</sup> do CPF:');
+                            } catch (e) {
+                                return false;
+                            }
                         },
-                        { timeout: 30000, polling: 1000 }
+                        { timeout: 30000, polling: 500 }
                     ).then(() => 'content_change'),
                     
-                    // Opção 3: Timeout de segurança
+                    // Opção 4: Timeout de segurança
                     new Promise((_, reject) => 
                         setTimeout(() => reject(new Error('Timeout na resposta')), 30000)
                     )
-                ]);
+                ]).catch(async (error) => {
+                    // Se der erro, verificar se já temos o resultado na página
+                    try {
+                        const temResultado = await this.page.evaluate(() => {
+                            if (!document.body) return false;
+                            const html = document.body.innerHTML || '';
+                            return html.includes('Situação Cadastral') || 
+                                   html.includes('clConteudoDados') ||
+                                   html.includes('N<sup>o</sup> do CPF:');
+                        });
+                        
+                        if (temResultado) {
+                            console.log('✅ Resultado já encontrado na página');
+                            return 'resultado_ja_presente';
+                        }
+                    } catch (e) {
+                        console.log('⚠️ Erro ao verificar resultado:', e.message);
+                    }
+                    
+                    throw error;
+                });
                 
                 console.log('✅ Resposta recebida da consulta');
                 
