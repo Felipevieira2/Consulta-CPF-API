@@ -44,11 +44,11 @@ class PlaywrightWebKitCPFConsultor {
             slowMo: 500 // Mais lento para visualizar
         });
         
-        if (isVisual) {
-            console.log('🖥️ Modo VISUAL ativado - navegador será exibido!');
-        } else {
-            console.log('👻 Modo HEADLESS ativado - navegador oculto');
-        }
+        // if (isVisual) {
+        //     console.log('🖥️ Modo VISUAL ativado - navegador será exibido!');
+        // } else {
+        //     console.log('👻 Modo HEADLESS ativado - navegador oculto');
+        // }
 
         // Cria contexto com configurações do scraper.js
         this.context = await this.browser.newContext({
