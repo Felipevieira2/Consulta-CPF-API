@@ -37,16 +37,25 @@ class PlaywrightWebKitCPFConsultor {
     async launch() {
         console.log('🚀 Iniciando Playwright com WebKit (Safari) para consulta CPF...');
         
-        // Configurações otimizadas do WebKit
+        // Configurações do WebKit - modo visual ou headless
+        const isVisual = process.env.VISUAL_MODE === 'true' || process.argv.includes('--visual');
+        
         this.browser = await webkit.launch({
-            headless: true,
-            slowMo: 50 // Reduzido para acelerar
+            headless: !isVisual, // false = mostra navegador, true = oculto
+            slowMo: 500 // Mais lento para visualizar
         });
+        
+        if (isVisual) {
+            console.log('🖥️ Modo VISUAL ativado - navegador será exibido!');
+        } else {
+            console.log('👻 Modo HEADLESS ativado - navegador oculto');
+        }
 
         // Cria contexto com configurações do scraper.js
         this.context = await this.browser.newContext({
             viewport: { width: 1920, height: 1080 },
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            ignoreHTTPSErrors: true
         });
 
         // Remove sinais de automação (do scraper.js)
@@ -91,7 +100,9 @@ class PlaywrightWebKitCPFConsultor {
     // Função principal para consultar CPF (TODA a lógica do scraper.js)
     async consultarCPF(cpf, birthDate) {
         console.log(`🔍 Iniciando consulta para CPF: ${cpf}`);
-
+        // Aguardar um pouco antes de acessar para evitar rate limiting
+        console.log('⏳ Aguardando 3 segundos para evitar bloqueios...');
+        await this.page.waitForTimeout(3000);
         if (!cpf || !birthDate) {
             return {
                 erro: true,
