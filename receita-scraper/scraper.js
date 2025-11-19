@@ -260,9 +260,20 @@ class PlaywrightWebKitCPFConsultor {
                             if (!isChecked) {
                                 await frameHandle.click('#checkbox');
                                 console.log('✅ Checkbox clicado');
-                                await this.page.waitForTimeout(1000);
+
+                                await this.page.waitForTimeout(3000);
                             } else {
                                 console.log('✅ Checkbox já marcado');
+                            }
+
+                            //como checar se o checkbox foi marcado?
+                            const isChecked2 = await frameHandle.evaluate(() => {
+                                const checkbox = document.querySelector('#checkbox');
+                                return checkbox && (checkbox.checked || checkbox.getAttribute('aria-checked') === 'true');
+                            });
+
+                            if (isChecked2) {
+                                console.log('✅ Checkbox marcado com sucesso');
                             }
                         }
                     } catch (frameError) {
