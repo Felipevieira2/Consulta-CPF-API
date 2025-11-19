@@ -140,6 +140,7 @@ class CpfConsultaController extends Controller
             '01_inicial.png' => '1. Página Inicial Carregada',
             '02_apos_preenchimento.png' => '2. Formulário Preenchido',
             '03_antes_captcha.png' => '3. Captcha Carregado',
+            '04_depois_do_clique_captcha.png' => '4. Depois do Clique no Captcha',
             '04_erro_deteccao_hcaptcha.png' => '4. Erro na Detecção do Captcha',
             '05_resultado.png' => '5. Resultado da Consulta',
             '06_final_sucesso.png' => '6. Consulta Finalizada com Sucesso',

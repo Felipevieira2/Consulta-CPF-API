@@ -271,7 +271,7 @@ class PlaywrightWebKitCPFConsultor {
                 } else {
                     console.log('⚠️ hCaptcha não encontrado');
                 }
-                
+                await takeScreenshot(this.page, '04_depois_do_clique_captcha');
             } catch (error) {
                 console.error('❌ Erro na detecção avançada do hCaptcha:', error);
                 await takeScreenshot(this.page, '04_erro_deteccao_hcaptcha');
