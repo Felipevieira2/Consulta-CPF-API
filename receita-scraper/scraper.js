@@ -272,8 +272,28 @@ class PlaywrightWebKitCPFConsultor {
                                 return checkbox && (checkbox.checked || checkbox.getAttribute('aria-checked') === 'true');
                             });
 
-                            if (isChecked2) {
+                            // Aguardar até que o checkbox esteja realmente marcado
+                            let checkboxMarked = isChecked2;
+                            let tentativas = 0;
+                            const maxTentativas = 30; // máximo 30 segundos
+                            
+                            while (!checkboxMarked && tentativas < maxTentativas) {
+                                console.log(`⏳ Aguardando checkbox ser marcado... (tentativa ${tentativas + 1}/${maxTentativas})`);
+                                await this.page.waitForTimeout(1000); // aguarda 1 segundo
+                                
+                                // Verifica novamente se o checkbox está marcado
+                                checkboxMarked = await frameHandle.evaluate(() => {
+                                    const checkbox = document.querySelector('#checkbox');
+                                    return checkbox && (checkbox.checked || checkbox.getAttribute('aria-checked') === 'true');
+                                });
+                                
+                                tentativas++;
+                            }
+                            
+                            if (checkboxMarked) {
                                 console.log('✅ Checkbox marcado com sucesso');
+                            } else {
+                                console.log('❌ Timeout: Checkbox não foi marcado após 30 segundos');
                             }
                         }
                     } catch (frameError) {
