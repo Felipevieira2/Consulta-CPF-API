@@ -280,7 +280,7 @@ class PlaywrightWebKitCPFConsultor {
                             while (!checkboxMarked && tentativas < maxTentativas) {
                                 console.log(`⏳ Aguardando checkbox ser marcado... (tentativa ${tentativas + 1}/${maxTentativas})`);
                                 await this.page.waitForTimeout(1000); // aguarda 1 segundo
-                                
+                                await takeScreenshot(this.page, '04_depois_do_clique_captcha_tentativa_' + tentativas);
                                 // Verifica novamente se o checkbox está marcado
                                 checkboxMarked = await frameHandle.evaluate(() => {
                                     const checkbox = document.querySelector('#checkbox');
