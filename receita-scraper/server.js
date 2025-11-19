@@ -1,8 +1,26 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { consultarCPF } = require('./scraper');
 const fs = require('fs');
 const path = require('path');
+
+// Detectar ambiente e usar scraper apropriado
+let consultarCPF;
+
+if (process.env.NODE_ENV === 'production' || process.env.USE_CHROMIUM === 'true') {
+    console.log('🖥️ Usando Chromium para servidor...');
+    const { consultarCPF: consultarCPFChromium } = require('./scraper-servidor');
+    consultarCPF = consultarCPFChromium;
+} else {
+    console.log('🦊 Usando WebKit para desenvolvimento...');
+    try {
+        const scraperWebkit = require('./scraper');
+        consultarCPF = scraperWebkit.consultarCPF;
+    } catch (error) {
+        console.log('⚠️ Fallback para Chromium devido a erro no WebKit:', error.message);
+        const { consultarCPF: consultarCPFChromium } = require('./scraper-servidor');
+        consultarCPF = consultarCPFChromium;
+    }
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -146,6 +164,7 @@ function getTituloScreenshot(filename) {
     '02_apos_preenchimento.png': '2. Formulário Preenchido',
     '03_antes_captcha.png': '3. Captcha Carregado',
     '04_erro_deteccao_hcaptcha.png': '4. Erro na Detecção do Captcha',
+    '04_01_depois_do_clique_captcha_tentativa.png': '4.01 Depois do Clique no Captcha (Tentativa)',
     '05_resultado.png': '5. Resultado da Consulta',
     '06_final_sucesso.png': '6. Consulta Finalizada com Sucesso',
     '07_erro.png': '7. Erro na Consulta'
