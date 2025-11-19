@@ -260,7 +260,7 @@ class PlaywrightWebKitCPFConsultor {
                             if (!isChecked) {
                                 await frameHandle.click('#checkbox');
                                 console.log('✅ Checkbox clicado');
-                                await this.page.waitForTimeout(500);
+                                await this.page.waitForTimeout(1000);
                             } else {
                                 console.log('✅ Checkbox já marcado');
                             }
@@ -271,6 +271,7 @@ class PlaywrightWebKitCPFConsultor {
                 } else {
                     console.log('⚠️ hCaptcha não encontrado');
                 }
+                await this.page.waitForTimeout(500);
                 await takeScreenshot(this.page, '04_depois_do_clique_captcha');
             } catch (error) {
                 console.error('❌ Erro na detecção avançada do hCaptcha:', error);
