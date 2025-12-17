@@ -72,31 +72,129 @@ class PlaywrightWebKitCPFConsultor {
             console.log('👻 Modo HEADLESS ativado - navegador oculto');
         }
         
-        // Cria contexto com configurações otimizadas e limpeza automática
+        // Contexto Ultra Stealth - Simula navegador real
+        const stealthUserAgents = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        ];
+        
+        const randomUserAgent = stealthUserAgents[Math.floor(Math.random() * stealthUserAgents.length)];
+        
         this.context = await this.browser.newContext({
-            viewport: { width: 1366, height: 768 },
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            // Viewport com variação humana
+            viewport: { 
+                width: 1366 + Math.floor(Math.random() * 100), 
+                height: 768 + Math.floor(Math.random() * 100) 
+            },
+            userAgent: randomUserAgent,
             ignoreHTTPSErrors: true,
             javaScriptEnabled: true,
             acceptDownloads: false,
             locale: 'pt-BR',
             timezoneId: 'America/Sao_Paulo',
-            // Configurações de limpeza automática
-            clearCookies: true,
-            clearCache: true,
-            bypassCSP: true,
-            // Configurações de privacidade
-            permissions: [],
-            geolocation: undefined,
-            colorScheme: 'light'
+            
+            // Headers stealth
+            extraHTTPHeaders: {
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
+                'Cache-Control': 'max-age=0',
+                'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+                'Sec-Ch-Ua-Mobile': '?0',
+                'Sec-Ch-Ua-Platform': '"Windows"',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'none',
+                'Sec-Fetch-User': '?1',
+                'Upgrade-Insecure-Requests': '1'
+            },
+            
+            // Configurações de privacidade realistas
+            permissions: ['geolocation'],
+            geolocation: { latitude: -23.5505, longitude: -46.6333 }, // São Paulo
+            colorScheme: 'light',
+            
+            // Simular comportamento real
+            hasTouch: false,
+            isMobile: false,
+            
+            // Configurações de rede realistas
+            offline: false,
+            
+            // Simular dispositivo real
+            deviceScaleFactor: 1,
+            
+            // Cookies e storage
+            storageState: undefined // Começar limpo mas permitir cookies
         });
 
-        // Remove sinais de automação (do scraper.js)
+        // Modo Stealth Avançado - Remove TODOS os sinais de automação
         await this.context.addInitScript(() => {
+            // 1. Remover webdriver
             Object.defineProperty(navigator, 'webdriver', {
                 get: () => undefined,
             });
             delete navigator.__proto__.webdriver;
+            
+            // 2. Mascarar plugins
+            Object.defineProperty(navigator, 'plugins', {
+                get: () => [1, 2, 3, 4, 5] // Simular plugins reais
+            });
+            
+            // 3. Mascarar languages
+            Object.defineProperty(navigator, 'languages', {
+                get: () => ['pt-BR', 'pt', 'en-US', 'en']
+            });
+            
+            // 4. Simular permissões
+            const originalQuery = window.navigator.permissions.query;
+            window.navigator.permissions.query = (parameters) => (
+                parameters.name === 'notifications' ?
+                    Promise.resolve({ state: Deno.build.os === 'darwin' ? 'granted' : 'prompt' }) :
+                    originalQuery(parameters)
+            );
+            
+            // 5. Mascarar chrome runtime
+            if (window.chrome) {
+                Object.defineProperty(window.chrome, 'runtime', {
+                    get: () => undefined
+                });
+            }
+            
+            // 6. Remover sinais do Playwright
+            delete window.__playwright;
+            delete window.__pw_manual;
+            delete window.__PW_inspect;
+            
+            // 7. Mascarar stack traces
+            const originalError = Error.prepareStackTrace;
+            Error.prepareStackTrace = (error, stack) => {
+                if (originalError) return originalError(error, stack);
+                return stack.toString();
+            };
+            
+            // 8. Simular comportamento de mouse/teclado humano
+            let mouseX = 0, mouseY = 0;
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+            
+            // 9. Mascarar timing de automação
+            const originalSetTimeout = window.setTimeout;
+            window.setTimeout = function(callback, delay) {
+                // Adicionar variação humana no timing
+                const humanDelay = delay + Math.random() * 100 - 50;
+                return originalSetTimeout(callback, Math.max(0, humanDelay));
+            };
+            
+            // 10. Simular viewport real
+            Object.defineProperty(window.screen, 'availWidth', { get: () => 1366 });
+            Object.defineProperty(window.screen, 'availHeight', { get: () => 768 });
+            
+            console.log('🥷 Modo Stealth Avançado ativado');
         });
 
         this.page = await this.context.newPage();
@@ -105,19 +203,37 @@ class PlaywrightWebKitCPFConsultor {
         this.page.setDefaultNavigationTimeout(45000);
         this.page.setDefaultTimeout(20000);
 
-        // Otimização: Reduzir recursos carregados de forma mais seletiva
+        // Roteamento stealth - Bloquear apenas o essencial
         await this.page.route('**/*', (route) => {
             const resourceType = route.request().resourceType();
             const url = route.request().url();
             
-            // Bloquear apenas recursos realmente desnecessários
-            if (['image', 'media', 'websocket'].includes(resourceType) ||
-                url.includes('analytics') || url.includes('tracking') || 
-                url.includes('ads') || url.includes('facebook') || 
-                url.includes('google-analytics')) {
+            // Lista de domínios suspeitos para bloquear
+            const blockedDomains = [
+                'google-analytics.com',
+                'googletagmanager.com',
+                'facebook.com',
+                'doubleclick.net',
+                'googlesyndication.com',
+                'amazon-adsystem.com'
+            ];
+            
+            // Bloquear apenas recursos claramente desnecessários
+            const shouldBlock = blockedDomains.some(domain => url.includes(domain)) ||
+                               (resourceType === 'image' && !url.includes('captcha') && !url.includes('hcaptcha')) ||
+                               resourceType === 'media' ||
+                               url.includes('/ads/') ||
+                               url.includes('/tracking/');
+            
+            if (shouldBlock) {
                 route.abort();
             } else {
-                route.continue();
+                // Adicionar headers realistas
+                const headers = route.request().headers();
+                headers['sec-fetch-site'] = 'same-origin';
+                headers['sec-fetch-mode'] = 'cors';
+                
+                route.continue({ headers });
             }
         });
         
@@ -135,12 +251,99 @@ class PlaywrightWebKitCPFConsultor {
         }
     }
 
+    // Método para simular digitação humana
+    async preencherComportamentoHumano(seletor, texto) {
+        try {
+            // Aguardar elemento aparecer
+            await this.page.waitForSelector(seletor, { timeout: 10000 });
+            
+            // Mover mouse para o campo (comportamento humano)
+            const elemento = await this.page.$(seletor);
+            const box = await elemento.boundingBox();
+            
+            if (box) {
+                // Mover mouse gradualmente para o campo
+                await this.page.mouse.move(
+                    box.x + box.width / 2 + Math.random() * 10 - 5,
+                    box.y + box.height / 2 + Math.random() * 10 - 5,
+                    { steps: Math.floor(Math.random() * 5) + 3 }
+                );
+                
+                // Pequena pausa antes de clicar
+                await this.page.waitForTimeout(Math.random() * 300 + 100);
+            }
+            
+            // Clicar no campo
+            await this.page.click(seletor);
+            
+            // Limpar campo existente com comportamento humano
+            await this.page.keyboard.down('Control');
+            await this.page.keyboard.press('KeyA');
+            await this.page.keyboard.up('Control');
+            await this.page.waitForTimeout(Math.random() * 100 + 50);
+            
+            // Digitar caractere por caractere com variação de velocidade
+            for (let i = 0; i < texto.length; i++) {
+                await this.page.keyboard.type(texto[i]);
+                
+                // Variação humana na velocidade de digitação
+                const delay = Math.random() * 150 + 50; // 50-200ms entre caracteres
+                await this.page.waitForTimeout(delay);
+                
+                // Ocasionalmente fazer uma pausa mais longa (como humanos fazem)
+                if (Math.random() < 0.1) {
+                    await this.page.waitForTimeout(Math.random() * 500 + 200);
+                }
+            }
+            
+            // Pequena pausa após terminar de digitar
+            await this.page.waitForTimeout(Math.random() * 200 + 100);
+            
+            // Disparar eventos de mudança
+            await this.page.evaluate((sel) => {
+                const element = document.querySelector(sel);
+                if (element) {
+                    element.dispatchEvent(new Event('input', { bubbles: true }));
+                    element.dispatchEvent(new Event('change', { bubbles: true }));
+                    element.dispatchEvent(new Event('blur', { bubbles: true }));
+                }
+            }, seletor);
+            
+        } catch (error) {
+            console.log(`⚠️ Erro no preenchimento humano de ${seletor}:`, error.message);
+            
+            // Fallback para método tradicional
+            await this.page.fill(seletor, texto);
+        }
+    }
+
+    // Método para simular movimento de mouse aleatório
+    async simularMovimentoMouse() {
+        try {
+            const viewport = this.page.viewportSize();
+            const x = Math.random() * viewport.width;
+            const y = Math.random() * viewport.height;
+            
+            await this.page.mouse.move(x, y, { 
+                steps: Math.floor(Math.random() * 10) + 5 
+            });
+        } catch (error) {
+            // Ignorar erros de movimento de mouse
+        }
+    }
+
     // Função principal para consultar CPF (TODA a lógica do scraper.js)
     async consultarCPF(cpf, birthDate) {
-        console.log(`🔍 Iniciando consulta para CPF: ${cpf}`);
-        // Aguardar um pouco antes de acessar para evitar rate limiting
-        console.log('⏳ Aguardando 3 segundos para evitar bloqueios...');
-        await this.page.waitForTimeout(3000);
+        console.log(`🔍 Iniciando consulta stealth para CPF: ${cpf}`);
+        
+        // Simular comportamento humano antes de começar
+        console.log('🥷 Simulando comportamento humano...');
+        await this.simularMovimentoMouse();
+        
+        // Aguardar com variação humana
+        const delayHumano = 2000 + Math.random() * 3000; // 2-5 segundos
+        console.log(`⏳ Aguardando ${Math.round(delayHumano/1000)}s para evitar detecção...`);
+        await this.page.waitForTimeout(delayHumano);
         if (!cpf || !birthDate) {
             return {
                 erro: true,
@@ -203,16 +406,12 @@ class PlaywrightWebKitCPFConsultor {
             await this.page.waitForSelector('#txtCPF');
             await takeScreenshot(this.page, '01_inicial');
 
-            // Preenchimento otimizado (do scraper.js)
-            console.log('Preenchendo CPF...');
-            await this.page.evaluate((cpfValue) => {
-                document.querySelector('#txtCPF').value = cpfValue;
-            }, cpf);
+            // Preenchimento com comportamento humano realista
+            console.log('Preenchendo CPF com comportamento humano...');
+            await this.preencherComportamentoHumano('#txtCPF', cpf);
 
-            console.log('Preenchendo data de nascimento...');
-            await this.page.evaluate((dateValue) => {
-                document.querySelector('#txtDataNascimento').value = dateValue;
-            }, birthDate);
+            console.log('Preenchendo data de nascimento com comportamento humano...');
+            await this.preencherComportamentoHumano('#txtDataNascimento', birthDate);
             await takeScreenshot(this.page, '02_apos_preenchimento');
 
             // Aguardar carregamento do captcha
