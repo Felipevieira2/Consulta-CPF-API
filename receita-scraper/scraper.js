@@ -220,145 +220,167 @@ class PlaywrightWebKitCPFConsultor {
             await this.page.waitForSelector('iframe[title="Widget contendo caixa de seleção para desafio de segurança hCaptcha"]');
             await takeScreenshot(this.page, '03_antes_captcha');
 
-            // Lógica otimizada de detecção do hCaptcha
-            console.log('🔍 Detectando hCaptcha...');
+            // Detecção inteligente de captcha
+            console.log('🔍 Verificando se há captcha na página...');
+            
+            let captchaEncontrado = false;
+            let captchaResolvido = false;
+            
             try {
-                // Seletores principais do hCaptcha
-                const hcaptchaSelectors = [
-                    'iframe[src*="hcaptcha.com"]',
-                    'iframe[title*="hCaptcha"]',
-                    '.h-captcha iframe'
-                ];
-
-                let hcaptchaIframeHandle = null;
-
-                // Buscar iframe do hCaptcha
-                for (const selector of hcaptchaSelectors) {
-                    try {
-                        await this.page.waitForSelector(selector, { timeout: 4000 });
-                        const iframe = await this.page.$(selector);
-                        if (iframe) {
-                            const src = await iframe.getAttribute('src');
-                            if (src && src.includes('hcaptcha.com')) {
-                                hcaptchaIframeHandle = iframe;
-                                console.log(`✅ hCaptcha encontrado: ${selector}`);
+                // Primeiro, verificar se realmente há um captcha visível
+                const temCaptchaVisivel = await this.page.evaluate(() => {
+                    // Verificar iframes de captcha
+                    const iframes = document.querySelectorAll('iframe');
+                    let captchaIframe = null;
+                    
+                    for (const iframe of iframes) {
+                        const src = iframe.src || '';
+                        const title = iframe.title || '';
+                        
+                        if (src.includes('hcaptcha.com') || title.toLowerCase().includes('captcha')) {
+                            // Verificar se o iframe está visível
+                            const rect = iframe.getBoundingClientRect();
+                            if (rect.width > 0 && rect.height > 0) {
+                                captchaIframe = iframe;
                                 break;
                             }
                         }
-                    } catch (e) {
-                        continue;
                     }
-                }
-
-                if (hcaptchaIframeHandle) {
-                    console.log('🎯 Tentando interagir com hCaptcha...');
                     
-                    await this.page.waitForTimeout(1000);
+                    return {
+                        temCaptcha: !!captchaIframe,
+                        captchaInfo: captchaIframe ? {
+                            src: captchaIframe.src,
+                            title: captchaIframe.title,
+                            width: captchaIframe.getBoundingClientRect().width,
+                            height: captchaIframe.getBoundingClientRect().height
+                        } : null
+                    };
+                });
+                
+                console.log('🔍 Resultado da verificação:', temCaptchaVisivel);
+                
+                if (temCaptchaVisivel.temCaptcha) {
+                    captchaEncontrado = true;
+                    console.log('✅ Captcha encontrado e visível');
+                    console.log('📊 Info do captcha:', temCaptchaVisivel.captchaInfo);
                     
+                    // Tentar interagir com o captcha apenas se ele existir e estiver visível
                     try {
-                        const frameHandle = await hcaptchaIframeHandle.contentFrame();
-                        if (frameHandle) {
-                            await frameHandle.waitForSelector('#checkbox', { timeout: 5000 });
-                            
-                            const isChecked = await frameHandle.evaluate(() => {
-                                const checkbox = document.querySelector('#checkbox');
-                                return checkbox && (checkbox.checked || checkbox.getAttribute('aria-checked') === 'true');
-                            });
-                            
-                            if (!isChecked) {
-                                await frameHandle.click('#checkbox');
-                                console.log('✅ Checkbox clicado');
-
-                                await this.page.waitForTimeout(3000);
-                            } else {
-                                console.log('✅ Checkbox já marcado');
-                            }
-
-                            // Verificar múltiplos indicadores de captcha resolvido
-                            const verificarCaptchaResolvido = async () => {
-                                return await frameHandle.evaluate(() => {
-                                    const checkbox = document.querySelector('#checkbox');
-                                    const isChecked = checkbox && (checkbox.checked || checkbox.getAttribute('aria-checked') === 'true');
-                                    
-                                    // Verificar também classes CSS que indicam sucesso
-                                    const hasSuccessClass = checkbox && (
-                                        checkbox.classList.contains('checked') ||
-                                        checkbox.classList.contains('success') ||
-                                        checkbox.parentElement?.classList.contains('checked')
-                                    );
-                                    
-                                    // Verificar se há token hCaptcha (indica resolução)
-                                    const hasToken = document.querySelector('textarea[name="h-captcha-response"]')?.value?.length > 0;
-                                    
-                                    return isChecked || hasSuccessClass || hasToken;
-                                });
-                            };
-
-                            // Aguardar até que o checkbox esteja realmente marcado
-                            let checkboxMarked = await verificarCaptchaResolvido();
-                            let tentativas = 0;
-                            const maxTentativas = 10; // máximo 10 segundos
-                            
-                            while (!checkboxMarked && tentativas < maxTentativas) {
-                                console.log(`⏳ Aguardando captcha ser resolvido... (tentativa ${tentativas + 1}/${maxTentativas})`);
-                                await this.page.waitForTimeout(1000);
-                                await takeScreenshot(this.page, '04_aguardando_captcha');
+                        const iframe = await this.page.$('iframe[src*="hcaptcha.com"]');
+                        if (iframe) {
+                            const frameHandle = await iframe.contentFrame();
+                            if (frameHandle) {
+                                console.log('🎯 Tentando interagir com captcha...');
                                 
-                                checkboxMarked = await verificarCaptchaResolvido();
-                                tentativas++;
-                            }
-                            
-                            if (checkboxMarked) {
-                                console.log('✅ Captcha resolvido com sucesso!');
-                            } else {
-                                console.log('⚠️ Captcha não foi resolvido automaticamente');
-                                
-                                // Verificar se o botão Consultar está habilitado mesmo sem captcha resolvido
-                                const botaoHabilitado = await this.page.evaluate(() => {
-                                    const botao = document.querySelector('input[value="Consultar"]');
-                                    return botao && !botao.disabled;
-                                });
-                                
-                                if (botaoHabilitado) {
-                                    console.log('💡 Botão Consultar está habilitado - prosseguindo sem captcha');
-                                } else {
-                                    console.log('💡 Em modo visual, você pode resolver manualmente');
+                                // Aguardar o checkbox aparecer
+                                try {
+                                    await frameHandle.waitForSelector('#checkbox', { timeout: 3000 });
                                     
-                                    // Se estiver em modo visual, aguardar mais tempo para resolução manual
-                                    const isVisual = process.env.VISUAL_MODE === 'true' || process.argv.includes('--visual');
-                                    if (isVisual) {
-                                        console.log('🖥️ Modo visual detectado - aguardando resolução manual...');
-                                        let tentativasExtras = 0;
-                                        const maxTentativasExtras = 60; // 60 segundos extras
+                                    // Verificar se já está marcado
+                                    const jaResolvido = await frameHandle.evaluate(() => {
+                                        const checkbox = document.querySelector('#checkbox');
+                                        const token = document.querySelector('textarea[name="h-captcha-response"]');
+                                        return (checkbox && checkbox.getAttribute('aria-checked') === 'true') || 
+                                               (token && token.value.length > 0);
+                                    });
+                                    
+                                    if (jaResolvido) {
+                                        console.log('✅ Captcha já estava resolvido');
+                                        captchaResolvido = true;
+                                    } else {
+                                        // Tentar clicar no checkbox
+                                        await frameHandle.click('#checkbox');
+                                        console.log('🖱️ Clique no captcha realizado');
                                         
-                                        while (!checkboxMarked && tentativasExtras < maxTentativasExtras) {
-                                            await this.page.waitForTimeout(1000);
-                                            checkboxMarked = await verificarCaptchaResolvido();
-                                            tentativasExtras++;
-                                            
-                                            if (tentativasExtras % 10 === 0) {
-                                                console.log(`⏳ Aguardando resolução manual... (${tentativasExtras}s)`);
-                                            }
-                                        }
+                                        // Aguardar um pouco para ver se resolve
+                                        await this.page.waitForTimeout(2000);
                                         
-                                        if (checkboxMarked) {
-                                            console.log('✅ Captcha resolvido manualmente!');
+                                        // Verificar se foi resolvido
+                                        const resolveuAposClique = await frameHandle.evaluate(() => {
+                                            const checkbox = document.querySelector('#checkbox');
+                                            const token = document.querySelector('textarea[name="h-captcha-response"]');
+                                            return (checkbox && checkbox.getAttribute('aria-checked') === 'true') || 
+                                                   (token && token.value.length > 0);
+                                        });
+                                        
+                                        if (resolveuAposClique) {
+                                            console.log('✅ Captcha resolvido após clique!');
+                                            captchaResolvido = true;
+                                        } else {
+                                            console.log('⚠️ Captcha não foi resolvido automaticamente');
                                         }
                                     }
+                                } catch (selectorError) {
+                                    console.log('⚠️ Checkbox do captcha não encontrado:', selectorError.message);
                                 }
                             }
                         }
-                    } catch (frameError) {
-                        console.log('⚠️ Erro na interação com hCaptcha:', frameError.message);
+                    } catch (interactionError) {
+                        console.log('⚠️ Erro na interação com captcha:', interactionError.message);
                     }
                 } else {
-                    console.log('⚠️ hCaptcha não encontrado');
+                    console.log('ℹ️ Nenhum captcha visível encontrado na página');
                 }
-                await this.page.waitForTimeout(500);
-                await takeScreenshot(this.page, '04_depois_do_clique_captcha');
+                
+                // Verificar se o botão Consultar está disponível
+                const botaoStatus = await this.page.evaluate(() => {
+                    const botao = document.querySelector('input[value="Consultar"]');
+                    return {
+                        existe: !!botao,
+                        habilitado: botao ? !botao.disabled : false,
+                        visivel: botao ? botao.offsetParent !== null : false
+                    };
+                });
+                
+                console.log('🔘 Status do botão Consultar:', botaoStatus);
+                
+                if (captchaEncontrado && !captchaResolvido) {
+                    const isVisual = process.env.VISUAL_MODE === 'true' || process.argv.includes('--visual');
+                    
+                    if (isVisual) {
+                        console.log('🖥️ Modo visual: aguardando resolução manual do captcha...');
+                        
+                        // Em modo visual, aguardar resolução manual
+                        let tentativasEspera = 0;
+                        const maxEspera = 60; // 60 segundos
+                        
+                        while (!captchaResolvido && tentativasEspera < maxEspera) {
+                            await this.page.waitForTimeout(1000);
+                            
+                            // Verificar se foi resolvido manualmente
+                            const resolvidoManualmente = await this.page.evaluate(() => {
+                                const token = document.querySelector('textarea[name="h-captcha-response"]');
+                                return token && token.value.length > 0;
+                            });
+                            
+                            if (resolvidoManualmente) {
+                                console.log('✅ Captcha resolvido manualmente!');
+                                captchaResolvido = true;
+                                break;
+                            }
+                            
+                            tentativasEspera++;
+                            if (tentativasEspera % 10 === 0) {
+                                console.log(`⏳ Aguardando resolução manual... (${tentativasEspera}s)`);
+                            }
+                        }
+                    } else if (botaoStatus.habilitado) {
+                        console.log('💡 Captcha não resolvido, mas botão está habilitado - prosseguindo');
+                    } else {
+                        console.log('⚠️ Captcha não resolvido e botão desabilitado - pode falhar');
+                    }
+                } else if (!captchaEncontrado) {
+                    console.log('✅ Nenhum captcha necessário - prosseguindo normalmente');
+                } else {
+                    console.log('✅ Captcha resolvido - prosseguindo');
+                }
+                
+                await takeScreenshot(this.page, '04_apos_captcha');
+                
             } catch (error) {
-                console.error('❌ Erro na detecção avançada do hCaptcha:', error);
-                await takeScreenshot(this.page, '04_erro_deteccao_hcaptcha');
+                console.log('⚠️ Erro na verificação de captcha:', error.message);
+                await takeScreenshot(this.page, '04_erro_captcha');
             }
 
             // Aguardar e verificar o botão Consultar (do scraper.js)
