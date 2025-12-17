@@ -72,7 +72,7 @@ class PlaywrightWebKitCPFConsultor {
             console.log('👻 Modo HEADLESS ativado - navegador oculto');
         }
         
-        // Cria contexto com configurações otimizadas
+        // Cria contexto com configurações otimizadas e limpeza automática
         this.context = await this.browser.newContext({
             viewport: { width: 1366, height: 768 },
             userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -80,7 +80,15 @@ class PlaywrightWebKitCPFConsultor {
             javaScriptEnabled: true,
             acceptDownloads: false,
             locale: 'pt-BR',
-            timezoneId: 'America/Sao_Paulo'
+            timezoneId: 'America/Sao_Paulo',
+            // Configurações de limpeza automática
+            clearCookies: true,
+            clearCache: true,
+            bypassCSP: true,
+            // Configurações de privacidade
+            permissions: [],
+            geolocation: undefined,
+            colorScheme: 'light'
         });
 
         // Remove sinais de automação (do scraper.js)
@@ -266,34 +274,78 @@ class PlaywrightWebKitCPFConsultor {
                                 console.log('✅ Checkbox já marcado');
                             }
 
-                            //como checar se o checkbox foi marcado?
-                            const isChecked2 = await frameHandle.evaluate(() => {
-                                const checkbox = document.querySelector('#checkbox');
-                                return checkbox && (checkbox.checked || checkbox.getAttribute('aria-checked') === 'true');
-                            });
+                            // Verificar múltiplos indicadores de captcha resolvido
+                            const verificarCaptchaResolvido = async () => {
+                                return await frameHandle.evaluate(() => {
+                                    const checkbox = document.querySelector('#checkbox');
+                                    const isChecked = checkbox && (checkbox.checked || checkbox.getAttribute('aria-checked') === 'true');
+                                    
+                                    // Verificar também classes CSS que indicam sucesso
+                                    const hasSuccessClass = checkbox && (
+                                        checkbox.classList.contains('checked') ||
+                                        checkbox.classList.contains('success') ||
+                                        checkbox.parentElement?.classList.contains('checked')
+                                    );
+                                    
+                                    // Verificar se há token hCaptcha (indica resolução)
+                                    const hasToken = document.querySelector('textarea[name="h-captcha-response"]')?.value?.length > 0;
+                                    
+                                    return isChecked || hasSuccessClass || hasToken;
+                                });
+                            };
 
                             // Aguardar até que o checkbox esteja realmente marcado
-                            let checkboxMarked = isChecked2;
+                            let checkboxMarked = await verificarCaptchaResolvido();
                             let tentativas = 0;
-                            const maxTentativas = 5; // máximo 30 segundos
+                            const maxTentativas = 10; // máximo 10 segundos
                             
                             while (!checkboxMarked && tentativas < maxTentativas) {
-                                console.log(`⏳ Aguardando checkbox ser marcado... (tentativa ${tentativas + 1}/${maxTentativas})`);
-                                await this.page.waitForTimeout(1000); // aguarda 1 segundo
-                                await takeScreenshot(this.page, '04_depois_do_clique_captcha_tentativa');
-                                // Verifica novamente se o checkbox está marcado
-                                checkboxMarked = await frameHandle.evaluate(() => {
-                                    const checkbox = document.querySelector('#checkbox');
-                                    return checkbox && (checkbox.checked || checkbox.getAttribute('aria-checked') === 'true');
-                                });
+                                console.log(`⏳ Aguardando captcha ser resolvido... (tentativa ${tentativas + 1}/${maxTentativas})`);
+                                await this.page.waitForTimeout(1000);
+                                await takeScreenshot(this.page, '04_aguardando_captcha');
                                 
+                                checkboxMarked = await verificarCaptchaResolvido();
                                 tentativas++;
                             }
                             
                             if (checkboxMarked) {
-                                console.log('✅ Checkbox marcado com sucesso');
+                                console.log('✅ Captcha resolvido com sucesso!');
                             } else {
-                                console.log('❌ Timeout: Checkbox não foi marcado após 30 segundos');
+                                console.log('⚠️ Captcha não foi resolvido automaticamente');
+                                
+                                // Verificar se o botão Consultar está habilitado mesmo sem captcha resolvido
+                                const botaoHabilitado = await this.page.evaluate(() => {
+                                    const botao = document.querySelector('input[value="Consultar"]');
+                                    return botao && !botao.disabled;
+                                });
+                                
+                                if (botaoHabilitado) {
+                                    console.log('💡 Botão Consultar está habilitado - prosseguindo sem captcha');
+                                } else {
+                                    console.log('💡 Em modo visual, você pode resolver manualmente');
+                                    
+                                    // Se estiver em modo visual, aguardar mais tempo para resolução manual
+                                    const isVisual = process.env.VISUAL_MODE === 'true' || process.argv.includes('--visual');
+                                    if (isVisual) {
+                                        console.log('🖥️ Modo visual detectado - aguardando resolução manual...');
+                                        let tentativasExtras = 0;
+                                        const maxTentativasExtras = 60; // 60 segundos extras
+                                        
+                                        while (!checkboxMarked && tentativasExtras < maxTentativasExtras) {
+                                            await this.page.waitForTimeout(1000);
+                                            checkboxMarked = await verificarCaptchaResolvido();
+                                            tentativasExtras++;
+                                            
+                                            if (tentativasExtras % 10 === 0) {
+                                                console.log(`⏳ Aguardando resolução manual... (${tentativasExtras}s)`);
+                                            }
+                                        }
+                                        
+                                        if (checkboxMarked) {
+                                            console.log('✅ Captcha resolvido manualmente!');
+                                        }
+                                    }
+                                }
                             }
                         }
                     } catch (frameError) {
@@ -320,15 +372,92 @@ class PlaywrightWebKitCPFConsultor {
             // Aguardar um pouco mais para garantir que tudo está pronto
             await this.page.waitForTimeout(500);
 
-            // Clicar no botão Consultar com melhor tratamento (do scraper.js)
+            // Clicar no botão Consultar com melhor tratamento
             console.log('Clicando em Consultar...');
             
             try {
-
-                //espere ate o botao estar habilitado
-              
-                // Tentar clique simples primeiro
-                await this.page.click('input[value="Consultar"]');
+                // Verificar se o botão está presente e habilitado
+                const botaoInfo = await this.page.evaluate(() => {
+                    const botao = document.querySelector('input[value="Consultar"]');
+                    if (!botao) return { existe: false };
+                    
+                    return {
+                        existe: true,
+                        habilitado: !botao.disabled,
+                        visivel: botao.offsetParent !== null,
+                        texto: botao.value
+                    };
+                });
+                
+                console.log('🔍 Status do botão:', botaoInfo);
+                
+                if (!botaoInfo.existe) {
+                    throw new Error('Botão Consultar não encontrado');
+                }
+                
+                if (!botaoInfo.habilitado) {
+                    console.log('⚠️ Botão está desabilitado, tentando habilitar...');
+                    
+                    // Tentar habilitar o botão via JavaScript
+                    await this.page.evaluate(() => {
+                        const botao = document.querySelector('input[value="Consultar"]');
+                        if (botao) {
+                            botao.disabled = false;
+                            botao.removeAttribute('disabled');
+                        }
+                    });
+                    
+                    await this.page.waitForTimeout(500);
+                }
+                
+                // Tentar múltiplas estratégias de clique
+                let cliqueSucesso = false;
+                
+                // Estratégia 1: Clique simples
+                try {
+                    await this.page.click('input[value="Consultar"]');
+                    console.log('✅ Clique simples realizado');
+                    cliqueSucesso = true;
+                } catch (error) {
+                    console.log('⚠️ Clique simples falhou:', error.message);
+                }
+                
+                // Estratégia 2: Clique via JavaScript se o simples falhou
+                if (!cliqueSucesso) {
+                    try {
+                        await this.page.evaluate(() => {
+                            const botao = document.querySelector('input[value="Consultar"]');
+                            if (botao) {
+                                botao.click();
+                            }
+                        });
+                        console.log('✅ Clique via JavaScript realizado');
+                        cliqueSucesso = true;
+                    } catch (error) {
+                        console.log('⚠️ Clique via JavaScript falhou:', error.message);
+                    }
+                }
+                
+                // Estratégia 3: Submeter formulário diretamente
+                if (!cliqueSucesso) {
+                    try {
+                        await this.page.evaluate(() => {
+                            const form = document.querySelector('form');
+                            if (form) {
+                                form.submit();
+                            }
+                        });
+                        console.log('✅ Formulário submetido diretamente');
+                        cliqueSucesso = true;
+                    } catch (error) {
+                        console.log('⚠️ Submit do formulário falhou:', error.message);
+                    }
+                }
+                
+                if (!cliqueSucesso) {
+                    throw new Error('Todas as estratégias de clique falharam');
+                }
+                
                 console.log('✅ Clique realizado com sucesso');
                 
                 // Aguardar navegação ou mudança na página
@@ -752,9 +881,77 @@ class PlaywrightWebKitCPFConsultor {
         });
     }
 
-    async close() {
+    async limparCache() {
+        console.log('🧹 Limpando cache do navegador...');
+        
+        if (this.context) {
+            try {
+                // Limpar cookies
+                await this.context.clearCookies();
+                console.log('✅ Cookies limpos');
+                
+                // Limpar storage local e session
+                if (this.page) {
+                    await this.page.evaluate(() => {
+                        localStorage.clear();
+                        sessionStorage.clear();
+                        // Limpar cache do service worker se existir
+                        if ('serviceWorker' in navigator) {
+                            navigator.serviceWorker.getRegistrations().then(registrations => {
+                                registrations.forEach(registration => registration.unregister());
+                            });
+                        }
+                    });
+                    console.log('✅ Storage local e session limpos');
+                }
+            } catch (error) {
+                console.log('⚠️ Erro na limpeza:', error.message);
+            }
+        }
+    }
+
+    async reiniciarNavegador() {
+        console.log('🔄 Reiniciando navegador...');
+        
+        // Fechar navegador atual
         if (this.browser) {
             await this.browser.close();
+        }
+        
+        // Aguardar um pouco
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Reiniciar
+        await this.launch();
+        
+        console.log('✅ Navegador reiniciado');
+    }
+
+    async close() {
+        console.log('🔄 Fechando navegador e limpando recursos...');
+        
+        try {
+            // Limpar cache antes de fechar
+            await this.limparCache();
+            
+            // Fechar página
+            if (this.page) {
+                await this.page.close();
+            }
+            
+            // Fechar contexto
+            if (this.context) {
+                await this.context.close();
+            }
+            
+            // Fechar navegador
+            if (this.browser) {
+                await this.browser.close();
+            }
+            
+            console.log('✅ Navegador fechado e limpo');
+        } catch (error) {
+            console.log('⚠️ Erro ao fechar:', error.message);
         }
     }
 }
