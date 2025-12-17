@@ -50,22 +50,27 @@ const takeScreenshot = async (page, name) => {
 // Verificar se TOR está rodando
 async function verificarTorStatus() {
     try {
-        // Tentar conectar na porta padrão do TOR
         const { exec } = require('child_process');
         const { promisify } = require('util');
         const execAsync = promisify(exec);
         
-        // Verificar se o serviço TOR está ativo
+        // Método 1: Verificar se a porta 9050 está aberta (melhor para Docker)
         try {
-            await execAsync('systemctl is-active tor');
-            return { ativo: true, metodo: 'systemd' };
+            await execAsync('netstat -tuln 2>/dev/null | grep 9050 || ss -tuln 2>/dev/null | grep 9050');
+            return { ativo: true, metodo: 'porta' };
         } catch (e) {
-            // Se systemctl falhar, verificar se a porta está aberta
+            // Método 2: Verificar se o processo TOR está rodando
             try {
-                await execAsync('netstat -tuln | grep 9050');
-                return { ativo: true, metodo: 'porta' };
+                await execAsync('pgrep -x tor');
+                return { ativo: true, metodo: 'processo' };
             } catch (e2) {
-                return { ativo: false, metodo: null };
+                // Método 3: Tentar verificar com systemctl (se disponível)
+                try {
+                    await execAsync('systemctl is-active tor 2>/dev/null');
+                    return { ativo: true, metodo: 'systemd' };
+                } catch (e3) {
+                    return { ativo: false, metodo: null };
+                }
             }
         }
     } catch (error) {
@@ -121,9 +126,11 @@ class PlaywrightTorCPFConsultor {
         if (!torStatus.ativo) {
             console.log('⚠️ TOR não está rodando!');
             console.log('💡 Instale e inicie o TOR:');
-            console.log('   sudo apt install tor');
-            console.log('   sudo systemctl start tor');
-            throw new Error('TOR não está rodando. Execute: sudo systemctl start tor');
+            console.log('   apt update && apt install -y tor');
+            console.log('   tor &');
+            console.log('   sleep 5');
+            console.log('💡 Em ambiente Docker, use: tor &');
+            throw new Error('TOR não está rodando. Execute: tor & (aguarde 5s)');
         }
         
         console.log(`✅ TOR detectado e ativo (método: ${torStatus.metodo})`);
