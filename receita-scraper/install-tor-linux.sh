@@ -46,8 +46,8 @@ fi
 install_ubuntu_debian() {
     echo -e "${BLUE}📦 Instalando TOR para Ubuntu/Debian...${NC}"
     
-    sudo apt update
-    sudo apt install tor -y
+     apt update
+     apt install tor -y
     
     echo -e "${GREEN}✅ TOR instalado!${NC}"
 }
@@ -56,7 +56,7 @@ install_ubuntu_debian() {
 install_fedora() {
     echo -e "${BLUE}📦 Instalando TOR para Fedora/RHEL...${NC}"
     
-    sudo dnf install tor -y
+     dnf install tor -y
     
     echo -e "${GREEN}✅ TOR instalado!${NC}"
 }
@@ -65,7 +65,7 @@ install_fedora() {
 install_arch() {
     echo -e "${BLUE}📦 Instalando TOR para Arch Linux...${NC}"
     
-    sudo pacman -S --noconfirm tor
+     pacman -S --noconfirm tor
     
     echo -e "${GREEN}✅ TOR instalado!${NC}"
 }
@@ -74,7 +74,7 @@ install_arch() {
 install_opensuse() {
     echo -e "${BLUE}📦 Instalando TOR para openSUSE...${NC}"
     
-    sudo zypper install -y tor
+     zypper install -y tor
     
     echo -e "${GREEN}✅ TOR instalado!${NC}"
 }
@@ -96,7 +96,7 @@ if [ "$SKIP_INSTALL" != "true" ]; then
             ;;
         *)
             echo -e "${RED}❌ Distribuição $DISTRO não suportada automaticamente${NC}"
-            echo -e "${YELLOW}💡 Tente instalar manualmente: sudo [apt|dnf|pacman|zypper] install tor${NC}"
+            echo -e "${YELLOW}💡 Tente instalar manualmente:  [apt|dnf|pacman|zypper] install tor${NC}"
             exit 1
             ;;
     esac
@@ -114,8 +114,8 @@ fi
 # Iniciar serviço TOR
 echo -e "${BLUE}🚀 Iniciando serviço TOR...${NC}"
 
-sudo systemctl start tor
-sudo systemctl enable tor
+ systemctl start tor
+ systemctl enable tor
 
 # Aguardar TOR inicializar
 echo -e "${YELLOW}⏳ Aguardando TOR inicializar...${NC}"
@@ -125,12 +125,12 @@ sleep 3
 echo ""
 echo -e "${BLUE}📊 Verificando status do TOR...${NC}"
 
-if sudo systemctl is-active --quiet tor; then
+if  systemctl is-active --quiet tor; then
     echo -e "${GREEN}✅ TOR está rodando!${NC}"
-    sudo systemctl status tor --no-pager | head -n 5
+     systemctl status tor --no-pager | head -n 5
 else
     echo -e "${RED}❌ TOR não está rodando${NC}"
-    echo -e "${YELLOW}💡 Tente: sudo systemctl start tor${NC}"
+    echo -e "${YELLOW}💡 Tente:  systemctl start tor${NC}"
     exit 1
 fi
 
@@ -138,7 +138,7 @@ fi
 echo ""
 echo -e "${BLUE}🔍 Verificando porta 9050...${NC}"
 
-if sudo netstat -tuln 2>/dev/null | grep -q 9050 || sudo ss -tuln 2>/dev/null | grep -q 9050; then
+if  netstat -tuln 2>/dev/null | grep -q 9050 ||  ss -tuln 2>/dev/null | grep -q 9050; then
     echo -e "${GREEN}✅ Porta 9050 está aberta${NC}"
 else
     echo -e "${YELLOW}⚠️  Porta 9050 não detectada, mas TOR pode estar funcionando${NC}"
@@ -165,18 +165,18 @@ if [[ $REPLY =~ ^[SsYy]$ ]]; then
         echo -e "${BLUE}📝 Configurando exit node para: $PAIS${NC}"
         
         # Backup do torrc
-        sudo cp /etc/tor/torrc /etc/tor/torrc.backup
+         cp /etc/tor/torrc /etc/tor/torrc.backup
         
         # Adicionar configuração
-        echo "" | sudo tee -a /etc/tor/torrc > /dev/null
-        echo "# Configuração adicionada pelo script" | sudo tee -a /etc/tor/torrc > /dev/null
-        echo "ExitNodes {$PAIS}" | sudo tee -a /etc/tor/torrc > /dev/null
-        echo "StrictNodes 1" | sudo tee -a /etc/tor/torrc > /dev/null
+        echo "" |  tee -a /etc/tor/torrc > /dev/null
+        echo "# Configuração adicionada pelo script" |  tee -a /etc/tor/torrc > /dev/null
+        echo "ExitNodes {$PAIS}" |  tee -a /etc/tor/torrc > /dev/null
+        echo "StrictNodes 1" |  tee -a /etc/tor/torrc > /dev/null
         
         echo -e "${GREEN}✅ Configuração salva${NC}"
         echo -e "${BLUE}🔄 Reiniciando TOR...${NC}"
         
-        sudo systemctl restart tor
+         systemctl restart tor
         sleep 3
     fi
 fi
@@ -190,16 +190,16 @@ if ! command -v curl &> /dev/null; then
     echo -e "${YELLOW}📦 Instalando curl...${NC}"
     case $DISTRO in
         ubuntu|debian|linuxmint|pop|elementary)
-            sudo apt install curl -y
+             apt install curl -y
             ;;
         fedora|rhel|centos|rocky|almalinux)
-            sudo dnf install curl -y
+             dnf install curl -y
             ;;
         arch|manjaro|endeavouros)
-            sudo pacman -S --noconfirm curl
+             pacman -S --noconfirm curl
             ;;
         opensuse*)
-            sudo zypper install -y curl
+             zypper install -y curl
             ;;
     esac
 fi
@@ -228,7 +228,7 @@ else
     echo -e "${RED}   $IP_TOR ❌${NC}"
     echo ""
     echo -e "${YELLOW}⚠️  TOR pode não estar funcionando corretamente${NC}"
-    echo -e "${YELLOW}💡 Tente reiniciar: sudo systemctl restart tor${NC}"
+    echo -e "${YELLOW}💡 Tente reiniciar:  systemctl restart tor${NC}"
 fi
 
 # Criar alias úteis
@@ -247,10 +247,10 @@ if [[ $REPLY =~ ^[SsYy]$ ]]; then
     
     echo "" >> "$SHELL_RC"
     echo "# Comandos TOR - Adicionados pelo script" >> "$SHELL_RC"
-    echo "alias tor-status='sudo systemctl status tor'" >> "$SHELL_RC"
-    echo "alias tor-start='sudo systemctl start tor'" >> "$SHELL_RC"
-    echo "alias tor-stop='sudo systemctl stop tor'" >> "$SHELL_RC"
-    echo "alias tor-restart='sudo systemctl restart tor'" >> "$SHELL_RC"
+    echo "alias tor-status=' systemctl status tor'" >> "$SHELL_RC"
+    echo "alias tor-start=' systemctl start tor'" >> "$SHELL_RC"
+    echo "alias tor-stop=' systemctl stop tor'" >> "$SHELL_RC"
+    echo "alias tor-restart=' systemctl restart tor'" >> "$SHELL_RC"
     echo "alias tor-ip='curl --socks5-hostname 127.0.0.1:9050 https://api.ipify.org'" >> "$SHELL_RC"
     echo "alias my-ip='curl https://api.ipify.org'" >> "$SHELL_RC"
     echo "alias tor-check='curl --socks5-hostname 127.0.0.1:9050 https://check.torproject.org/ | grep -i congratulations'" >> "$SHELL_RC"
@@ -290,10 +290,10 @@ echo "2️⃣  Verificar IP TOR:"
 echo -e "   ${BLUE}npm run my-tor-ip${NC}"
 echo ""
 echo "3️⃣  Trocar de IP (obter novo circuito):"
-echo -e "   ${BLUE}sudo systemctl restart tor${NC}"
+echo -e "   ${BLUE} systemctl restart tor${NC}"
 echo ""
 echo "4️⃣  Ver logs do TOR:"
-echo -e "   ${BLUE}sudo journalctl -u tor -f${NC}"
+echo -e "   ${BLUE} journalctl -u tor -f${NC}"
 echo ""
 echo "📚 Documentação completa:"
 echo -e "   ${BLUE}cat TOR_LINUX_GUIDE.md${NC}"
