@@ -72,43 +72,70 @@ class PlaywrightWebKitCPFConsultor {
             console.log('👻 Modo HEADLESS ativado - navegador oculto');
         }
         
-        // Contexto Ultra Stealth - Simula navegador real
+        // Contexto ULTRA STEALTH - Simula navegador real com fingerprints únicos
         const stealthUserAgents = [
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.216 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.6045.199 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.6167.85 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.216 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.216 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15'
         ];
         
         const randomUserAgent = stealthUserAgents[Math.floor(Math.random() * stealthUserAgents.length)];
         
+        // Gerar fingerprints únicos para cada sessão
+        const uniqueFingerprint = {
+            canvasNoise: Math.random() * 0.0001,
+            webglVendor: ['Intel Inc.', 'NVIDIA Corporation', 'AMD'][Math.floor(Math.random() * 3)],
+            webglRenderer: [
+                'ANGLE (Intel, Intel(R) UHD Graphics 620, OpenGL 4.5)',
+                'ANGLE (NVIDIA, NVIDIA GeForce GTX 1650, OpenGL 4.5)',
+                'ANGLE (AMD, AMD Radeon RX 580, OpenGL 4.5)'
+            ][Math.floor(Math.random() * 3)],
+            platform: ['Win32', 'MacIntel', 'Linux x86_64'][Math.floor(Math.random() * 3)],
+            hardwareConcurrency: [4, 6, 8, 12][Math.floor(Math.random() * 4)],
+            deviceMemory: [4, 8, 16][Math.floor(Math.random() * 3)],
+            screenResolution: [
+                { width: 1920, height: 1080 },
+                { width: 1366, height: 768 },
+                { width: 2560, height: 1440 },
+                { width: 1536, height: 864 }
+            ][Math.floor(Math.random() * 4)],
+            timezone: ['America/Sao_Paulo', 'America/New_York', 'Europe/London'][Math.floor(Math.random() * 3)],
+            timezoneOffset: [-180, -240, -300, 0][Math.floor(Math.random() * 4)]
+        };
+        
         this.context = await this.browser.newContext({
-            // Viewport com variação humana
+            // Viewport ÚNICO para cada sessão (baseado em fingerprint)
             viewport: { 
-                width: 1366 + Math.floor(Math.random() * 100), 
-                height: 768 + Math.floor(Math.random() * 100) 
+                width: uniqueFingerprint.screenResolution.width,
+                height: uniqueFingerprint.screenResolution.height
             },
             userAgent: randomUserAgent,
             ignoreHTTPSErrors: true,
             javaScriptEnabled: true,
             acceptDownloads: false,
-            locale: 'pt-BR',
-            timezoneId: 'America/Sao_Paulo',
+            locale: ['pt-BR', 'pt-BR,pt;q=0.9', 'pt-BR,pt;q=0.9,en-US;q=0.8'][Math.floor(Math.random() * 3)],
+            timezoneId: uniqueFingerprint.timezone,
             
-            // Headers stealth
+            // Headers ÚNICOS por sessão (baseado em fingerprint)
             extraHTTPHeaders: {
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
                 'Accept-Encoding': 'gzip, deflate, br',
-                'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
-                'Cache-Control': 'max-age=0',
-                'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+                'Accept-Language': ['pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7', 'pt-BR,pt;q=0.9', 'pt-BR,pt;q=0.9,en;q=0.8'][Math.floor(Math.random() * 3)],
+                'Cache-Control': ['max-age=0', 'no-cache', 'no-store'][Math.floor(Math.random() * 3)],
+                'Sec-Ch-Ua': `"Not_A Brand";v="8", "Chromium";v="${120 + Math.floor(Math.random() * 3)}", "Google Chrome";v="${120 + Math.floor(Math.random() * 3)}"`,
                 'Sec-Ch-Ua-Mobile': '?0',
-                'Sec-Ch-Ua-Platform': '"Windows"',
+                'Sec-Ch-Ua-Platform': `"${uniqueFingerprint.platform === 'Win32' ? 'Windows' : uniqueFingerprint.platform === 'MacIntel' ? 'macOS' : 'Linux'}"`,
                 'Sec-Fetch-Dest': 'document',
                 'Sec-Fetch-Mode': 'navigate',
                 'Sec-Fetch-Site': 'none',
                 'Sec-Fetch-User': '?1',
-                'Upgrade-Insecure-Requests': '1'
+                'Upgrade-Insecure-Requests': '1',
+                'DNT': Math.random() < 0.3 ? '1' : undefined // 30% chance de DNT
             },
             
             // Configurações de privacidade realistas
@@ -130,43 +157,70 @@ class PlaywrightWebKitCPFConsultor {
             storageState: undefined // Começar limpo mas permitir cookies
         });
 
-        // Modo Stealth Avançado - Remove TODOS os sinais de automação
-        await this.context.addInitScript(() => {
-            // 1. Remover webdriver
+        // Modo STEALTH IMPOSSÍVEL DE DETECTAR - Remove TODOS os sinais de automação
+        await this.context.addInitScript((fingerprint) => {
+            // 1. Remover COMPLETAMENTE webdriver
             Object.defineProperty(navigator, 'webdriver', {
                 get: () => undefined,
+                configurable: false
             });
             delete navigator.__proto__.webdriver;
             
-            // 2. Mascarar plugins
+            // 2. Mascarar plugins de forma realista
+            const mockPlugins = {
+                length: 5,
+                0: { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
+                1: { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: '' },
+                2: { name: 'Native Client', filename: 'internal-nacl-plugin', description: '' },
+                3: { name: 'Chromium PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
+                4: { name: 'Microsoft Edge PDF Plugin', filename: 'edge-pdf-viewer', description: 'Portable Document Format' }
+            };
             Object.defineProperty(navigator, 'plugins', {
-                get: () => [1, 2, 3, 4, 5] // Simular plugins reais
+                get: () => mockPlugins
             });
             
-            // 3. Mascarar languages
+            // 3. Mascarar languages de forma dinâmica
             Object.defineProperty(navigator, 'languages', {
                 get: () => ['pt-BR', 'pt', 'en-US', 'en']
             });
             
-            // 4. Simular permissões
-            const originalQuery = window.navigator.permissions.query;
-            window.navigator.permissions.query = (parameters) => (
-                parameters.name === 'notifications' ?
-                    Promise.resolve({ state: Deno.build.os === 'darwin' ? 'granted' : 'prompt' }) :
-                    originalQuery(parameters)
-            );
+            // 4. Simular permissões realistas
+            const originalQuery = window.navigator.permissions?.query;
+            if (originalQuery) {
+                window.navigator.permissions.query = (parameters) => (
+                    parameters.name === 'notifications' ?
+                        Promise.resolve({ state: 'prompt' }) :
+                        originalQuery(parameters)
+                );
+            }
             
-            // 5. Mascarar chrome runtime
+            // 5. Mascarar COMPLETAMENTE chrome runtime
             if (window.chrome) {
                 Object.defineProperty(window.chrome, 'runtime', {
                     get: () => undefined
                 });
             }
             
-            // 6. Remover sinais do Playwright
+            // 6. Remover TODOS os sinais do Playwright/Puppeteer
             delete window.__playwright;
             delete window.__pw_manual;
             delete window.__PW_inspect;
+            delete window.__nightmare;
+            delete window._phantom;
+            delete window.callPhantom;
+            delete window.callSelenium;
+            delete window._selenium;
+            delete window.__webdriver_evaluate;
+            delete window.__selenium_evaluate;
+            delete window.__webdriver_script_function;
+            delete window.__webdriver_script_func;
+            delete window.__webdriver_script_fn;
+            delete window.__fxdriver_evaluate;
+            delete window.__driver_unwrapped;
+            delete window.__webdriver_unwrapped;
+            delete window.__driver_evaluate;
+            delete window.__selenium_unwrapped;
+            delete window.__fxdriver_unwrapped;
             
             // 7. Mascarar stack traces
             const originalError = Error.prepareStackTrace;
@@ -175,27 +229,129 @@ class PlaywrightWebKitCPFConsultor {
                 return stack.toString();
             };
             
-            // 8. Simular comportamento de mouse/teclado humano
-            let mouseX = 0, mouseY = 0;
+            // 8. Simular comportamento REALISTA de mouse/teclado humano
+            let mouseX = 0, mouseY = 0, lastMouseMove = Date.now();
             document.addEventListener('mousemove', (e) => {
                 mouseX = e.clientX;
                 mouseY = e.clientY;
+                lastMouseMove = Date.now();
             });
             
-            // 9. Mascarar timing de automação
+            // 9. Mascarar timing com variação HUMANA
             const originalSetTimeout = window.setTimeout;
+            const originalSetInterval = window.setInterval;
+            
             window.setTimeout = function(callback, delay) {
-                // Adicionar variação humana no timing
                 const humanDelay = delay + Math.random() * 100 - 50;
                 return originalSetTimeout(callback, Math.max(0, humanDelay));
             };
             
-            // 10. Simular viewport real
-            Object.defineProperty(window.screen, 'availWidth', { get: () => 1366 });
-            Object.defineProperty(window.screen, 'availHeight', { get: () => 768 });
+            window.setInterval = function(callback, delay) {
+                const humanDelay = delay + Math.random() * 50 - 25;
+                return originalSetInterval(callback, Math.max(0, humanDelay));
+            };
             
-            console.log('🥷 Modo Stealth Avançado ativado');
-        });
+            // 10. Simular viewport ÚNICO (do fingerprint)
+            Object.defineProperty(window.screen, 'width', { 
+                get: () => fingerprint.screenResolution.width 
+            });
+            Object.defineProperty(window.screen, 'height', { 
+                get: () => fingerprint.screenResolution.height 
+            });
+            Object.defineProperty(window.screen, 'availWidth', { 
+                get: () => fingerprint.screenResolution.width 
+            });
+            Object.defineProperty(window.screen, 'availHeight', { 
+                get: () => fingerprint.screenResolution.height - 40 
+            });
+            
+            // 11. Canvas Fingerprint ÚNICO (adicionar noise)
+            const originalToDataURL = HTMLCanvasElement.prototype.toDataURL;
+            HTMLCanvasElement.prototype.toDataURL = function(type) {
+                const context = this.getContext('2d');
+                if (context) {
+                    const imageData = context.getImageData(0, 0, this.width, this.height);
+                    for (let i = 0; i < imageData.data.length; i += 4) {
+                        imageData.data[i] += fingerprint.canvasNoise * 255;
+                    }
+                    context.putImageData(imageData, 0, 0);
+                }
+                return originalToDataURL.apply(this, arguments);
+            };
+            
+            // 12. WebGL Fingerprint ÚNICO
+            const getParameter = WebGLRenderingContext.prototype.getParameter;
+            WebGLRenderingContext.prototype.getParameter = function(parameter) {
+                if (parameter === 37445) return fingerprint.webglVendor;
+                if (parameter === 37446) return fingerprint.webglRenderer;
+                return getParameter.apply(this, arguments);
+            };
+            
+            // 13. Hardware Fingerprint ÚNICO
+            Object.defineProperty(navigator, 'hardwareConcurrency', {
+                get: () => fingerprint.hardwareConcurrency
+            });
+            
+            Object.defineProperty(navigator, 'deviceMemory', {
+                get: () => fingerprint.deviceMemory
+            });
+            
+            // 14. Platform ÚNICO
+            Object.defineProperty(navigator, 'platform', {
+                get: () => fingerprint.platform
+            });
+            
+            // 15. Timezone Offset ÚNICO
+            Date.prototype.getTimezoneOffset = function() {
+                return fingerprint.timezoneOffset;
+            };
+            
+            // 16. Mascarar Performance API (remover sinais de automação)
+            const originalPerformanceNow = Performance.prototype.now;
+            Performance.prototype.now = function() {
+                return originalPerformanceNow.apply(this, arguments) + Math.random() * 0.1;
+            };
+            
+            // 17. Mascarar Battery API
+            if (navigator.getBattery) {
+                navigator.getBattery = () => Promise.resolve({
+                    charging: Math.random() > 0.5,
+                    chargingTime: Math.random() * 3600,
+                    dischargingTime: Math.random() * 7200 + 3600,
+                    level: 0.5 + Math.random() * 0.5
+                });
+            }
+            
+            // 18. Adicionar propriedades normais de navegador
+            if (!window.chrome) {
+                window.chrome = {
+                    loadTimes: () => {},
+                    csi: () => {},
+                    app: {}
+                };
+            }
+            
+            // 19. Mascarar Notification API
+            if (window.Notification) {
+                Object.defineProperty(Notification, 'permission', {
+                    get: () => 'default'
+                });
+            }
+            
+            // 20. Adicionar ruído ao AudioContext (fingerprint)
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (AudioContext) {
+                const originalCreateOscillator = AudioContext.prototype.createOscillator;
+                AudioContext.prototype.createOscillator = function() {
+                    const oscillator = originalCreateOscillator.apply(this, arguments);
+                    const originalFrequency = oscillator.frequency.value;
+                    oscillator.frequency.value = originalFrequency + Math.random() * 0.001;
+                    return oscillator;
+                };
+            }
+            
+            console.log('🥷 Modo STEALTH IMPOSSÍVEL DE DETECTAR ativado com fingerprint único!');
+        }, uniqueFingerprint);
 
         this.page = await this.context.newPage();
         
@@ -203,37 +359,42 @@ class PlaywrightWebKitCPFConsultor {
         this.page.setDefaultNavigationTimeout(45000);
         this.page.setDefaultTimeout(20000);
 
-        // Roteamento stealth - Bloquear apenas o essencial
+        // Roteamento INTELIGENTE - Bloquear MINIMAMENTE para evitar detecção
         await this.page.route('**/*', (route) => {
             const resourceType = route.request().resourceType();
             const url = route.request().url();
             
-            // Lista de domínios suspeitos para bloquear
+            // Lista MÍNIMA de bloqueios (muito bloqueio pode ser detectado)
             const blockedDomains = [
                 'google-analytics.com',
                 'googletagmanager.com',
-                'facebook.com',
-                'doubleclick.net',
-                'googlesyndication.com',
-                'amazon-adsystem.com'
+                'doubleclick.net'
             ];
             
-            // Bloquear apenas recursos claramente desnecessários
+            // Bloquear APENAS tracking óbvio (não bloquear demais = mais stealth)
             const shouldBlock = blockedDomains.some(domain => url.includes(domain)) ||
-                               (resourceType === 'image' && !url.includes('captcha') && !url.includes('hcaptcha')) ||
-                               resourceType === 'media' ||
-                               url.includes('/ads/') ||
-                               url.includes('/tracking/');
+                               url.includes('/analytics.') ||
+                               url.includes('/ga.js');
             
             if (shouldBlock) {
                 route.abort();
             } else {
-                // Adicionar headers realistas
+                // Adicionar headers EXTREMAMENTE realistas com variação
                 const headers = route.request().headers();
-                headers['sec-fetch-site'] = 'same-origin';
-                headers['sec-fetch-mode'] = 'cors';
                 
-                route.continue({ headers });
+                // Variar headers para parecer mais natural
+                if (Math.random() < 0.8) {
+                    headers['sec-fetch-site'] = url.includes(route.request().frame().url()) ? 'same-origin' : 'cross-site';
+                    headers['sec-fetch-mode'] = resourceType === 'document' ? 'navigate' : 'no-cors';
+                    headers['sec-fetch-dest'] = resourceType;
+                }
+                
+                // Adicionar variação no timing (como navegador real)
+                if (Math.random() < 0.1) {
+                    setTimeout(() => route.continue({ headers }), Math.random() * 50);
+                } else {
+                    route.continue({ headers });
+                }
             }
         });
         
@@ -251,61 +412,104 @@ class PlaywrightWebKitCPFConsultor {
         }
     }
 
-    // Método para simular digitação humana
+    // Método para simular digitação ULTRA REALISTA
     async preencherComportamentoHumano(seletor, texto) {
         try {
             // Aguardar elemento aparecer
             await this.page.waitForSelector(seletor, { timeout: 10000 });
             
-            // Mover mouse para o campo (comportamento humano)
+            // Simular movimento de olhos (ler antes de clicar)
+            await this.page.waitForTimeout(Math.random() * 400 + 200);
+            
+            // Mover mouse de forma ULTRA REALISTA (curva Bezier)
             const elemento = await this.page.$(seletor);
             const box = await elemento.boundingBox();
             
             if (box) {
-                // Mover mouse gradualmente para o campo
-                await this.page.mouse.move(
-                    box.x + box.width / 2 + Math.random() * 10 - 5,
-                    box.y + box.height / 2 + Math.random() * 10 - 5,
-                    { steps: Math.floor(Math.random() * 5) + 3 }
-                );
+                // Posição alvo com variação humana
+                const targetX = box.x + box.width / 2 + Math.random() * 20 - 10;
+                const targetY = box.y + box.height / 2 + Math.random() * 20 - 10;
                 
-                // Pequena pausa antes de clicar
-                await this.page.waitForTimeout(Math.random() * 300 + 100);
+                // Mover em múltiplos passos com velocidade variável (mais realista)
+                const steps = Math.floor(Math.random() * 15) + 10;
+                for (let i = 0; i <= steps; i++) {
+                    const progress = i / steps;
+                    // Curva de aceleração/desaceleração (easing)
+                    const eased = progress < 0.5 
+                        ? 2 * progress * progress 
+                        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                    
+                    const currentPos = await this.page.mouse.position || { x: 0, y: 0 };
+                    const x = currentPos.x + (targetX - currentPos.x) * eased;
+                    const y = currentPos.y + (targetY - currentPos.y) * eased;
+                    
+                    await this.page.mouse.move(x, y);
+                    await this.page.waitForTimeout(Math.random() * 10 + 5);
+                }
+                
+                // Pausa antes de clicar (humanos não clicam instantaneamente)
+                await this.page.waitForTimeout(Math.random() * 400 + 200);
             }
             
             // Clicar no campo
             await this.page.click(seletor);
+            await this.page.waitForTimeout(Math.random() * 150 + 100);
             
-            // Limpar campo existente com comportamento humano
-            await this.page.keyboard.down('Control');
-            await this.page.keyboard.press('KeyA');
-            await this.page.keyboard.up('Control');
-            await this.page.waitForTimeout(Math.random() * 100 + 50);
+            // Limpar campo com comportamento humano (verificar se tem conteúdo primeiro)
+            const hasContent = await this.page.evaluate((sel) => {
+                const el = document.querySelector(sel);
+                return el ? el.value.length > 0 : false;
+            }, seletor);
             
-            // Digitar caractere por caractere com variação de velocidade
+            if (hasContent) {
+                // Selecionar tudo (Ctrl+A) com timing humano
+                await this.page.keyboard.down('Control');
+                await this.page.waitForTimeout(Math.random() * 50 + 30);
+                await this.page.keyboard.press('KeyA');
+                await this.page.waitForTimeout(Math.random() * 50 + 30);
+                await this.page.keyboard.up('Control');
+                await this.page.waitForTimeout(Math.random() * 100 + 50);
+            }
+            
+            // Digitar com MÁXIMO REALISMO
             for (let i = 0; i < texto.length; i++) {
-                await this.page.keyboard.type(texto[i]);
+                const char = texto[i];
                 
-                // Variação humana na velocidade de digitação
-                const delay = Math.random() * 150 + 50; // 50-200ms entre caracteres
+                // Variação EXTREMA na velocidade (humanos não digitam uniformemente)
+                let delay;
+                if (Math.random() < 0.05) {
+                    // 5% chance de pausa longa (pensando)
+                    delay = Math.random() * 800 + 400;
+                } else if (Math.random() < 0.15) {
+                    // 15% chance de digitação rápida (sequência conhecida)
+                    delay = Math.random() * 50 + 30;
+                } else {
+                    // Velocidade normal com variação
+                    delay = Math.random() * 150 + 80;
+                }
+                
+                await this.page.keyboard.type(char);
                 await this.page.waitForTimeout(delay);
                 
-                // Ocasionalmente fazer uma pausa mais longa (como humanos fazem)
-                if (Math.random() < 0.1) {
-                    await this.page.waitForTimeout(Math.random() * 500 + 200);
+                // Ocasionalmente "errar" e corrigir (backspace)
+                if (Math.random() < 0.03 && i > 0) {
+                    await this.page.waitForTimeout(Math.random() * 100 + 50);
+                    await this.page.keyboard.press('Backspace');
+                    await this.page.waitForTimeout(Math.random() * 150 + 100);
+                    await this.page.keyboard.type(char);
                 }
             }
             
-            // Pequena pausa após terminar de digitar
-            await this.page.waitForTimeout(Math.random() * 200 + 100);
+            // Pausa após terminar (revisar o que foi digitado)
+            await this.page.waitForTimeout(Math.random() * 300 + 200);
             
-            // Disparar eventos de mudança
+            // Disparar eventos de forma escalonada (mais natural)
             await this.page.evaluate((sel) => {
                 const element = document.querySelector(sel);
                 if (element) {
-                    element.dispatchEvent(new Event('input', { bubbles: true }));
-                    element.dispatchEvent(new Event('change', { bubbles: true }));
-                    element.dispatchEvent(new Event('blur', { bubbles: true }));
+                    setTimeout(() => element.dispatchEvent(new Event('input', { bubbles: true })), 10);
+                    setTimeout(() => element.dispatchEvent(new Event('change', { bubbles: true })), 50);
+                    setTimeout(() => element.dispatchEvent(new Event('blur', { bubbles: true })), 100);
                 }
             }, seletor);
             
@@ -317,16 +521,56 @@ class PlaywrightWebKitCPFConsultor {
         }
     }
 
-    // Método para simular movimento de mouse aleatório
+    // Método para simular movimento de mouse ULTRA REALISTA
     async simularMovimentoMouse() {
         try {
             const viewport = this.page.viewportSize();
-            const x = Math.random() * viewport.width;
-            const y = Math.random() * viewport.height;
             
-            await this.page.mouse.move(x, y, { 
-                steps: Math.floor(Math.random() * 10) + 5 
-            });
+            // Humanos não movem o mouse de forma completamente aleatória
+            // Eles tendem a mover em padrões (olhando elementos, lendo)
+            const numMovimentos = Math.floor(Math.random() * 3) + 2; // 2-4 movimentos
+            
+            for (let i = 0; i < numMovimentos; i++) {
+                // Zona mais provável de movimento (centro da tela, não extremos)
+                const centerBias = 0.3; // 30% de viés para o centro
+                let x = Math.random() * viewport.width;
+                let y = Math.random() * viewport.height;
+                
+                if (Math.random() < centerBias) {
+                    x = viewport.width * 0.3 + Math.random() * viewport.width * 0.4;
+                    y = viewport.height * 0.3 + Math.random() * viewport.height * 0.4;
+                }
+                
+                // Movimento com curva (não linear)
+                const steps = Math.floor(Math.random() * 20) + 10;
+                const currentPos = await this.page.evaluate(() => ({ x: 0, y: 0 }));
+                
+                for (let step = 0; step <= steps; step++) {
+                    const progress = step / steps;
+                    // Curva suave com overshoot ocasional
+                    const eased = progress < 0.5
+                        ? 2 * progress * progress
+                        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                    
+                    const currentX = currentPos.x + (x - currentPos.x) * eased;
+                    const currentY = currentPos.y + (y - currentPos.y) * eased;
+                    
+                    await this.page.mouse.move(currentX, currentY);
+                    await this.page.waitForTimeout(Math.random() * 15 + 5);
+                }
+                
+                // Pausa entre movimentos (humanos param o mouse)
+                await this.page.waitForTimeout(Math.random() * 500 + 200);
+                
+                // 20% chance de fazer micro-movimento (ajuste fino)
+                if (Math.random() < 0.2) {
+                    await this.page.mouse.move(
+                        x + Math.random() * 20 - 10,
+                        y + Math.random() * 20 - 10
+                    );
+                    await this.page.waitForTimeout(Math.random() * 200 + 100);
+                }
+            }
         } catch (error) {
             // Ignorar erros de movimento de mouse
         }
@@ -334,16 +578,39 @@ class PlaywrightWebKitCPFConsultor {
 
     // Função principal para consultar CPF (TODA a lógica do scraper.js)
     async consultarCPF(cpf, birthDate) {
-        console.log(`🔍 Iniciando consulta stealth para CPF: ${cpf}`);
+        console.log(`🔍 Iniciando consulta ULTRA STEALTH para CPF: ${cpf}`);
         
-        // Simular comportamento humano antes de começar
-        console.log('🥷 Simulando comportamento humano...');
+        // Simular comportamento EXTREMAMENTE humano antes de começar
+        console.log('🥷 Simulando comportamento ULTRA realista...');
+        
+        // 1. Movimento inicial de mouse (humano sempre move o mouse ao chegar)
+        await this.simularMovimentoMouse();
+        await this.page.waitForTimeout(Math.random() * 800 + 400);
+        
+        // 2. Scroll aleatório (humanos geralmente dão scroll para ver a página)
+        if (Math.random() < 0.7) { // 70% chance de dar scroll
+            console.log('📜 Simulando scroll humano...');
+            const scrolls = Math.floor(Math.random() * 3) + 1;
+            for (let i = 0; i < scrolls; i++) {
+                await this.page.mouse.wheel(0, Math.random() * 200 + 100);
+                await this.page.waitForTimeout(Math.random() * 600 + 300);
+            }
+            
+            // Voltar ao topo
+            await this.page.mouse.wheel(0, -500);
+            await this.page.waitForTimeout(Math.random() * 400 + 200);
+        }
+        
+        // 3. Movimento adicional de mouse (simular leitura da página)
         await this.simularMovimentoMouse();
         
-        // Aguardar com variação humana
-        const delayHumano = 2000 + Math.random() * 3000; // 2-5 segundos
-        console.log(`⏳ Aguardando ${Math.round(delayHumano/1000)}s para evitar detecção...`);
+        // 4. Aguardar com MÁXIMA variação humana
+        const delayHumano = 3000 + Math.random() * 5000; // 3-8 segundos
+        console.log(`⏳ Aguardando ${Math.round(delayHumano/1000)}s (comportamento humano natural)...`);
         await this.page.waitForTimeout(delayHumano);
+        
+        // 5. Último movimento antes de começar (foco)
+        await this.page.waitForTimeout(Math.random() * 500 + 300);
         if (!cpf || !birthDate) {
             return {
                 erro: true,
@@ -414,9 +681,19 @@ class PlaywrightWebKitCPFConsultor {
             await this.preencherComportamentoHumano('#txtDataNascimento', birthDate);
             await takeScreenshot(this.page, '02_apos_preenchimento');
 
+            // Simular leitura da página antes do captcha (comportamento humano)
+            console.log('📖 Simulando leitura da página...');
+            await this.page.waitForTimeout(Math.random() * 1500 + 1000);
+            await this.simularMovimentoMouse();
+            
             // Aguardar carregamento do captcha
             console.log('Aguardando carregamento do captcha...');
             await this.page.waitForSelector('iframe[title="Widget contendo caixa de seleção para desafio de segurança hCaptcha"]');
+            
+            // Movimento de mouse antes de interagir com captcha (MUITO importante)
+            await this.page.waitForTimeout(Math.random() * 800 + 500);
+            await this.simularMovimentoMouse();
+            
             await takeScreenshot(this.page, '03_antes_captcha');
 
             // Detecção inteligente de captcha
@@ -582,13 +859,42 @@ class PlaywrightWebKitCPFConsultor {
                 await takeScreenshot(this.page, '04_erro_captcha');
             }
 
+            // Detectar e EVITAR honeypots (campos invisíveis de armadilha)
+            console.log('🕵️ Verificando honeypots...');
+            const temHoneypot = await this.page.evaluate(() => {
+                const inputs = document.querySelectorAll('input[type="text"], input[type="hidden"]');
+                let honeypotDetectado = false;
+                inputs.forEach(input => {
+                    // Honeypots comuns têm display:none, visibility:hidden ou position:absolute com left:-9999px
+                    const style = window.getComputedStyle(input);
+                    if (style.display === 'none' || style.visibility === 'hidden' || 
+                        parseInt(style.left) < -1000 || input.offsetParent === null) {
+                        // NÃO preencher honeypots!
+                        honeypotDetectado = true;
+                    }
+                });
+                return honeypotDetectado;
+            });
+            
+            if (temHoneypot) {
+                console.log('⚠️ Honeypot detectado - evitando armadilha!');
+            } else {
+                console.log('✅ Nenhum honeypot detectado');
+            }
+            
             // Aguardar e verificar o botão Consultar (do scraper.js)
             console.log('Aguardando botão Consultar...');
             await this.page.waitForSelector('input[value="Consultar"]', {
                 timeout: 30000
             });
 
-
+            // Simular REVISÃO dos dados antes de submeter (comportamento humano)
+            console.log('📋 Simulando revisão dos dados preenchidos...');
+            await this.page.waitForTimeout(Math.random() * 2000 + 1500);
+            
+            // Movimento de mouse sobre os campos (como se estivesse revisando)
+            await this.simularMovimentoMouse();
+            await this.page.waitForTimeout(Math.random() * 1000 + 800);
 
             // Aguardar um pouco mais para garantir que tudo está pronto
             await this.page.waitForTimeout(500);
@@ -631,16 +937,41 @@ class PlaywrightWebKitCPFConsultor {
                     await this.page.waitForTimeout(500);
                 }
                 
-                // Tentar múltiplas estratégias de clique
+                // Tentar múltiplas estratégias de clique REALISTA
                 let cliqueSucesso = false;
                 
-                // Estratégia 1: Clique simples
+                // Estratégia 1: Clique ULTRA REALISTA com movimento de mouse
                 try {
+                    // Mover mouse para o botão de forma realista
+                    const botao = await this.page.$('input[value="Consultar"]');
+                    const box = await botao.boundingBox();
+                    
+                    if (box) {
+                        // Mover com curva e variação humana
+                        const targetX = box.x + box.width / 2 + Math.random() * 10 - 5;
+                        const targetY = box.y + box.height / 2 + Math.random() * 10 - 5;
+                        
+                        const steps = Math.floor(Math.random() * 20) + 15;
+                        for (let i = 0; i <= steps; i++) {
+                            const progress = i / steps;
+                            const eased = progress < 0.5 
+                                ? 2 * progress * progress 
+                                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                            
+                            await this.page.waitForTimeout(Math.random() * 10 + 5);
+                        }
+                        
+                        await this.page.mouse.move(targetX, targetY);
+                        
+                        // Pausa antes de clicar (humanos não clicam instantaneamente)
+                        await this.page.waitForTimeout(Math.random() * 400 + 200);
+                    }
+                    
                     await this.page.click('input[value="Consultar"]');
-                    console.log('✅ Clique simples realizado');
+                    console.log('✅ Clique REALISTA realizado');
                     cliqueSucesso = true;
                 } catch (error) {
-                    console.log('⚠️ Clique simples falhou:', error.message);
+                    console.log('⚠️ Clique realista falhou:', error.message);
                 }
                 
                 // Estratégia 2: Clique via JavaScript se o simples falhou
