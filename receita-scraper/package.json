@@ -77,7 +77,9 @@
         "test:tor:linux": "bash ensure-tor.sh && node scraper-linux-tor.js 45083784807 29/03/1995",
         "test:tor:linux:visual": "bash ensure-tor.sh && VISUAL_MODE=true node scraper-linux-tor.js 45083784807 29/03/1995",
         "check-tor": "node -e \"require('./scraper-linux-tor').verificarTorStatus().then(s => console.log('TOR ativo:', s.ativo))\"",
-        "my-tor-ip": "node -e \"require('./scraper-linux-tor').obterIpTor().then(ip => console.log('IP TOR:', ip))\""
+        "my-tor-ip": "node -e \"require('./scraper-linux-tor').obterIpTor().then(ip => console.log('IP TOR:', ip))\"",
+        "test:anti-detect": "node test-stealth.js",
+        "test:anti-detect:visual": "VISUAL_MODE=true node test-stealth.js"
     },
     "dependencies": {
         "body-parser": "^1.20.2",
