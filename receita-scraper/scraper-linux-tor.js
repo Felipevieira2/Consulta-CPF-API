@@ -258,8 +258,8 @@ class PlaywrightTorCPFConsultor {
 
         this.page = await this.context.newPage();
         
-        this.page.setDefaultNavigationTimeout(60000); // 60s para TOR
-        this.page.setDefaultTimeout(30000);
+        this.page.setDefaultNavigationTimeout(120000); // 120s para TOR (2 minutos)
+        this.page.setDefaultTimeout(60000); // 60s timeout padrão
 
         // Bloquear recursos desnecessários
         await this.page.route('**/*', (route) => {
@@ -297,11 +297,22 @@ class PlaywrightTorCPFConsultor {
 
     async navigateTo(url) {
         console.log(`🌐 Navegando para: ${url} (através do TOR)`);
+        console.log('⏳ TOR é lento, isso pode demorar 1-2 minutos...');
+        
         try {
-            await this.page.goto(url, { waitUntil: 'networkidle', timeout: 60000 });
+            await this.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 120000 });
+            console.log('✅ Página carregada através do TOR');
         } catch (error) {
-            console.log('⚠️ Erro na navegação, tentando novamente...');
-            await this.page.goto(url, { timeout: 60000 });
+            console.log('⚠️ Primeira tentativa falhou, tentando novamente...');
+            try {
+                await this.page.goto(url, { waitUntil: 'load', timeout: 120000 });
+                console.log('✅ Página carregada na segunda tentativa');
+            } catch (error2) {
+                console.log('❌ Erro na navegação através do TOR');
+                console.log('💡 O IP do TOR pode estar bloqueado ou circuito muito lento');
+                console.log('💡 Tente trocar de circuito: pkill tor && tor &');
+                throw error2;
+            }
         }
     }
 
