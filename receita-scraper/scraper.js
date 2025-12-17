@@ -72,286 +72,24 @@ class PlaywrightWebKitCPFConsultor {
             console.log('👻 Modo HEADLESS ativado - navegador oculto');
         }
         
-        // Contexto ULTRA STEALTH - Simula navegador real com fingerprints únicos
-        const stealthUserAgents = [
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.216 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.6045.199 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.6167.85 Safari/537.36',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.216 Safari/537.36',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15',
-            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.216 Safari/537.36',
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15'
-        ];
-        
-        const randomUserAgent = stealthUserAgents[Math.floor(Math.random() * stealthUserAgents.length)];
-        
-        // Gerar fingerprints únicos para cada sessão
-        const uniqueFingerprint = {
-            canvasNoise: Math.random() * 0.0001,
-            webglVendor: ['Intel Inc.', 'NVIDIA Corporation', 'AMD'][Math.floor(Math.random() * 3)],
-            webglRenderer: [
-                'ANGLE (Intel, Intel(R) UHD Graphics 620, OpenGL 4.5)',
-                'ANGLE (NVIDIA, NVIDIA GeForce GTX 1650, OpenGL 4.5)',
-                'ANGLE (AMD, AMD Radeon RX 580, OpenGL 4.5)'
-            ][Math.floor(Math.random() * 3)],
-            platform: ['Win32', 'MacIntel', 'Linux x86_64'][Math.floor(Math.random() * 3)],
-            hardwareConcurrency: [4, 6, 8, 12][Math.floor(Math.random() * 4)],
-            deviceMemory: [4, 8, 16][Math.floor(Math.random() * 3)],
-            screenResolution: [
-                { width: 1920, height: 1080 },
-                { width: 1366, height: 768 },
-                { width: 2560, height: 1440 },
-                { width: 1536, height: 864 }
-            ][Math.floor(Math.random() * 4)],
-            timezone: ['America/Sao_Paulo', 'America/New_York', 'Europe/London'][Math.floor(Math.random() * 3)],
-            timezoneOffset: [-180, -240, -300, 0][Math.floor(Math.random() * 4)]
-        };
-        
+        // Cria contexto com configurações otimizadas
         this.context = await this.browser.newContext({
-            // Viewport ÚNICO para cada sessão (baseado em fingerprint)
-            viewport: { 
-                width: uniqueFingerprint.screenResolution.width,
-                height: uniqueFingerprint.screenResolution.height
-            },
-            userAgent: randomUserAgent,
+            viewport: { width: 1366, height: 768 },
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             ignoreHTTPSErrors: true,
             javaScriptEnabled: true,
             acceptDownloads: false,
-            locale: ['pt-BR', 'pt-BR,pt;q=0.9', 'pt-BR,pt;q=0.9,en-US;q=0.8'][Math.floor(Math.random() * 3)],
-            timezoneId: uniqueFingerprint.timezone,
-            
-            // Headers ÚNICOS por sessão (baseado em fingerprint)
-            extraHTTPHeaders: {
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Accept-Language': ['pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7', 'pt-BR,pt;q=0.9', 'pt-BR,pt;q=0.9,en;q=0.8'][Math.floor(Math.random() * 3)],
-                'Cache-Control': ['max-age=0', 'no-cache', 'no-store'][Math.floor(Math.random() * 3)],
-                'Sec-Ch-Ua': `"Not_A Brand";v="8", "Chromium";v="${120 + Math.floor(Math.random() * 3)}", "Google Chrome";v="${120 + Math.floor(Math.random() * 3)}"`,
-                'Sec-Ch-Ua-Mobile': '?0',
-                'Sec-Ch-Ua-Platform': `"${uniqueFingerprint.platform === 'Win32' ? 'Windows' : uniqueFingerprint.platform === 'MacIntel' ? 'macOS' : 'Linux'}"`,
-                'Sec-Fetch-Dest': 'document',
-                'Sec-Fetch-Mode': 'navigate',
-                'Sec-Fetch-Site': 'none',
-                'Sec-Fetch-User': '?1',
-                'Upgrade-Insecure-Requests': '1',
-                'DNT': Math.random() < 0.3 ? '1' : undefined // 30% chance de DNT
-            },
-            
-            // Configurações de privacidade realistas
-            permissions: ['geolocation'],
-            geolocation: { latitude: -23.5505, longitude: -46.6333 }, // São Paulo
-            colorScheme: 'light',
-            
-            // Simular comportamento real
-            hasTouch: false,
-            isMobile: false,
-            
-            // Configurações de rede realistas
-            offline: false,
-            
-            // Simular dispositivo real
-            deviceScaleFactor: 1,
-            
-            // Cookies e storage
-            storageState: undefined // Começar limpo mas permitir cookies
+            locale: 'pt-BR',
+            timezoneId: 'America/Sao_Paulo'
         });
 
-        // Modo STEALTH IMPOSSÍVEL DE DETECTAR - Remove TODOS os sinais de automação
-        await this.context.addInitScript((fingerprint) => {
-            // 1. Remover COMPLETAMENTE webdriver
+        // Remove sinais de automação (do scraper.js)
+        await this.context.addInitScript(() => {
             Object.defineProperty(navigator, 'webdriver', {
                 get: () => undefined,
-                configurable: false
             });
             delete navigator.__proto__.webdriver;
-            
-            // 2. Mascarar plugins de forma realista
-            const mockPlugins = {
-                length: 5,
-                0: { name: 'Chrome PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
-                1: { name: 'Chrome PDF Viewer', filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: '' },
-                2: { name: 'Native Client', filename: 'internal-nacl-plugin', description: '' },
-                3: { name: 'Chromium PDF Plugin', filename: 'internal-pdf-viewer', description: 'Portable Document Format' },
-                4: { name: 'Microsoft Edge PDF Plugin', filename: 'edge-pdf-viewer', description: 'Portable Document Format' }
-            };
-            Object.defineProperty(navigator, 'plugins', {
-                get: () => mockPlugins
-            });
-            
-            // 3. Mascarar languages de forma dinâmica
-            Object.defineProperty(navigator, 'languages', {
-                get: () => ['pt-BR', 'pt', 'en-US', 'en']
-            });
-            
-            // 4. Simular permissões realistas
-            const originalQuery = window.navigator.permissions?.query;
-            if (originalQuery) {
-                window.navigator.permissions.query = (parameters) => (
-                    parameters.name === 'notifications' ?
-                        Promise.resolve({ state: 'prompt' }) :
-                        originalQuery(parameters)
-                );
-            }
-            
-            // 5. Mascarar COMPLETAMENTE chrome runtime
-            if (window.chrome) {
-                Object.defineProperty(window.chrome, 'runtime', {
-                    get: () => undefined
-                });
-            }
-            
-            // 6. Remover TODOS os sinais do Playwright/Puppeteer
-            delete window.__playwright;
-            delete window.__pw_manual;
-            delete window.__PW_inspect;
-            delete window.__nightmare;
-            delete window._phantom;
-            delete window.callPhantom;
-            delete window.callSelenium;
-            delete window._selenium;
-            delete window.__webdriver_evaluate;
-            delete window.__selenium_evaluate;
-            delete window.__webdriver_script_function;
-            delete window.__webdriver_script_func;
-            delete window.__webdriver_script_fn;
-            delete window.__fxdriver_evaluate;
-            delete window.__driver_unwrapped;
-            delete window.__webdriver_unwrapped;
-            delete window.__driver_evaluate;
-            delete window.__selenium_unwrapped;
-            delete window.__fxdriver_unwrapped;
-            
-            // 7. Mascarar stack traces
-            const originalError = Error.prepareStackTrace;
-            Error.prepareStackTrace = (error, stack) => {
-                if (originalError) return originalError(error, stack);
-                return stack.toString();
-            };
-            
-            // 8. Simular comportamento REALISTA de mouse/teclado humano
-            let mouseX = 0, mouseY = 0, lastMouseMove = Date.now();
-            document.addEventListener('mousemove', (e) => {
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-                lastMouseMove = Date.now();
-            });
-            
-            // 9. Mascarar timing com variação HUMANA
-            const originalSetTimeout = window.setTimeout;
-            const originalSetInterval = window.setInterval;
-            
-            window.setTimeout = function(callback, delay) {
-                const humanDelay = delay + Math.random() * 100 - 50;
-                return originalSetTimeout(callback, Math.max(0, humanDelay));
-            };
-            
-            window.setInterval = function(callback, delay) {
-                const humanDelay = delay + Math.random() * 50 - 25;
-                return originalSetInterval(callback, Math.max(0, humanDelay));
-            };
-            
-            // 10. Simular viewport ÚNICO (do fingerprint)
-            Object.defineProperty(window.screen, 'width', { 
-                get: () => fingerprint.screenResolution.width 
-            });
-            Object.defineProperty(window.screen, 'height', { 
-                get: () => fingerprint.screenResolution.height 
-            });
-            Object.defineProperty(window.screen, 'availWidth', { 
-                get: () => fingerprint.screenResolution.width 
-            });
-            Object.defineProperty(window.screen, 'availHeight', { 
-                get: () => fingerprint.screenResolution.height - 40 
-            });
-            
-            // 11. Canvas Fingerprint ÚNICO (adicionar noise)
-            const originalToDataURL = HTMLCanvasElement.prototype.toDataURL;
-            HTMLCanvasElement.prototype.toDataURL = function(type) {
-                const context = this.getContext('2d');
-                if (context) {
-                    const imageData = context.getImageData(0, 0, this.width, this.height);
-                    for (let i = 0; i < imageData.data.length; i += 4) {
-                        imageData.data[i] += fingerprint.canvasNoise * 255;
-                    }
-                    context.putImageData(imageData, 0, 0);
-                }
-                return originalToDataURL.apply(this, arguments);
-            };
-            
-            // 12. WebGL Fingerprint ÚNICO
-            const getParameter = WebGLRenderingContext.prototype.getParameter;
-            WebGLRenderingContext.prototype.getParameter = function(parameter) {
-                if (parameter === 37445) return fingerprint.webglVendor;
-                if (parameter === 37446) return fingerprint.webglRenderer;
-                return getParameter.apply(this, arguments);
-            };
-            
-            // 13. Hardware Fingerprint ÚNICO
-            Object.defineProperty(navigator, 'hardwareConcurrency', {
-                get: () => fingerprint.hardwareConcurrency
-            });
-            
-            Object.defineProperty(navigator, 'deviceMemory', {
-                get: () => fingerprint.deviceMemory
-            });
-            
-            // 14. Platform ÚNICO
-            Object.defineProperty(navigator, 'platform', {
-                get: () => fingerprint.platform
-            });
-            
-            // 15. Timezone Offset ÚNICO
-            Date.prototype.getTimezoneOffset = function() {
-                return fingerprint.timezoneOffset;
-            };
-            
-            // 16. Mascarar Performance API (remover sinais de automação)
-            const originalPerformanceNow = Performance.prototype.now;
-            Performance.prototype.now = function() {
-                return originalPerformanceNow.apply(this, arguments) + Math.random() * 0.1;
-            };
-            
-            // 17. Mascarar Battery API
-            if (navigator.getBattery) {
-                navigator.getBattery = () => Promise.resolve({
-                    charging: Math.random() > 0.5,
-                    chargingTime: Math.random() * 3600,
-                    dischargingTime: Math.random() * 7200 + 3600,
-                    level: 0.5 + Math.random() * 0.5
-                });
-            }
-            
-            // 18. Adicionar propriedades normais de navegador
-            if (!window.chrome) {
-                window.chrome = {
-                    loadTimes: () => {},
-                    csi: () => {},
-                    app: {}
-                };
-            }
-            
-            // 19. Mascarar Notification API
-            if (window.Notification) {
-                Object.defineProperty(Notification, 'permission', {
-                    get: () => 'default'
-                });
-            }
-            
-            // 20. Adicionar ruído ao AudioContext (fingerprint)
-            const AudioContext = window.AudioContext || window.webkitAudioContext;
-            if (AudioContext) {
-                const originalCreateOscillator = AudioContext.prototype.createOscillator;
-                AudioContext.prototype.createOscillator = function() {
-                    const oscillator = originalCreateOscillator.apply(this, arguments);
-                    const originalFrequency = oscillator.frequency.value;
-                    oscillator.frequency.value = originalFrequency + Math.random() * 0.001;
-                    return oscillator;
-                };
-            }
-            
-            console.log('🥷 Modo STEALTH IMPOSSÍVEL DE DETECTAR ativado com fingerprint único!');
-        }, uniqueFingerprint);
+        });
 
         this.page = await this.context.newPage();
         
@@ -359,42 +97,19 @@ class PlaywrightWebKitCPFConsultor {
         this.page.setDefaultNavigationTimeout(45000);
         this.page.setDefaultTimeout(20000);
 
-        // Roteamento INTELIGENTE - Bloquear MINIMAMENTE para evitar detecção
+        // Otimização: Reduzir recursos carregados de forma mais seletiva
         await this.page.route('**/*', (route) => {
             const resourceType = route.request().resourceType();
             const url = route.request().url();
             
-            // Lista MÍNIMA de bloqueios (muito bloqueio pode ser detectado)
-            const blockedDomains = [
-                'google-analytics.com',
-                'googletagmanager.com',
-                'doubleclick.net'
-            ];
-            
-            // Bloquear APENAS tracking óbvio (não bloquear demais = mais stealth)
-            const shouldBlock = blockedDomains.some(domain => url.includes(domain)) ||
-                               url.includes('/analytics.') ||
-                               url.includes('/ga.js');
-            
-            if (shouldBlock) {
+            // Bloquear apenas recursos realmente desnecessários
+            if (['image', 'media', 'websocket'].includes(resourceType) ||
+                url.includes('analytics') || url.includes('tracking') || 
+                url.includes('ads') || url.includes('facebook') || 
+                url.includes('google-analytics')) {
                 route.abort();
             } else {
-                // Adicionar headers EXTREMAMENTE realistas com variação
-                const headers = route.request().headers();
-                
-                // Variar headers para parecer mais natural
-                if (Math.random() < 0.8) {
-                    headers['sec-fetch-site'] = url.includes(route.request().frame().url()) ? 'same-origin' : 'cross-site';
-                    headers['sec-fetch-mode'] = resourceType === 'document' ? 'navigate' : 'no-cors';
-                    headers['sec-fetch-dest'] = resourceType;
-                }
-                
-                // Adicionar variação no timing (como navegador real)
-                if (Math.random() < 0.1) {
-                    setTimeout(() => route.continue({ headers }), Math.random() * 50);
-                } else {
-                    route.continue({ headers });
-                }
+                route.continue();
             }
         });
         
@@ -412,205 +127,12 @@ class PlaywrightWebKitCPFConsultor {
         }
     }
 
-    // Método para simular digitação ULTRA REALISTA
-    async preencherComportamentoHumano(seletor, texto) {
-        try {
-            // Aguardar elemento aparecer
-            await this.page.waitForSelector(seletor, { timeout: 10000 });
-            
-            // Simular movimento de olhos (ler antes de clicar)
-            await this.page.waitForTimeout(Math.random() * 400 + 200);
-            
-            // Mover mouse de forma ULTRA REALISTA (curva Bezier)
-            const elemento = await this.page.$(seletor);
-            const box = await elemento.boundingBox();
-            
-            if (box) {
-                // Posição alvo com variação humana
-                const targetX = box.x + box.width / 2 + Math.random() * 20 - 10;
-                const targetY = box.y + box.height / 2 + Math.random() * 20 - 10;
-                
-                // Mover em múltiplos passos com velocidade variável (mais realista)
-                const steps = Math.floor(Math.random() * 15) + 10;
-                for (let i = 0; i <= steps; i++) {
-                    const progress = i / steps;
-                    // Curva de aceleração/desaceleração (easing)
-                    const eased = progress < 0.5 
-                        ? 2 * progress * progress 
-                        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-                    
-                    const currentPos = await this.page.mouse.position || { x: 0, y: 0 };
-                    const x = currentPos.x + (targetX - currentPos.x) * eased;
-                    const y = currentPos.y + (targetY - currentPos.y) * eased;
-                    
-                    await this.page.mouse.move(x, y);
-                    await this.page.waitForTimeout(Math.random() * 10 + 5);
-                }
-                
-                // Pausa antes de clicar (humanos não clicam instantaneamente)
-                await this.page.waitForTimeout(Math.random() * 400 + 200);
-            }
-            
-            // Clicar no campo
-            await this.page.click(seletor);
-            await this.page.waitForTimeout(Math.random() * 150 + 100);
-            
-            // Limpar campo com comportamento humano (verificar se tem conteúdo primeiro)
-            const hasContent = await this.page.evaluate((sel) => {
-                const el = document.querySelector(sel);
-                return el ? el.value.length > 0 : false;
-            }, seletor);
-            
-            if (hasContent) {
-                // Selecionar tudo (Ctrl+A) com timing humano
-                await this.page.keyboard.down('Control');
-                await this.page.waitForTimeout(Math.random() * 50 + 30);
-                await this.page.keyboard.press('KeyA');
-                await this.page.waitForTimeout(Math.random() * 50 + 30);
-                await this.page.keyboard.up('Control');
-                await this.page.waitForTimeout(Math.random() * 100 + 50);
-            }
-            
-            // Digitar com MÁXIMO REALISMO
-            for (let i = 0; i < texto.length; i++) {
-                const char = texto[i];
-                
-                // Variação EXTREMA na velocidade (humanos não digitam uniformemente)
-                let delay;
-                if (Math.random() < 0.05) {
-                    // 5% chance de pausa longa (pensando)
-                    delay = Math.random() * 800 + 400;
-                } else if (Math.random() < 0.15) {
-                    // 15% chance de digitação rápida (sequência conhecida)
-                    delay = Math.random() * 50 + 30;
-                } else {
-                    // Velocidade normal com variação
-                    delay = Math.random() * 150 + 80;
-                }
-                
-                await this.page.keyboard.type(char);
-                await this.page.waitForTimeout(delay);
-                
-                // Ocasionalmente "errar" e corrigir (backspace)
-                if (Math.random() < 0.03 && i > 0) {
-                    await this.page.waitForTimeout(Math.random() * 100 + 50);
-                    await this.page.keyboard.press('Backspace');
-                    await this.page.waitForTimeout(Math.random() * 150 + 100);
-                    await this.page.keyboard.type(char);
-                }
-            }
-            
-            // Pausa após terminar (revisar o que foi digitado)
-            await this.page.waitForTimeout(Math.random() * 300 + 200);
-            
-            // Disparar eventos de forma escalonada (mais natural)
-            await this.page.evaluate((sel) => {
-                const element = document.querySelector(sel);
-                if (element) {
-                    setTimeout(() => element.dispatchEvent(new Event('input', { bubbles: true })), 10);
-                    setTimeout(() => element.dispatchEvent(new Event('change', { bubbles: true })), 50);
-                    setTimeout(() => element.dispatchEvent(new Event('blur', { bubbles: true })), 100);
-                }
-            }, seletor);
-            
-        } catch (error) {
-            console.log(`⚠️ Erro no preenchimento humano de ${seletor}:`, error.message);
-            
-            // Fallback para método tradicional
-            await this.page.fill(seletor, texto);
-        }
-    }
-
-    // Método para simular movimento de mouse ULTRA REALISTA
-    async simularMovimentoMouse() {
-        try {
-            const viewport = this.page.viewportSize();
-            
-            // Humanos não movem o mouse de forma completamente aleatória
-            // Eles tendem a mover em padrões (olhando elementos, lendo)
-            const numMovimentos = Math.floor(Math.random() * 3) + 2; // 2-4 movimentos
-            
-            for (let i = 0; i < numMovimentos; i++) {
-                // Zona mais provável de movimento (centro da tela, não extremos)
-                const centerBias = 0.3; // 30% de viés para o centro
-                let x = Math.random() * viewport.width;
-                let y = Math.random() * viewport.height;
-                
-                if (Math.random() < centerBias) {
-                    x = viewport.width * 0.3 + Math.random() * viewport.width * 0.4;
-                    y = viewport.height * 0.3 + Math.random() * viewport.height * 0.4;
-                }
-                
-                // Movimento com curva (não linear)
-                const steps = Math.floor(Math.random() * 20) + 10;
-                const currentPos = await this.page.evaluate(() => ({ x: 0, y: 0 }));
-                
-                for (let step = 0; step <= steps; step++) {
-                    const progress = step / steps;
-                    // Curva suave com overshoot ocasional
-                    const eased = progress < 0.5
-                        ? 2 * progress * progress
-                        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-                    
-                    const currentX = currentPos.x + (x - currentPos.x) * eased;
-                    const currentY = currentPos.y + (y - currentPos.y) * eased;
-                    
-                    await this.page.mouse.move(currentX, currentY);
-                    await this.page.waitForTimeout(Math.random() * 15 + 5);
-                }
-                
-                // Pausa entre movimentos (humanos param o mouse)
-                await this.page.waitForTimeout(Math.random() * 500 + 200);
-                
-                // 20% chance de fazer micro-movimento (ajuste fino)
-                if (Math.random() < 0.2) {
-                    await this.page.mouse.move(
-                        x + Math.random() * 20 - 10,
-                        y + Math.random() * 20 - 10
-                    );
-                    await this.page.waitForTimeout(Math.random() * 200 + 100);
-                }
-            }
-        } catch (error) {
-            // Ignorar erros de movimento de mouse
-        }
-    }
-
     // Função principal para consultar CPF (TODA a lógica do scraper.js)
     async consultarCPF(cpf, birthDate) {
-        console.log(`🔍 Iniciando consulta ULTRA STEALTH para CPF: ${cpf}`);
-        
-        // Simular comportamento EXTREMAMENTE humano antes de começar
-        console.log('🥷 Simulando comportamento ULTRA realista...');
-        
-        // 1. Movimento inicial de mouse (humano sempre move o mouse ao chegar)
-        await this.simularMovimentoMouse();
-        await this.page.waitForTimeout(Math.random() * 800 + 400);
-        
-        // 2. Scroll aleatório (humanos geralmente dão scroll para ver a página)
-        if (Math.random() < 0.7) { // 70% chance de dar scroll
-            console.log('📜 Simulando scroll humano...');
-            const scrolls = Math.floor(Math.random() * 3) + 1;
-            for (let i = 0; i < scrolls; i++) {
-                await this.page.mouse.wheel(0, Math.random() * 200 + 100);
-                await this.page.waitForTimeout(Math.random() * 600 + 300);
-            }
-            
-            // Voltar ao topo
-            await this.page.mouse.wheel(0, -500);
-            await this.page.waitForTimeout(Math.random() * 400 + 200);
-        }
-        
-        // 3. Movimento adicional de mouse (simular leitura da página)
-        await this.simularMovimentoMouse();
-        
-        // 4. Aguardar com MÁXIMA variação humana
-        const delayHumano = 3000 + Math.random() * 5000; // 3-8 segundos
-        console.log(`⏳ Aguardando ${Math.round(delayHumano/1000)}s (comportamento humano natural)...`);
-        await this.page.waitForTimeout(delayHumano);
-        
-        // 5. Último movimento antes de começar (foco)
-        await this.page.waitForTimeout(Math.random() * 500 + 300);
+        console.log(`🔍 Iniciando consulta para CPF: ${cpf}`);
+        // Aguardar um pouco antes de acessar para evitar rate limiting
+        console.log('⏳ Aguardando 3 segundos para evitar bloqueios...');
+        await this.page.waitForTimeout(3000);
         if (!cpf || !birthDate) {
             return {
                 erro: true,
@@ -673,343 +195,140 @@ class PlaywrightWebKitCPFConsultor {
             await this.page.waitForSelector('#txtCPF');
             await takeScreenshot(this.page, '01_inicial');
 
-            // Preenchimento com comportamento humano realista
-            console.log('Preenchendo CPF com comportamento humano...');
-            await this.preencherComportamentoHumano('#txtCPF', cpf);
+            // Preenchimento otimizado (do scraper.js)
+            console.log('Preenchendo CPF...');
+            await this.page.evaluate((cpfValue) => {
+                document.querySelector('#txtCPF').value = cpfValue;
+            }, cpf);
 
-            console.log('Preenchendo data de nascimento com comportamento humano...');
-            await this.preencherComportamentoHumano('#txtDataNascimento', birthDate);
+            console.log('Preenchendo data de nascimento...');
+            await this.page.evaluate((dateValue) => {
+                document.querySelector('#txtDataNascimento').value = dateValue;
+            }, birthDate);
             await takeScreenshot(this.page, '02_apos_preenchimento');
 
-            // Simular leitura da página antes do captcha (comportamento humano)
-            console.log('📖 Simulando leitura da página...');
-            await this.page.waitForTimeout(Math.random() * 1500 + 1000);
-            await this.simularMovimentoMouse();
-            
             // Aguardar carregamento do captcha
             console.log('Aguardando carregamento do captcha...');
             await this.page.waitForSelector('iframe[title="Widget contendo caixa de seleção para desafio de segurança hCaptcha"]');
-            
-            // Movimento de mouse antes de interagir com captcha (MUITO importante)
-            await this.page.waitForTimeout(Math.random() * 800 + 500);
-            await this.simularMovimentoMouse();
-            
             await takeScreenshot(this.page, '03_antes_captcha');
 
-            // Detecção inteligente de captcha
-            console.log('🔍 Verificando se há captcha na página...');
-            
-            let captchaEncontrado = false;
-            let captchaResolvido = false;
-            
+            // Lógica otimizada de detecção do hCaptcha
+            console.log('🔍 Detectando hCaptcha...');
             try {
-                // Primeiro, verificar se realmente há um captcha visível
-                const temCaptchaVisivel = await this.page.evaluate(() => {
-                    // Verificar iframes de captcha
-                    const iframes = document.querySelectorAll('iframe');
-                    let captchaIframe = null;
-                    
-                    for (const iframe of iframes) {
-                        const src = iframe.src || '';
-                        const title = iframe.title || '';
-                        
-                        if (src.includes('hcaptcha.com') || title.toLowerCase().includes('captcha')) {
-                            // Verificar se o iframe está visível
-                            const rect = iframe.getBoundingClientRect();
-                            if (rect.width > 0 && rect.height > 0) {
-                                captchaIframe = iframe;
+                // Seletores principais do hCaptcha
+                const hcaptchaSelectors = [
+                    'iframe[src*="hcaptcha.com"]',
+                    'iframe[title*="hCaptcha"]',
+                    '.h-captcha iframe'
+                ];
+
+                let hcaptchaIframeHandle = null;
+
+                // Buscar iframe do hCaptcha
+                for (const selector of hcaptchaSelectors) {
+                    try {
+                        await this.page.waitForSelector(selector, { timeout: 4000 });
+                        const iframe = await this.page.$(selector);
+                        if (iframe) {
+                            const src = await iframe.getAttribute('src');
+                            if (src && src.includes('hcaptcha.com')) {
+                                hcaptchaIframeHandle = iframe;
+                                console.log(`✅ hCaptcha encontrado: ${selector}`);
                                 break;
                             }
                         }
+                    } catch (e) {
+                        continue;
                     }
-                    
-                    return {
-                        temCaptcha: !!captchaIframe,
-                        captchaInfo: captchaIframe ? {
-                            src: captchaIframe.src,
-                            title: captchaIframe.title,
-                            width: captchaIframe.getBoundingClientRect().width,
-                            height: captchaIframe.getBoundingClientRect().height
-                        } : null
-                    };
-                });
-                
-                console.log('🔍 Resultado da verificação:', temCaptchaVisivel);
-                
-                if (temCaptchaVisivel.temCaptcha) {
-                    captchaEncontrado = true;
-                    console.log('✅ Captcha encontrado e visível');
-                    console.log('📊 Info do captcha:', temCaptchaVisivel.captchaInfo);
-                    
-                    // Tentar interagir com o captcha apenas se ele existir e estiver visível
-                    try {
-                        const iframe = await this.page.$('iframe[src*="hcaptcha.com"]');
-                        if (iframe) {
-                            const frameHandle = await iframe.contentFrame();
-                            if (frameHandle) {
-                                console.log('🎯 Tentando interagir com captcha...');
-                                
-                                // Aguardar o checkbox aparecer
-                                try {
-                                    await frameHandle.waitForSelector('#checkbox', { timeout: 3000 });
-                                    
-                                    // Verificar se já está marcado
-                                    const jaResolvido = await frameHandle.evaluate(() => {
-                                        const checkbox = document.querySelector('#checkbox');
-                                        const token = document.querySelector('textarea[name="h-captcha-response"]');
-                                        return (checkbox && checkbox.getAttribute('aria-checked') === 'true') || 
-                                               (token && token.value.length > 0);
-                                    });
-                                    
-                                    if (jaResolvido) {
-                                        console.log('✅ Captcha já estava resolvido');
-                                        captchaResolvido = true;
-                                    } else {
-                                        // Tentar clicar no checkbox
-                                        await frameHandle.click('#checkbox');
-                                        console.log('🖱️ Clique no captcha realizado');
-                                        
-                                        // Aguardar um pouco para ver se resolve
-                                        await this.page.waitForTimeout(2000);
-                                        
-                                        // Verificar se foi resolvido
-                                        const resolveuAposClique = await frameHandle.evaluate(() => {
-                                            const checkbox = document.querySelector('#checkbox');
-                                            const token = document.querySelector('textarea[name="h-captcha-response"]');
-                                            return (checkbox && checkbox.getAttribute('aria-checked') === 'true') || 
-                                                   (token && token.value.length > 0);
-                                        });
-                                        
-                                        if (resolveuAposClique) {
-                                            console.log('✅ Captcha resolvido após clique!');
-                                            captchaResolvido = true;
-                                        } else {
-                                            console.log('⚠️ Captcha não foi resolvido automaticamente');
-                                        }
-                                    }
-                                } catch (selectorError) {
-                                    console.log('⚠️ Checkbox do captcha não encontrado:', selectorError.message);
-                                }
-                            }
-                        }
-                    } catch (interactionError) {
-                        console.log('⚠️ Erro na interação com captcha:', interactionError.message);
-                    }
-                } else {
-                    console.log('ℹ️ Nenhum captcha visível encontrado na página');
                 }
-                
-                // Verificar se o botão Consultar está disponível
-                const botaoStatus = await this.page.evaluate(() => {
-                    const botao = document.querySelector('input[value="Consultar"]');
-                    return {
-                        existe: !!botao,
-                        habilitado: botao ? !botao.disabled : false,
-                        visivel: botao ? botao.offsetParent !== null : false
-                    };
-                });
-                
-                console.log('🔘 Status do botão Consultar:', botaoStatus);
-                
-                if (captchaEncontrado && !captchaResolvido) {
-                    const isVisual = process.env.VISUAL_MODE === 'true' || process.argv.includes('--visual');
+
+                if (hcaptchaIframeHandle) {
+                    console.log('🎯 Tentando interagir com hCaptcha...');
                     
-                    if (isVisual) {
-                        console.log('🖥️ Modo visual: aguardando resolução manual do captcha...');
-                        
-                        // Em modo visual, aguardar resolução manual
-                        let tentativasEspera = 0;
-                        const maxEspera = 60; // 60 segundos
-                        
-                        while (!captchaResolvido && tentativasEspera < maxEspera) {
-                            await this.page.waitForTimeout(1000);
+                    await this.page.waitForTimeout(1000);
+                    
+                    try {
+                        const frameHandle = await hcaptchaIframeHandle.contentFrame();
+                        if (frameHandle) {
+                            await frameHandle.waitForSelector('#checkbox', { timeout: 5000 });
                             
-                            // Verificar se foi resolvido manualmente
-                            const resolvidoManualmente = await this.page.evaluate(() => {
-                                const token = document.querySelector('textarea[name="h-captcha-response"]');
-                                return token && token.value.length > 0;
+                            const isChecked = await frameHandle.evaluate(() => {
+                                const checkbox = document.querySelector('#checkbox');
+                                return checkbox && (checkbox.checked || checkbox.getAttribute('aria-checked') === 'true');
                             });
                             
-                            if (resolvidoManualmente) {
-                                console.log('✅ Captcha resolvido manualmente!');
-                                captchaResolvido = true;
-                                break;
+                            if (!isChecked) {
+                                await frameHandle.click('#checkbox');
+                                console.log('✅ Checkbox clicado');
+
+                                await this.page.waitForTimeout(3000);
+                            } else {
+                                console.log('✅ Checkbox já marcado');
+                            }
+
+                            //como checar se o checkbox foi marcado?
+                            const isChecked2 = await frameHandle.evaluate(() => {
+                                const checkbox = document.querySelector('#checkbox');
+                                return checkbox && (checkbox.checked || checkbox.getAttribute('aria-checked') === 'true');
+                            });
+
+                            // Aguardar até que o checkbox esteja realmente marcado
+                            let checkboxMarked = isChecked2;
+                            let tentativas = 0;
+                            const maxTentativas = 5; // máximo 30 segundos
+                            
+                            while (!checkboxMarked && tentativas < maxTentativas) {
+                                console.log(`⏳ Aguardando checkbox ser marcado... (tentativa ${tentativas + 1}/${maxTentativas})`);
+                                await this.page.waitForTimeout(1000); // aguarda 1 segundo
+                                await takeScreenshot(this.page, '04_depois_do_clique_captcha_tentativa');
+                                // Verifica novamente se o checkbox está marcado
+                                checkboxMarked = await frameHandle.evaluate(() => {
+                                    const checkbox = document.querySelector('#checkbox');
+                                    return checkbox && (checkbox.checked || checkbox.getAttribute('aria-checked') === 'true');
+                                });
+                                
+                                tentativas++;
                             }
                             
-                            tentativasEspera++;
-                            if (tentativasEspera % 10 === 0) {
-                                console.log(`⏳ Aguardando resolução manual... (${tentativasEspera}s)`);
+                            if (checkboxMarked) {
+                                console.log('✅ Checkbox marcado com sucesso');
+                            } else {
+                                console.log('❌ Timeout: Checkbox não foi marcado após 30 segundos');
                             }
                         }
-                    } else if (botaoStatus.habilitado) {
-                        console.log('💡 Captcha não resolvido, mas botão está habilitado - prosseguindo');
-                    } else {
-                        console.log('⚠️ Captcha não resolvido e botão desabilitado - pode falhar');
+                    } catch (frameError) {
+                        console.log('⚠️ Erro na interação com hCaptcha:', frameError.message);
                     }
-                } else if (!captchaEncontrado) {
-                    console.log('✅ Nenhum captcha necessário - prosseguindo normalmente');
                 } else {
-                    console.log('✅ Captcha resolvido - prosseguindo');
+                    console.log('⚠️ hCaptcha não encontrado');
                 }
-                
-                await takeScreenshot(this.page, '04_apos_captcha');
-                
+                await this.page.waitForTimeout(500);
+                await takeScreenshot(this.page, '04_depois_do_clique_captcha');
             } catch (error) {
-                console.log('⚠️ Erro na verificação de captcha:', error.message);
-                await takeScreenshot(this.page, '04_erro_captcha');
+                console.error('❌ Erro na detecção avançada do hCaptcha:', error);
+                await takeScreenshot(this.page, '04_erro_deteccao_hcaptcha');
             }
 
-            // Detectar e EVITAR honeypots (campos invisíveis de armadilha)
-            console.log('🕵️ Verificando honeypots...');
-            const temHoneypot = await this.page.evaluate(() => {
-                const inputs = document.querySelectorAll('input[type="text"], input[type="hidden"]');
-                let honeypotDetectado = false;
-                inputs.forEach(input => {
-                    // Honeypots comuns têm display:none, visibility:hidden ou position:absolute com left:-9999px
-                    const style = window.getComputedStyle(input);
-                    if (style.display === 'none' || style.visibility === 'hidden' || 
-                        parseInt(style.left) < -1000 || input.offsetParent === null) {
-                        // NÃO preencher honeypots!
-                        honeypotDetectado = true;
-                    }
-                });
-                return honeypotDetectado;
-            });
-            
-            if (temHoneypot) {
-                console.log('⚠️ Honeypot detectado - evitando armadilha!');
-            } else {
-                console.log('✅ Nenhum honeypot detectado');
-            }
-            
             // Aguardar e verificar o botão Consultar (do scraper.js)
             console.log('Aguardando botão Consultar...');
             await this.page.waitForSelector('input[value="Consultar"]', {
                 timeout: 30000
             });
 
-            // Simular REVISÃO dos dados antes de submeter (comportamento humano)
-            console.log('📋 Simulando revisão dos dados preenchidos...');
-            await this.page.waitForTimeout(Math.random() * 2000 + 1500);
-            
-            // Movimento de mouse sobre os campos (como se estivesse revisando)
-            await this.simularMovimentoMouse();
-            await this.page.waitForTimeout(Math.random() * 1000 + 800);
+
 
             // Aguardar um pouco mais para garantir que tudo está pronto
             await this.page.waitForTimeout(500);
 
-            // Clicar no botão Consultar com melhor tratamento
+            // Clicar no botão Consultar com melhor tratamento (do scraper.js)
             console.log('Clicando em Consultar...');
             
             try {
-                // Verificar se o botão está presente e habilitado
-                const botaoInfo = await this.page.evaluate(() => {
-                    const botao = document.querySelector('input[value="Consultar"]');
-                    if (!botao) return { existe: false };
-                    
-                    return {
-                        existe: true,
-                        habilitado: !botao.disabled,
-                        visivel: botao.offsetParent !== null,
-                        texto: botao.value
-                    };
-                });
-                
-                console.log('🔍 Status do botão:', botaoInfo);
-                
-                if (!botaoInfo.existe) {
-                    throw new Error('Botão Consultar não encontrado');
-                }
-                
-                if (!botaoInfo.habilitado) {
-                    console.log('⚠️ Botão está desabilitado, tentando habilitar...');
-                    
-                    // Tentar habilitar o botão via JavaScript
-                    await this.page.evaluate(() => {
-                        const botao = document.querySelector('input[value="Consultar"]');
-                        if (botao) {
-                            botao.disabled = false;
-                            botao.removeAttribute('disabled');
-                        }
-                    });
-                    
-                    await this.page.waitForTimeout(500);
-                }
-                
-                // Tentar múltiplas estratégias de clique REALISTA
-                let cliqueSucesso = false;
-                
-                // Estratégia 1: Clique ULTRA REALISTA com movimento de mouse
-                try {
-                    // Mover mouse para o botão de forma realista
-                    const botao = await this.page.$('input[value="Consultar"]');
-                    const box = await botao.boundingBox();
-                    
-                    if (box) {
-                        // Mover com curva e variação humana
-                        const targetX = box.x + box.width / 2 + Math.random() * 10 - 5;
-                        const targetY = box.y + box.height / 2 + Math.random() * 10 - 5;
-                        
-                        const steps = Math.floor(Math.random() * 20) + 15;
-                        for (let i = 0; i <= steps; i++) {
-                            const progress = i / steps;
-                            const eased = progress < 0.5 
-                                ? 2 * progress * progress 
-                                : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-                            
-                            await this.page.waitForTimeout(Math.random() * 10 + 5);
-                        }
-                        
-                        await this.page.mouse.move(targetX, targetY);
-                        
-                        // Pausa antes de clicar (humanos não clicam instantaneamente)
-                        await this.page.waitForTimeout(Math.random() * 400 + 200);
-                    }
-                    
-                    await this.page.click('input[value="Consultar"]');
-                    console.log('✅ Clique REALISTA realizado');
-                    cliqueSucesso = true;
-                } catch (error) {
-                    console.log('⚠️ Clique realista falhou:', error.message);
-                }
-                
-                // Estratégia 2: Clique via JavaScript se o simples falhou
-                if (!cliqueSucesso) {
-                    try {
-                        await this.page.evaluate(() => {
-                            const botao = document.querySelector('input[value="Consultar"]');
-                            if (botao) {
-                                botao.click();
-                            }
-                        });
-                        console.log('✅ Clique via JavaScript realizado');
-                        cliqueSucesso = true;
-                    } catch (error) {
-                        console.log('⚠️ Clique via JavaScript falhou:', error.message);
-                    }
-                }
-                
-                // Estratégia 3: Submeter formulário diretamente
-                if (!cliqueSucesso) {
-                    try {
-                        await this.page.evaluate(() => {
-                            const form = document.querySelector('form');
-                            if (form) {
-                                form.submit();
-                            }
-                        });
-                        console.log('✅ Formulário submetido diretamente');
-                        cliqueSucesso = true;
-                    } catch (error) {
-                        console.log('⚠️ Submit do formulário falhou:', error.message);
-                    }
-                }
-                
-                if (!cliqueSucesso) {
-                    throw new Error('Todas as estratégias de clique falharam');
-                }
-                
+
+                //espere ate o botao estar habilitado
+              
+                // Tentar clique simples primeiro
+                await this.page.click('input[value="Consultar"]');
                 console.log('✅ Clique realizado com sucesso');
                 
                 // Aguardar navegação ou mudança na página
@@ -1433,77 +752,9 @@ class PlaywrightWebKitCPFConsultor {
         });
     }
 
-    async limparCache() {
-        console.log('🧹 Limpando cache do navegador...');
-        
-        if (this.context) {
-            try {
-                // Limpar cookies
-                await this.context.clearCookies();
-                console.log('✅ Cookies limpos');
-                
-                // Limpar storage local e session
-                if (this.page) {
-                    await this.page.evaluate(() => {
-                        localStorage.clear();
-                        sessionStorage.clear();
-                        // Limpar cache do service worker se existir
-                        if ('serviceWorker' in navigator) {
-                            navigator.serviceWorker.getRegistrations().then(registrations => {
-                                registrations.forEach(registration => registration.unregister());
-                            });
-                        }
-                    });
-                    console.log('✅ Storage local e session limpos');
-                }
-            } catch (error) {
-                console.log('⚠️ Erro na limpeza:', error.message);
-            }
-        }
-    }
-
-    async reiniciarNavegador() {
-        console.log('🔄 Reiniciando navegador...');
-        
-        // Fechar navegador atual
+    async close() {
         if (this.browser) {
             await this.browser.close();
-        }
-        
-        // Aguardar um pouco
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Reiniciar
-        await this.launch();
-        
-        console.log('✅ Navegador reiniciado');
-    }
-
-    async close() {
-        console.log('🔄 Fechando navegador e limpando recursos...');
-        
-        try {
-            // Limpar cache antes de fechar
-            await this.limparCache();
-            
-            // Fechar página
-            if (this.page) {
-                await this.page.close();
-            }
-            
-            // Fechar contexto
-            if (this.context) {
-                await this.context.close();
-            }
-            
-            // Fechar navegador
-            if (this.browser) {
-                await this.browser.close();
-            }
-            
-            console.log('✅ Navegador fechado e limpo');
-        } catch (error) {
-            console.log('⚠️ Erro ao fechar:', error.message);
         }
     }
 }
