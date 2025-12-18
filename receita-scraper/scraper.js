@@ -2,103 +2,6 @@ const { webkit } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
-// ============================================
-// PERSISTÊNCIA DE COOKIES
-// ============================================
-
-const COOKIES_FILE = path.join(__dirname, 'cookies_hcaptcha.json');
-
-// Função para salvar cookies após consulta bem-sucedida
-const saveCookies = async (context) => {
-    try {
-        const cookies = await context.cookies();
-        
-        // Filtra apenas cookies relevantes (hCaptcha e Receita Federal)
-        const relevantCookies = cookies.filter(cookie => 
-            cookie.domain.includes('hcaptcha.com') || 
-            cookie.domain.includes('receita.fazenda.gov.br') ||
-            cookie.domain.includes('.gov.br')
-        );
-        
-        if (relevantCookies.length > 0) {
-            // Adiciona timestamp para controle de expiração
-            const cookieData = {
-                savedAt: new Date().toISOString(),
-                cookies: relevantCookies
-            };
-            
-            fs.writeFileSync(COOKIES_FILE, JSON.stringify(cookieData, null, 2));
-            console.log(`🍪 Cookies salvos: ${relevantCookies.length} cookies armazenados`);
-            return true;
-        }
-        
-        console.log('⚠️ Nenhum cookie relevante para salvar');
-        return false;
-    } catch (error) {
-        console.error('❌ Erro ao salvar cookies:', error.message);
-        return false;
-    }
-};
-
-// Função para carregar cookies salvos
-const loadCookies = async (context) => {
-    try {
-        if (!fs.existsSync(COOKIES_FILE)) {
-            console.log('📭 Nenhum cookie salvo encontrado (primeira execução)');
-            return false;
-        }
-        
-        const cookieData = JSON.parse(fs.readFileSync(COOKIES_FILE, 'utf8'));
-        
-        // Verifica se os cookies não são muito antigos (máximo 24 horas)
-        const savedAt = new Date(cookieData.savedAt);
-        const hoursAgo = (Date.now() - savedAt.getTime()) / (1000 * 60 * 60);
-        
-        if (hoursAgo > 24) {
-            console.log(`⏰ Cookies expirados (${hoursAgo.toFixed(1)} horas atrás) - serão renovados`);
-            fs.unlinkSync(COOKIES_FILE);
-            return false;
-        }
-        
-        // Filtra cookies que ainda não expiraram
-        const now = Date.now() / 1000;
-        const validCookies = cookieData.cookies.filter(cookie => {
-            if (cookie.expires && cookie.expires > 0) {
-                return cookie.expires > now;
-            }
-            return true; // Session cookies são válidos
-        });
-        
-        if (validCookies.length > 0) {
-            await context.addCookies(validCookies);
-            console.log(`🍪 Cookies carregados: ${validCookies.length} cookies (salvos há ${hoursAgo.toFixed(1)} horas)`);
-            return true;
-        }
-        
-        console.log('⚠️ Todos os cookies expiraram');
-        return false;
-    } catch (error) {
-        console.error('❌ Erro ao carregar cookies:', error.message);
-        return false;
-    }
-};
-
-// Função para limpar cookies salvos (útil para debug)
-const clearSavedCookies = () => {
-    try {
-        if (fs.existsSync(COOKIES_FILE)) {
-            fs.unlinkSync(COOKIES_FILE);
-            console.log('🗑️ Cookies salvos removidos');
-            return true;
-        }
-        console.log('📭 Nenhum cookie para remover');
-        return false;
-    } catch (error) {
-        console.error('❌ Erro ao remover cookies:', error.message);
-        return false;
-    }
-};
-
 // Função para criar diretório de screenshots (do scraper.js)
 const setupScreenshotDir = () => {
     const dir = path.join(__dirname, 'screenshots', 'ultima_consulta');
@@ -179,12 +82,6 @@ class PlaywrightWebKitCPFConsultor {
             locale: 'pt-BR',
             timezoneId: 'America/Sao_Paulo'
         });
-
-        // 🍪 Carregar cookies salvos de sessões anteriores (aumenta confiança do hCaptcha)
-        const cookiesLoaded = await loadCookies(this.context);
-        if (cookiesLoaded) {
-            console.log('✅ Sessão anterior restaurada - maior chance de checkbox simples!');
-        }
 
         // Remove sinais de automação (do scraper.js)
         await this.context.addInitScript(() => {
@@ -609,9 +506,6 @@ class PlaywrightWebKitCPFConsultor {
             console.log('Consulta finalizada com sucesso');
             await takeScreenshot(this.page, '06_final_sucesso');
             
-            // 🍪 Salvar cookies após consulta bem-sucedida (para próximas execuções)
-            await saveCookies(this.context);
-            
             // Salvar dados da última consulta
             const resultadoCompleto = {
                 ...data,
@@ -867,56 +761,17 @@ class PlaywrightWebKitCPFConsultor {
 
 // Função principal
 async function main() {
-    const args = process.argv.slice(2);
-    
-    // Verificar se é para limpar cookies
-    if (args.includes('--clear-cookies')) {
-        console.log('🗑️ Limpando cookies salvos...');
-        clearSavedCookies();
-        console.log('✅ Cookies limpos! Execute novamente sem --clear-cookies para consultar.');
-        return;
-    }
-    
-    // Mostrar ajuda
-    if (args.includes('--help') || args.includes('-h')) {
-        console.log(`
-🔍 Consultor de CPF - Receita Federal
-
-USO:
-  node scraper.js <CPF> <DATA_NASCIMENTO> [opções]
-
-EXEMPLOS:
-  node scraper.js 11144477735 01/01/1990
-  node scraper.js 11144477735 01/01/1990 --visual
-  node scraper.js --clear-cookies
-
-OPÇÕES:
-  --visual          Mostra o navegador (útil para debug)
-  --clear-cookies   Limpa cookies salvos e sai
-  --help, -h        Mostra esta ajuda
-
-🍪 PERSISTÊNCIA DE COOKIES:
-  - Cookies são salvos automaticamente após consulta bem-sucedida
-  - Cookies salvos aumentam a chance de passar pelo captcha simples
-  - Cookies expiram após 24 horas
-  - Use --clear-cookies para forçar nova sessão
-        `);
-        return;
-    }
-    
     const consultor = new PlaywrightWebKitCPFConsultor();
     
     try {
         await consultor.launch();
         await consultor.navigateTo('https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp');
         
-        // Filtrar argumentos (remover flags)
-        const filteredArgs = args.filter(arg => !arg.startsWith('--'));
-        
         // Verificar se argumentos foram fornecidos para execução automática
-        if (filteredArgs.length >= 2) {
-            const cpf = filteredArgs[0];
-            const birthDate = filteredArgs[1];
+        const args = process.argv.slice(2);
+        if (args.length >= 2) {
+            const cpf = args[0];
+            const birthDate = args[1];
             
             console.log(`🚀 Executando consulta automática para CPF: ${cpf} e Data: ${birthDate}`);
             
@@ -999,10 +854,7 @@ module.exports = {
         } finally {
             await consultor.close();
         }
-    },
-    // Funções de gerenciamento de cookies
-    clearCookies: clearSavedCookies,
-    getCookiesPath: () => COOKIES_FILE,
+    }
 };
 
 // Executar se chamado diretamente
