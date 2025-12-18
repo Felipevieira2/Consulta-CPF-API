@@ -96,20 +96,20 @@ class PlaywrightWebKitCPFConsultor {
         this.page.setDefaultTimeout(20000);
 
         // Otimização: Reduzir recursos carregados de forma mais seletiva
-        await this.page.route('**/*', (route) => {
-            const resourceType = route.request().resourceType();
-            const url = route.request().url();
+        // await this.page.route('**/*', (route) => {
+        //     const resourceType = route.request().resourceType();
+        //     const url = route.request().url();
             
-            // Bloquear apenas recursos realmente desnecessários
-            if (['image', 'media', 'websocket'].includes(resourceType) ||
-                url.includes('analytics') || url.includes('tracking') || 
-                url.includes('ads') || url.includes('facebook') || 
-                url.includes('google-analytics')) {
-                route.abort();
-            } else {
-                route.continue();
-            }
-        });
+        //     // Bloquear apenas recursos realmente desnecessários
+        //     if (['image', 'media', 'websocket'].includes(resourceType) ||
+        //         url.includes('analytics') || url.includes('tracking') || 
+        //         url.includes('ads') || url.includes('facebook') || 
+        //         url.includes('google-analytics')) {
+        //         route.abort();
+        //     } else {
+        //         route.continue();
+        //     }
+        // });
         
         console.log('✅ WebKit iniciado para consulta CPF!');
         return this.page;
@@ -125,81 +125,367 @@ class PlaywrightWebKitCPFConsultor {
         }
     }
 
+    // Função principal para consultar CPF (TODA a lógica do scraper.js)
     async consultarCPF(cpf, birthDate) {
         console.log(`🔍 Iniciando consulta para CPF: ${cpf}`);
-    
+        // Aguardar um pouco antes de acessar para evitar rate limiting
+        console.log('⏳ Aguardando 3 segundos para evitar bloqueios...');
+        await this.page.waitForTimeout(3000);
         if (!cpf || !birthDate) {
-            return { erro: true, mensagem: !cpf ? 'CPF não informado' : 'Data de nascimento não informada' };
+            return {
+                erro: true,
+                mensagem: !cpf ? 'CPF não informado' : 'Data de nascimento não informada'
+            };
         }
-    
+
+        // Formatar CPF (remover caracteres não numéricos) - do scraper.js
         cpf = cpf.replace(/[^0-9]/g, '');
-    
+
+        // Validar formato da data de nascimento - do scraper.js
         if (!/^\d{2}\/\d{2}\/\d{4}$/.test(birthDate)) {
-            if (/^\d{8}$/.test(birthDate)) {
-                birthDate = `${birthDate.substr(0,2)}/${birthDate.substr(2,2)}/${birthDate.substr(4,4)}`;
-            } else {
-                return { erro: true, mensagem: 'Formato de data inválido. Use dd/mm/aaaa' };
+            try {
+                // Tentar formatar se estiver em outro formato (ddmmaaaa)
+                if (/^\d{8}$/.test(birthDate)) {
+                    birthDate = `${birthDate.substr(0, 2)}/${birthDate.substr(2, 2)}/${birthDate.substr(4, 4)}`;
+                } else {
+                    return {
+                        erro: true,
+                        mensagem: 'Formato de data inválido. Use o formato dd/mm/aaaa'
+                    };
+                }
+            } catch (e) {
+                return {
+                    erro: true,
+                    mensagem: 'Formato de data inválido. Use o formato dd/mm/aaaa'
+                };
             }
         }
-    
+
         try {
-            await this.page.goto('https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp', { waitUntil: 'domcontentloaded' });
-    
-            // Stealth extra: esconder mais traços de automação
-            await this.page.addInitScript(() => {
-                // Já tinha webdriver, adicionar mais
-                Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] }); // fake plugins
-                Object.defineProperty(navigator, 'languages', { get: () => ['pt-BR', 'pt', 'en-US', 'en'] });
-                window.chrome = { runtime: {}, app: {}, webstore: {} }; // fake chrome obj (alguns sites checam)
-                delete navigator.__proto__.webdriver;
-            });
-    
-            await this.page.waitForSelector('#txtCPF', { timeout: 30000 });
-            await takeScreenshot(this.page, '01_pagina_inicial');
-    
-            // Preenchimento mais humano: focus + type (digitação simulada)
+            console.log('Acessando site da Receita Federal...');
+            
+            // Tentar diferentes estratégias de carregamento
+            let carregouSite = false;
+            const tentativas = [
+                { waitUntil: 'domcontentloaded', timeout: 15000 },
+                { waitUntil: 'load', timeout: 20000 },
+                { waitUntil: 'networkidle', timeout: 30000 }
+            ];
+            
+            for (const config of tentativas) {
+                try {
+                    await this.page.goto('https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp', config);
+                    console.log(`✅ Site carregado com estratégia: ${config.waitUntil}`);
+                    carregouSite = true;
+                    break;
+                } catch (error) {
+                    console.log(`⚠️ Falha com ${config.waitUntil}: ${error.message}`);
+                    if (config === tentativas[tentativas.length - 1]) {
+                        throw error;
+                    }
+                }
+            }
+            
+            if (!carregouSite) {
+                throw new Error('Não foi possível carregar o site da Receita Federal');
+            }
+            // Aguardar carregamento do formulário
+            await this.page.waitForSelector('#txtCPF');
+            await takeScreenshot(this.page, '01_inicial');
+
+            // Preenchimento otimizado (do scraper.js)
+            console.log('Preenchendo CPF...');
             await this.page.click('#txtCPF');
             await this.page.type('#txtCPF', cpf, { delay: Math.random() * 100 + 50 }); // delay randômico ~50-150ms por tecla
     
             await this.page.click('#txtDataNascimento');
             await this.page.type('#txtDataNascimento', birthDate, { delay: Math.random() * 100 + 50 });
-    
-            // Scroll leve para simular usuário real
-            await this.page.evaluate(() => window.scrollBy(0, 200));
-    
-            await this.page.waitForTimeout(Math.random() * 1000 + 500); // delay humano
-    
-            await takeScreenshot(this.page, '02_preenchido');
-    
-            // Clique no botão Consultar (mais natural com hover primeiro)
-            await this.page.hover('input[value="Consultar"]');
-            await this.page.click('input[value="Consultar"]');
-    
-            // Aguardar resultado (mais robusto)
-            await Promise.race([
-                this.page.waitForNavigation({ waitUntil: 'networkidle', timeout: 30000 }),
-                this.page.waitForSelector('.clConteudoDados', { timeout: 30000 })
-            ]);
-    
-            await takeScreenshot(this.page, '03_resultado');
-    
-            // Tratamento de erros (mantido, mas simplificado)
-            const erroDivergenciaData = await this.page.evaluate(() => document.body.innerText.includes('Data de nascimento informada está divergente'));
-            if (erroDivergenciaData) return { erro: true, mensagem: 'Data de nascimento divergente', type: 'data_divergente' };
-    
-            const erroCpfIncorreto = await this.page.evaluate(() => document.body.innerText.includes('CPF incorreto'));
-            if (erroCpfIncorreto) return { erro: true, mensagem: 'CPF incorreto', type: 'cpf_incorreto' };
-    
-            const cpfNaoExiste = await this.page.evaluate(() => document.body.innerText.includes('CPF não encontrado'));
-            if (cpfNaoExiste) return { erro: true, mensagem: 'CPF não encontrado', type: 'cpf_nao_encontrado' };
-    
-            // Extração de dados (mantida)
+            await takeScreenshot(this.page, '02_apos_preenchimento');
+
+            // Aguardar carregamento do captcha
+            console.log('Aguardando carregamento do captcha...');
+            await this.page.waitForSelector('iframe[title="Widget contendo caixa de seleção para desafio de segurança hCaptcha"]');
+            await takeScreenshot(this.page, '03_antes_captcha');
+
+            // Lógica otimizada de detecção do hCaptcha
+            console.log('🔍 Detectando hCaptcha...');
+            try {
+                // Seletores principais do hCaptcha
+                const hcaptchaSelectors = [
+                    'iframe[src*="hcaptcha.com"]',
+                    'iframe[title*="hCaptcha"]',
+                    '.h-captcha iframe'
+                ];
+
+                let hcaptchaIframeHandle = null;
+
+                // Buscar iframe do hCaptcha
+                for (const selector of hcaptchaSelectors) {
+                    try {
+                        await this.page.waitForSelector(selector, { timeout: 4000 });
+                        const iframe = await this.page.$(selector);
+                        if (iframe) {
+                            const src = await iframe.getAttribute('src');
+                            if (src && src.includes('hcaptcha.com')) {
+                                hcaptchaIframeHandle = iframe;
+                                console.log(`✅ hCaptcha encontrado: ${selector}`);
+                                break;
+                            }
+                        }
+                    } catch (e) {
+                        continue;
+                    }
+                }
+
+                if (hcaptchaIframeHandle) {
+                    console.log('🎯 Tentando interagir com hCaptcha...');
+                    
+                    await this.page.waitForTimeout(1000);
+                    
+                    try {
+                        const frameHandle = await hcaptchaIframeHandle.contentFrame();
+                        if (frameHandle) {
+                            await frameHandle.waitForSelector('#checkbox', { timeout: 5000 });
+                            
+                            const isChecked = await frameHandle.evaluate(() => {
+                                const checkbox = document.querySelector('#checkbox');
+                                return checkbox && (checkbox.checked || checkbox.getAttribute('aria-checked') === 'true');
+                            });
+                            
+                            if (!isChecked) {
+                                await frameHandle.click('#checkbox');
+                                console.log('✅ Checkbox clicado');
+
+                                await this.page.waitForTimeout(3000);
+                            } else {
+                                console.log('✅ Checkbox já marcado');
+                            }
+
+                            //como checar se o checkbox foi marcado?
+                            const isChecked2 = await frameHandle.evaluate(() => {
+                                const checkbox = document.querySelector('#checkbox');
+                                return checkbox && (checkbox.checked || checkbox.getAttribute('aria-checked') === 'true');
+                            });
+
+                            // Aguardar até que o checkbox esteja realmente marcado
+                            let checkboxMarked = isChecked2;
+                            let tentativas = 0;
+                            const maxTentativas = 5; // máximo 30 segundos
+                            
+                            while (!checkboxMarked && tentativas < maxTentativas) {
+                                console.log(`⏳ Aguardando checkbox ser marcado... (tentativa ${tentativas + 1}/${maxTentativas})`);
+                                await this.page.waitForTimeout(1000); // aguarda 1 segundo
+                                await takeScreenshot(this.page, '04_depois_do_clique_captcha_tentativa');
+                                // Verifica novamente se o checkbox está marcado
+                                checkboxMarked = await frameHandle.evaluate(() => {
+                                    const checkbox = document.querySelector('#checkbox');
+                                    return checkbox && (checkbox.checked || checkbox.getAttribute('aria-checked') === 'true');
+                                });
+                                
+                                tentativas++;
+                            }
+                            
+                            if (checkboxMarked) {
+                                console.log('✅ Checkbox marcado com sucesso');
+                            } else {
+                                console.log('❌ Timeout: Checkbox não foi marcado após 30 segundos');
+                            }
+                        }
+                    } catch (frameError) {
+                        console.log('⚠️ Erro na interação com hCaptcha:', frameError.message);
+                    }
+                } else {
+                    console.log('⚠️ hCaptcha não encontrado');
+                }
+                await this.page.waitForTimeout(500);
+                await takeScreenshot(this.page, '04_depois_do_clique_captcha');
+            } catch (error) {
+                console.error('❌ Erro na detecção avançada do hCaptcha:', error);
+                await takeScreenshot(this.page, '04_erro_deteccao_hcaptcha');
+            }
+
+            // Aguardar e verificar o botão Consultar (do scraper.js)
+            console.log('Aguardando botão Consultar...');
+            await this.page.waitForSelector('input[value="Consultar"]', {
+                timeout: 30000
+            });
+
+
+
+            // Aguardar um pouco mais para garantir que tudo está pronto
+            await this.page.waitForTimeout(500);
+
+            // Clicar no botão Consultar com melhor tratamento (do scraper.js)
+            console.log('Clicando em Consultar...');
+            
+            try {
+
+                //espere ate o botao estar habilitado
+              
+                // Tentar clique simples primeiro
+                await this.page.click('input[value="Consultar"]');
+                console.log('✅ Clique realizado com sucesso');
+                
+                // Aguardar navegação ou mudança na página
+                console.log('Aguardando resposta da consulta...');
+                
+                // Aguardar por qualquer mudança na página (navegação ou conteúdo)
+                await Promise.race([
+                    // Opção 1: Navegação completa
+                    this.page.waitForNavigation({ 
+                        waitUntil: 'networkidle', 
+                        timeout: 30000 
+                    }).then(() => 'navigation'),
+                    
+                    // Opção 2: Verificar se já estamos na página de resultado
+                    this.page.waitForSelector('.clConteudoDados', { timeout: 5000 })
+                        .then(() => 'resultado_encontrado')
+                        .catch(() => null),
+                    
+                    // Opção 3: Mudança no conteúdo (com verificação de segurança)
+                    this.page.waitForFunction(
+                        () => {
+                            // Verificar se document.body existe antes de acessar innerText
+                            if (!document.body) return false;
+                            
+                            try {
+                                const body = document.body.innerText || '';
+                                const html = document.body.innerHTML || '';
+                                
+                                // Verificar se já temos o resultado na página
+                                return html.includes('Situação Cadastral') || 
+                                       html.includes('Comprovante de Situação Cadastral no CPF') ||
+                                       body.includes('Data de nascimento informada') ||
+                                       body.includes('CPF incorreto') ||
+                                       body.includes('CPF não encontrado') ||
+                                       body.includes('erro') ||
+                                       body.includes('Erro') ||
+                                       // Verificar se já temos dados específicos do resultado
+                                       html.includes('clConteudoDados') ||
+                                       html.includes('N<sup>o</sup> do CPF:');
+                            } catch (e) {
+                                return false;
+                            }
+                        },
+                        { timeout: 30000, polling: 500 }
+                    ).then(() => 'content_change'),
+                    
+                    // Opção 4: Timeout de segurança
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Timeout na resposta')), 30000)
+                    )
+                ]).catch(async (error) => {
+                    // Se der erro, verificar se já temos o resultado na página
+                    try {
+                        const temResultado = await this.page.evaluate(() => {
+                            if (!document.body) return false;
+                            const html = document.body.innerHTML || '';
+                            return html.includes('Situação Cadastral') || 
+                                   html.includes('clConteudoDados') ||
+                                   html.includes('N<sup>o</sup> do CPF:');
+                        });
+                        
+                        if (temResultado) {
+                            console.log('✅ Resultado já encontrado na página');
+                            return 'resultado_ja_presente';
+                        }
+                    } catch (e) {
+                        console.log('⚠️ Erro ao verificar resultado:', e.message);
+                    }
+                    
+                    throw error;
+                });
+                
+                console.log('✅ Resposta recebida da consulta');
+                
+            } catch (clickError) {
+                console.log('❌ Erro no clique simples, tentando clique alternativo... message: ' + clickError.message);
+           
+               
+                
+               
+               
+            }
+
+            // Verificar se há alertas (do scraper.js)
+            try {
+                await this.page.waitForTimeout(1000);
+                const alertMessage = await this.page.evaluate(() => {
+                    return window.alert ? window.alert.toString() : null;
+                });
+
+                if (alertMessage) {
+                    console.log(`Alerta detectado: ${alertMessage}`);
+                }
+            } catch (e) {
+                console.log('Nenhum alerta detectado');
+            }
+
+            await takeScreenshot(this.page, '05_resultado');
+
+            console.log('Verificando se há mensagem de erro sobre data de nascimento divergente...');
+            // TODOS os tratamentos de erro do scraper.js
+            const temErroDivergencia = await this.page.evaluate(() => {
+                const conteudo = document.body.innerText;
+                return conteudo.includes('Data de nascimento informada') &&
+                    conteudo.includes('está divergente') &&
+                    conteudo.includes('Retorne a página anterior');
+            });
+
+            if (temErroDivergencia) {
+                console.log('Erro detectado: Data de nascimento divergente');
+                return {
+                  error: true,
+                  message: 'Data de nascimento informada está divergente da constante na base de dados.',
+                  type: 'data_divergente'
+                };
+            }
+
+            const temErroDivergenciaCpf = await this.page.evaluate(() => {
+                const conteudo = document.body.innerText;
+                return conteudo.includes('CPF incorreto');
+            });
+
+            if (temErroDivergenciaCpf) {
+                console.log('Erro detectado: CPF está com divergente');
+                return {
+                    error: true,
+                    message: 'CPF informado está incorreto',
+                    type: 'cpf_incorreto'
+                };
+            }
+
+            //cpf nao existe 
+            const cpfNaoExiste = await this.page.evaluate(() => {    
+                const conteudo = document.body.innerText;
+                return conteudo.includes('CPF não encontrado');
+            });
+
+            if (cpfNaoExiste) {
+                return {    
+                    error: true,
+                    message: 'CPF não encontrado na base de dados da Receita Federal',
+                    type: 'cpf_nao_encontrado'
+                };
+            }
+
+            // TODA a lógica de extração de dados do scraper.js
             const data = await this.page.evaluate(() => {
+                // Usar querySelector em vez de regex quando possível - mais rápido
+                const getTextContent = (selector) => {
+                    const el = document.querySelector(selector);
+                    return el ? el.textContent.trim() : null;
+                };
+                
+                // Usar regex apenas quando necessário
+                const html = document.body.innerHTML;
                 const extract = (pattern) => {
-                    const match = document.body.innerHTML.match(pattern);
+                    const match = html.match(pattern);
                     return match ? match[1].trim() : null;
                 };
+                
                 return {
+                    // Dados extraídos de forma mais eficiente
                     cpf: extract(/N<sup>o<\/sup> do CPF:\s*<b>(.*?)<\/b>/),
                     nome: extract(/Nome:\s*<b>(.*?)<\/b>/),
                     data_nascimento: extract(/Data de Nascimento:\s*<b>(.*?)<\/b>/),
@@ -211,14 +497,45 @@ class PlaywrightWebKitCPFConsultor {
                     codigo_controle: extract(/Código de controle do comprovante:\s*<b>(.*?)<\/b>/)
                 };
             });
-    
-            await takeScreenshot(this.page, '04_sucesso');
+
+            console.log('Consulta finalizada com sucesso');
+            await takeScreenshot(this.page, '06_final_sucesso');
+            
+            // Salvar dados da última consulta
+            const resultadoCompleto = {
+                ...data,
+                cpf_consultado: cpf,
+                data_nascimento_consultada: birthDate,
+                timestamp: new Date().toISOString(),
+                sucesso: true
+            };
+            
+            const resultadoPath = path.join(__dirname, 'screenshots', 'ultima_consulta', 'resultado.json');
+            fs.writeFileSync(resultadoPath, JSON.stringify(resultadoCompleto, null, 2));
+            
             return data;
-    
+
         } catch (error) {
-            console.error('Erro na consulta:', error.message);
-            await takeScreenshot(this.page, '99_erro');
-            return { erro: true, mensagem: `Erro inesperado: ${error.message}` };
+            console.error('Erro durante a consulta:', error);
+            await takeScreenshot(this.page, '07_erro');
+            
+            // Salvar dados do erro
+            const resultadoErro = {
+                cpf_consultado: cpf,
+                data_nascimento_consultada: birthDate,
+                timestamp: new Date().toISOString(),
+                sucesso: false,
+                erro: true,
+                mensagem: `Erro ao consultar CPF: ${error.message}`
+            };
+            
+            const resultadoPath = path.join(__dirname, 'screenshots', 'ultima_consulta', 'resultado.json');
+            fs.writeFileSync(resultadoPath, JSON.stringify(resultadoErro, null, 2));
+            
+            return {
+                erro: true,
+                mensagem: `Erro ao consultar CPF: ${error.message}`
+            };
         }
     }
 
