@@ -75,7 +75,7 @@ class CpfController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => "sem saldo"
-            ], 400);
+            ], 500);
         }
         // Consulta os dados
         $result = $this->cpfService->getDadosCpf($cpf, $birthDate);
@@ -88,7 +88,7 @@ class CpfController extends Controller
         if ($result->hasError()) {
             return response()->json([
                 'error' => $result->error
-            ], 400);
+            ], 500);
         }
 
         $apiKey = ApiKey::where('key', $request->api_token)->first();
