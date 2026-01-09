@@ -33,11 +33,17 @@ class ReceitaFederalService
             Log::info('Resposta da Receita Federal: ' . json_encode($responseData));
            
             if($response->getStatusCode() != 200){
-                return ['error' => 'Erro ao consultar Receita Federal'];
+                return [
+                    
+                    'error' => 'Erro ao consultar Receita Federal'
+                ];
             }
 
             if(isset($responseData['error'])){
-                return ['error' => $responseData["message"]];
+                return [
+                    'error' => $responseData["message"],
+                    'type' => $responseData["type"]
+                ];
             }
             
             return $responseData;

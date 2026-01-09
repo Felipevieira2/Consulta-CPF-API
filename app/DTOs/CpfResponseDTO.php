@@ -15,6 +15,7 @@ class CpfResponseDTO
         public readonly string $data_emissao,
         public readonly string $codigo_controle,
         public readonly ?string $error = null,
+        public readonly ?string $type = null,
     ) {
     }
 
@@ -31,6 +32,7 @@ class CpfResponseDTO
             data_emissao: $data['data_emissao'] ?? '',
             codigo_controle: $data['codigo_controle'] ?? '',
             error: $data['error'] ?? null,
+            type: $data['type'] ?? null,
         );
     }
 
@@ -47,6 +49,7 @@ class CpfResponseDTO
             'data_emissao' => $this->data_emissao,
             'codigo_controle' => $this->codigo_controle,
             'error' => $this->error,
+            'type' => $this->type,
         ];
     }
 

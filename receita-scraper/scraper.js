@@ -133,7 +133,7 @@ class PlaywrightWebKitCPFConsultor {
         await this.page.waitForTimeout(3000);
         if (!cpf || !birthDate) {
             return {
-                erro: true,
+                error: true,
                 mensagem: !cpf ? 'CPF não informado' : 'Data de nascimento não informada'
             };
         }
@@ -149,13 +149,13 @@ class PlaywrightWebKitCPFConsultor {
                     birthDate = `${birthDate.substr(0, 2)}/${birthDate.substr(2, 2)}/${birthDate.substr(4, 4)}`;
                 } else {
                     return {
-                        erro: true,
+                        error: true,
                         mensagem: 'Formato de data inválido. Use o formato dd/mm/aaaa'
                     };
                 }
             } catch (e) {
                 return {
-                    erro: true,
+                    error: true,
                     mensagem: 'Formato de data inválido. Use o formato dd/mm/aaaa'
                 };
             }
@@ -525,7 +525,7 @@ class PlaywrightWebKitCPFConsultor {
                 data_nascimento_consultada: birthDate,
                 timestamp: new Date().toISOString(),
                 sucesso: false,
-                erro: true,
+                error: true,
                 mensagem: `Erro ao consultar CPF: ${error.message}`
             };
             
@@ -533,7 +533,7 @@ class PlaywrightWebKitCPFConsultor {
             fs.writeFileSync(resultadoPath, JSON.stringify(resultadoErro, null, 2));
             
             return {
-                erro: true,
+                error: true,
                 mensagem: `Erro ao consultar CPF: ${error.message}`
             };
         }

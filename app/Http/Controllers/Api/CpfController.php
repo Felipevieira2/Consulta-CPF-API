@@ -45,7 +45,7 @@ class CpfController extends Controller
                 'success' => false,
                 'message' => __('validation.failed'),
                 'errors' => $validator->errors(),
-            ], 422);
+            ], 400);
         }
 
         $cpf = $request->input('cpf');
@@ -53,10 +53,11 @@ class CpfController extends Controller
 
         // Valida o CPF
         if (!$this->cpfService->validarCpf($cpf)) {
+            
             return response()->json([
                 'success' => false,
                 'message' => __('validation.custom.cpf.invalid'),
-            ], 422);
+            ], 400);
         }
 
 
@@ -86,8 +87,9 @@ class CpfController extends Controller
         }
 
         if ($result->hasError()) {
+            $result->type ? $type = $result->type : $type = 'default';
 
-            switch($result->type){
+            switch($type){
                 case 'cpf_incorreto':
                     return response()->json([
                         'success' => false,
