@@ -86,9 +86,30 @@ class CpfController extends Controller
         }
 
         if ($result->hasError()) {
-            return response()->json([
-                'error' => $result->error
-            ], 500);
+
+            switch($result->type){
+                case 'cpf_incorreto':
+                    return response()->json([
+                        'success' => false,
+                        'message' => $result->error
+                    ], 400);
+                case 'data_divergente':
+                    return response()->json([
+                        'success' => false,
+                        'message' => $result->error
+                    ], 400);
+                case 'cpf_nao_encontrado':
+                    return response()->json([
+                        'success' => false,
+                        'message' => $result->error
+                    ], 400);
+                default:
+                    return response()->json([
+                        'success' => false,
+                        'message' => $result->error
+                    ], 500);
+            }
+          
         }
 
         $apiKey = ApiKey::where('key', $request->api_token)->first();
