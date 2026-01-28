@@ -34,3 +34,7 @@ echo "❌ TOR não iniciou no tempo esperado"
 echo "📋 Ver logs: cat /var/log/tor/tor.log"
 exit 1
 
+
+
+
+

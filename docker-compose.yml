@@ -1,4 +1,4 @@
-version: "3.7"
+version: "4.7"
 services:
   app:
     build:
@@ -18,7 +18,7 @@ services:
       - ./:/var/www
       - ./storage:/var/www/storage:delegated
     networks:
-      - consultacpf-network   
+      - consultacpf-network
   db:
     image: mariadb:10.4
     container_name: db-consultacpf
@@ -38,6 +38,7 @@ services:
       - 3432:3306
   nginx:
     image: nginx:alpine
+    #image: node:18-bullseye
     container_name: nginx-consultacpf
     restart: unless-stopped
     ports:
@@ -48,7 +49,8 @@ services:
     networks:
       - consultacpf-network
   receita-scraper:
-    image: buildkite/puppeteer:latest
+    #image: buildkite/puppeteer:latest
+    image: node:18-bullseye
     ports:
       - "3435:3000"
     volumes:

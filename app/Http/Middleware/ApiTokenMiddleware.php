@@ -74,7 +74,7 @@ class ApiTokenMiddleware
                 'token' => $tokenFromRequest ?? 'não fornecido',
                 'trace' => $e->getTraceAsString()
             ]);
-            
+         
             return response()->json([
                 'success' => false,
                 'error' => 'Erro ao processar autenticação',

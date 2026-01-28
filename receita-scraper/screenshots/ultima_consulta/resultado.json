@@ -1,0 +1,15 @@
+{
+  "cpf": null,
+  "nome": null,
+  "data_nascimento": null,
+  "situacao_cadastral": null,
+  "data_inscricao": null,
+  "digito_verificador": null,
+  "hora_emissao": null,
+  "data_emissao": null,
+  "codigo_controle": null,
+  "cpf_consultado": "45083784807",
+  "data_nascimento_consultada": "29/03/1995",
+  "timestamp": "2026-01-13T19:50:52.160Z",
+  "sucesso": true
+}

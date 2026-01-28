@@ -222,3 +222,7 @@ setInterval(() => {
     }
     console.log(`🧹 Limpeza automática: ${cache.size} entradas no cache`);
 }, 60 * 60 * 1000); // 1 hora
+
+
+
+
