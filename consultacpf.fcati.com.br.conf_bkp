@@ -1,0 +1,19 @@
+<VirtualHost *:80>
+    ServerName consultacpf.fcati.com.br
+    ServerAlias www.consultacpf.fcati.com.com.br
+    
+    ProxyRequests Off
+    ProxyPreserveHost On
+
+    <Proxy *>
+        Order deny,allow
+        Allow from all
+    </Proxy>
+
+    # Redirecionar todo tráfego para o container Docker
+    ProxyPass / http://localhost:3434/
+    ProxyPassReverse / http://localhost:343/
+
+    ErrorLog ${APACHE_LOG_DIR}/consultacpf.fcati.com.br.com_error.log
+    CustomLog ${APACHE_LOG_DIR}/consultacpf.fcati.com.br_access.log combined
+</VirtualHost>

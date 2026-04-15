@@ -1,4 +1,3 @@
-version: "3.7"
 services:
   app:
     build:
@@ -38,6 +37,7 @@ services:
       - 3432:3306
   nginx:
     image: nginx:alpine
+    #image: node:18-bullseye
     container_name: nginx-consultacpf
     restart: unless-stopped
     ports:
@@ -48,13 +48,25 @@ services:
     networks:
       - consultacpf-network
   receita-scraper:
-    image: buildkite/puppeteer:latest
+    #build:
+    #  context: ./receita-scraper   # 👈 aponta para a pasta com o Dockerfile
+    #  dockerfile: Dockerfile
+    container_name: consulta-cpf-api-receita-scraper
+    #image: node:18-bullseye   ## Original image 
+    image: consulta-cpf-api-receita-scraper_compilada:202603 ##Imagem já compilada em 2026-03
     ports:
       - "3435:3000"
+    cpuset: '6-7'
+    mem_limit: 2560m
+    mem_reservation: 512m
+    #pids_limit: 200
+    memswap_limit: 2g
+    environment:
+      DEBIAN_FRONTEND: noninteractive
     volumes:
       - ./receita-scraper:/app
     working_dir: /app
-    # command: sh -c "npm install && node server.js" #prod
+    #command: sh -c "npm install && node server.js" #prod
     command: sh -c "npm install && npm run dev" # Alterado para usar npm run dev
     networks:
       - consultacpf-network
