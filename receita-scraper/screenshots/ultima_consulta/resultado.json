@@ -1,8 +1,8 @@
 {
-  "cpf_consultado": "17484700789",
-  "data_nascimento_consultada": "08/02/1995",
-  "timestamp": "2026-04-15T14:52:30.091Z",
+  "cpf_consultado": "07541217123",
+  "data_nascimento_consultada": "25/02/2015",
+  "timestamp": "2026-04-15T14:54:57.720Z",
   "sucesso": false,
   "error": true,
-  "mensagem": "Erro ao consultar CPF: page.goto: Timeout 30000ms exceeded.\nCall log:\n  - navigating to \"https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp\", waiting until \"networkidle\"\n"
+  "mensagem": "Erro ao consultar CPF: page.goto: Navigation to \"https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp\" is interrupted by another navigation to \"https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp\"\nCall log:\n  - navigating to \"https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp\", waiting until \"networkidle\"\n"
 }
