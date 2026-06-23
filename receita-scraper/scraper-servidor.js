@@ -31,14 +31,45 @@ class ChromiumCPFConsultor {
         this.browser = null;
         this.context = null;
         this.page = null;
+        this.cookiesPath = path.join(__dirname, 'cookies_hcaptcha.json');
+    }
+    
+    // Sistema de cache de cookies (igual ao scraper.js)
+    async loadCookies() {
+        try {
+            if (fs.existsSync(this.cookiesPath)) {
+                const cookiesString = fs.readFileSync(this.cookiesPath, 'utf8');
+                const cookies = JSON.parse(cookiesString);
+                await this.context.addCookies(cookies);
+                console.log('✅ Cookies do hCaptcha carregados (melhor reputação!)');
+                return true;
+            }
+        } catch (error) {
+            console.log('⚠️ Não foi possível carregar cookies:', error.message);
+        }
+        return false;
+    }
+    
+    async saveCookies() {
+        try {
+            const cookies = await this.context.cookies();
+            const relevantCookies = cookies.filter(cookie => 
+                cookie.domain.includes('hcaptcha.com') || 
+                cookie.domain.includes('receita.fazenda.gov.br')
+            );
+            fs.writeFileSync(this.cookiesPath, JSON.stringify(relevantCookies, null, 2));
+            console.log('✅ Cookies salvos para próxima execução');
+        } catch (error) {
+            console.log('⚠️ Não foi possível salvar cookies:', error.message);
+        }
     }
 
     async launch() {
-        console.log('🚀 Iniciando Playwright com Chromium para servidor...');
+        console.log('🚀 Iniciando Playwright com Chromium ANTI-DETECÇÃO...');
         
-        // Configurações otimizadas para servidor
+        // Configurações MELHORADAS com anti-detecção
         this.browser = await chromium.launch({
-            headless: true, // Sempre headless no servidor
+            headless: true,
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
@@ -47,33 +78,128 @@ class ChromiumCPFConsultor {
                 '--no-first-run',
                 '--no-zygote',
                 '--disable-gpu',
-                '--disable-web-security',
-                '--disable-features=VizDisplayCompositor'
+                '--disable-blink-features=AutomationControlled',  // IMPORTANTE!
+                '--disable-features=IsolateOrigins,site-per-process',
+                '--lang=pt-BR'
             ]
         });
         
-        console.log('👻 Modo SERVIDOR ativado - Chromium headless');
+        console.log('👻 Modo SERVIDOR ativado - Chromium anti-detecção');
         
-        // Cria contexto otimizado para servidor
+        // User-Agents realistas e variados
+        const userAgents = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        ];
+        const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
+        
+        // Contexto com TODAS as melhorias anti-detecção
         this.context = await this.browser.newContext({
-            viewport: { width: 1366, height: 768 },
-            userAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            viewport: { 
+                width: 1366 + Math.floor(Math.random() * 300), 
+                height: 768 + Math.floor(Math.random() * 300) 
+            },
+            userAgent: randomUserAgent,
             ignoreHTTPSErrors: true,
             javaScriptEnabled: true,
             acceptDownloads: false,
             locale: 'pt-BR',
-            timezoneId: 'America/Sao_Paulo'
+            timezoneId: 'America/Sao_Paulo',
+            permissions: ['geolocation', 'notifications'],
+            deviceScaleFactor: 1,
+            isMobile: false,
+            hasTouch: false,
+            extraHTTPHeaders: {
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+                'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'DNT': '1',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+                'Sec-Fetch-Dest': 'document',
+                'Sec-Fetch-Mode': 'navigate',
+                'Sec-Fetch-Site': 'none',
+                'Cache-Control': 'max-age=0'
+            }
         });
 
-        // Remove sinais de automação
+        // TÉCNICAS AVANÇADAS ANTI-DETECÇÃO (iguais ao scraper.js)
         await this.context.addInitScript(() => {
             Object.defineProperty(navigator, 'webdriver', {
                 get: () => undefined,
             });
             delete navigator.__proto__.webdriver;
+            
+            Object.defineProperty(navigator, 'plugins', {
+                get: () => [
+                    {
+                        0: {type: "application/x-google-chrome-pdf", suffixes: "pdf", description: "Portable Document Format"},
+                        description: "Portable Document Format",
+                        filename: "internal-pdf-viewer",
+                        length: 1,
+                        name: "Chrome PDF Plugin"
+                    },
+                    {
+                        0: {type: "application/pdf", suffixes: "pdf", description: ""},
+                        description: "",
+                        filename: "mhjfbmdgcfjbbpaeojofohoefgiehjai",
+                        length: 1,
+                        name: "Chrome PDF Viewer"
+                    }
+                ]
+            });
+            
+            Object.defineProperty(navigator, 'languages', {
+                get: () => ['pt-BR', 'pt', 'en-US', 'en']
+            });
+            
+            Object.defineProperty(navigator, 'hardwareConcurrency', {
+                get: () => 8
+            });
+            
+            Object.defineProperty(navigator, 'deviceMemory', {
+                get: () => 8
+            });
+            
+            const originalQuery = window.navigator.permissions.query;
+            window.navigator.permissions.query = (parameters) => (
+                parameters.name === 'notifications' ?
+                    Promise.resolve({ state: Notification.permission }) :
+                    originalQuery(parameters)
+            );
+            
+            if (!window.chrome) {
+                window.chrome = {};
+            }
+            window.chrome.runtime = {
+                connect: () => {},
+                sendMessage: () => {}
+            };
+            
+            Object.defineProperty(navigator, 'connection', {
+                get: () => ({
+                    effectiveType: '4g',
+                    rtt: 50,
+                    downlink: 10,
+                    saveData: false
+                })
+            });
+            
+            const originalToString = Function.prototype.toString;
+            Function.prototype.toString = function() {
+                if (this === navigator.webdriver) {
+                    return 'function webdriver() { [native code] }';
+                }
+                return originalToString.apply(this, arguments);
+            };
         });
 
         this.page = await this.context.newPage();
+        
+        // CARREGAR COOKIES SALVOS
+        await this.loadCookies();
         
         // Configurar timeouts para servidor
         this.page.setDefaultNavigationTimeout(60000);
@@ -463,6 +589,9 @@ class ChromiumCPFConsultor {
             const resultadoPath = path.join(__dirname, 'screenshots', 'ultima_consulta', 'resultado.json');
             fs.writeFileSync(resultadoPath, JSON.stringify(resultadoCompleto, null, 2));
             
+            // SALVAR COOKIES para próxima execução
+            await this.saveCookies();
+            
             return data;
 
         } catch (error) {
@@ -481,6 +610,13 @@ class ChromiumCPFConsultor {
             
             const resultadoPath = path.join(__dirname, 'screenshots', 'ultima_consulta', 'resultado.json');
             fs.writeFileSync(resultadoPath, JSON.stringify(resultadoErro, null, 2));
+            
+            // Tentar salvar cookies mesmo em caso de erro
+            try {
+                await this.saveCookies();
+            } catch (e) {
+                console.log('⚠️ Não foi possível salvar cookies após erro');
+            }
             
             return {
                 erro: true,

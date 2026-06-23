@@ -22,6 +22,25 @@ RUN apk add --no-cache \
     npm \
     bash
 
+
+RUN apk add --no-cache \
+    libzip-dev \
+    zip \
+    unzip \
+    oniguruma-dev \
+    icu-dev \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev
+
+RUN docker-php-ext-install \
+    zip \
+    pdo \
+    pdo_mysql \
+    mbstring \
+    intl \
+    gd
+
 # Instalar extensões PHP
 RUN docker-php-ext-install \
     pdo_mysql \

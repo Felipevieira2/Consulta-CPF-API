@@ -1,8 +1,15 @@
 {
-  "cpf_consultado": "07541217123",
-  "data_nascimento_consultada": "25/02/2015",
-  "timestamp": "2026-04-15T14:54:57.720Z",
-  "sucesso": false,
-  "error": true,
-  "mensagem": "Erro ao consultar CPF: page.goto: Navigation to \"https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp\" is interrupted by another navigation to \"https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp\"\nCall log:\n  - navigating to \"https://servicos.receita.fazenda.gov.br/servicos/cpf/consultasituacao/consultapublica.asp\", waiting until \"networkidle\"\n"
+  "cpf": null,
+  "nome": null,
+  "data_nascimento": null,
+  "situacao_cadastral": null,
+  "data_inscricao": null,
+  "digito_verificador": null,
+  "hora_emissao": null,
+  "data_emissao": null,
+  "codigo_controle": null,
+  "cpf_consultado": "15173207710",
+  "data_nascimento_consultada": "17/01/1995",
+  "timestamp": "2026-06-23T12:20:46.481Z",
+  "sucesso": true
 }

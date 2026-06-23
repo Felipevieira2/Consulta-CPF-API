@@ -20,60 +20,27 @@ const setupScreenshotDir = () => {
     return dir;
 };
 
-// Função para capturar screenshots (do scraper.js) - MELHORADA
+// Função para capturar screenshots (do scraper.js)
 const takeScreenshot = async (page, name) => {
     try {
-        console.log(`📸 Tentando capturar screenshot: ${name}...`);
-        
         const dir = path.join(__dirname, 'screenshots', 'ultima_consulta');
         if (!fs.existsSync(dir)) {
-            console.log(`📁 Criando diretório: ${dir}`);
             fs.mkdirSync(dir, { recursive: true });
         }
         
         const filename = `${name}.png`;
         const filepath = path.join(dir, filename);
         
-        // Aguardar um pouco para garantir que a página está estável
-        await page.waitForTimeout(500);
+        await page.screenshot({
+            path: filepath,
+            fullPage: true
+        });
         
-        // Tentar capturar com timeout
-        await Promise.race([
-            page.screenshot({
-                path: filepath,
-                fullPage: true,
-                timeout: 10000 // 10 segundos de timeout
-            }),
-            new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Screenshot timeout')), 12000)
-            )
-        ]);
-        
-        // Verificar se o arquivo foi criado
-        if (fs.existsSync(filepath)) {
-            const stats = fs.statSync(filepath);
-            console.log(`✅ Screenshot salvo com sucesso: ${filename} (${(stats.size / 1024).toFixed(2)} KB)`);
-            return filepath;
-        } else {
-            console.log(`⚠️ Screenshot não foi criado: ${filename}`);
-            return null;
-        }
+        console.log(`📸 Screenshot salvo: ${filename}`);
+        return filepath;
     } catch (error) {
-        console.log(`❌ ERRO ao capturar screenshot ${name}:`, error.message);
-        console.log(`   Stack: ${error.stack}`);
-        
-        // Tentar captura simples como fallback
-        try {
-            console.log(`🔄 Tentando captura simples...`);
-            const dir = path.join(__dirname, 'screenshots', 'ultima_consulta');
-            const filepath = path.join(dir, `${name}.png`);
-            await page.screenshot({ path: filepath });
-            console.log(`✅ Captura simples funcionou: ${name}`);
-            return filepath;
-        } catch (fallbackError) {
-            console.log(`❌ Captura simples também falhou: ${fallbackError.message}`);
-            return null;
-        }
+        console.log(`❌ Erro ao capturar screenshot ${name}:`, error.message);
+        return null;
     }
 };
 
@@ -83,39 +50,6 @@ class PlaywrightWebKitCPFConsultor {
         this.context = null;
         this.page = null;
         this.screenshotDir = setupScreenshotDir();
-        this.cookiesPath = path.join(__dirname, 'cookies_hcaptcha.json');
-    }
-    
-    // NOVA FUNÇÃO: Carregar cookies salvos (diminui MUITO a detecção)
-    async loadCookies() {
-        try {
-            if (fs.existsSync(this.cookiesPath)) {
-                const cookiesString = fs.readFileSync(this.cookiesPath, 'utf8');
-                const cookies = JSON.parse(cookiesString);
-                await this.context.addCookies(cookies);
-                console.log('✅ Cookies do hCaptcha carregados (melhor reputação!)');
-                return true;
-            }
-        } catch (error) {
-            console.log('⚠️ Não foi possível carregar cookies:', error.message);
-        }
-        return false;
-    }
-    
-    // NOVA FUNÇÃO: Salvar cookies para próxima execução
-    async saveCookies() {
-        try {
-            const cookies = await this.context.cookies();
-            // Filtrar apenas cookies relevantes do hCaptcha e Receita
-            const relevantCookies = cookies.filter(cookie => 
-                cookie.domain.includes('hcaptcha.com') || 
-                cookie.domain.includes('receita.fazenda.gov.br')
-            );
-            fs.writeFileSync(this.cookiesPath, JSON.stringify(relevantCookies, null, 2));
-            console.log('✅ Cookies salvos para próxima execução');
-        } catch (error) {
-            console.log('⚠️ Não foi possível salvar cookies:', error.message);
-        }
     }
 
     async launch() {
@@ -138,154 +72,46 @@ class PlaywrightWebKitCPFConsultor {
             console.log('👻 Modo HEADLESS ativado - navegador oculto');
         }
         
-        // User-Agents realistas e variados (rotação)
-        const userAgents = [
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Safari/605.1.15',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3 Safari/605.1.15',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15',
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Safari/605.1.15'
-        ];
-        const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
-        
-        // Cria contexto com configurações otimizadas e anti-detecção
+        // Cria contexto com configurações otimizadas
         this.context = await this.browser.newContext({
-            viewport: { 
-                width: 1366 + Math.floor(Math.random() * 300), 
-                height: 768 + Math.floor(Math.random() * 300) 
-            },
-            userAgent: randomUserAgent,
+            viewport: { width: 1366, height: 768 },
+            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
             ignoreHTTPSErrors: true,
             javaScriptEnabled: true,
             acceptDownloads: false,
             locale: 'pt-BR',
-            timezoneId: 'America/Sao_Paulo',
-            // Adicionar permissões realistas
-            permissions: ['geolocation', 'notifications'],
-            // Simular dispositivo real
-            deviceScaleFactor: 1,
-            isMobile: false,
-            hasTouch: false,
-            // Headers extras para parecer mais humano
-            extraHTTPHeaders: {
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-                'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'DNT': '1',
-                'Connection': 'keep-alive',
-                'Upgrade-Insecure-Requests': '1',
-                'Sec-Fetch-Dest': 'document',
-                'Sec-Fetch-Mode': 'navigate',
-                'Sec-Fetch-Site': 'none',
-                'Cache-Control': 'max-age=0'
-            }
+            timezoneId: 'America/Sao_Paulo'
         });
 
-        // TÉCNICAS AVANÇADAS ANTI-DETECÇÃO
+        // Remove sinais de automação (do scraper.js)
         await this.context.addInitScript(() => {
-            // 1. Remover propriedade webdriver
             Object.defineProperty(navigator, 'webdriver', {
                 get: () => undefined,
             });
-            
-            // 2. Sobrescrever propriedades de automação
             delete navigator.__proto__.webdriver;
-            
-            // 3. Mock de plugins (navegadores reais têm plugins)
-            Object.defineProperty(navigator, 'plugins', {
-                get: () => [
-                    {
-                        0: {type: "application/x-google-chrome-pdf", suffixes: "pdf", description: "Portable Document Format", enabledPlugin: Plugin},
-                        description: "Portable Document Format",
-                        filename: "internal-pdf-viewer",
-                        length: 1,
-                        name: "Chrome PDF Plugin"
-                    },
-                    {
-                        0: {type: "application/pdf", suffixes: "pdf", description: "", enabledPlugin: Plugin},
-                        description: "",
-                        filename: "mhjfbmdgcfjbbpaeojofohoefgiehjai",
-                        length: 1,
-                        name: "Chrome PDF Viewer"
-                    }
-                ]
-            });
-            
-            // 4. Mock de languages (mais realista)
-            Object.defineProperty(navigator, 'languages', {
-                get: () => ['pt-BR', 'pt', 'en-US', 'en']
-            });
-            
-            // 5. Adicionar propriedades de hardware (parecer dispositivo real)
-            Object.defineProperty(navigator, 'hardwareConcurrency', {
-                get: () => 8
-            });
-            
-            // 6. Mock de bateria (dispositivos reais têm)
-            Object.defineProperty(navigator, 'deviceMemory', {
-                get: () => 8
-            });
-            
-            // 7. Permissões realistas
-            const originalQuery = window.navigator.permissions.query;
-            window.navigator.permissions.query = (parameters) => (
-                parameters.name === 'notifications' ?
-                    Promise.resolve({ state: Notification.permission }) :
-                    originalQuery(parameters)
-            );
-            
-            // 8. Chrome runtime (alguns sites verificam isso)
-            if (!window.chrome) {
-                window.chrome = {};
-            }
-            window.chrome.runtime = {
-                connect: () => {},
-                sendMessage: () => {}
-            };
-            
-            // 9. Mock de conexão (parecer conexão real)
-            Object.defineProperty(navigator, 'connection', {
-                get: () => ({
-                    effectiveType: '4g',
-                    rtt: 50,
-                    downlink: 10,
-                    saveData: false
-                })
-            });
-            
-            // 10. Sobrescrever toString de funções nativas
-            const originalToString = Function.prototype.toString;
-            Function.prototype.toString = function() {
-                if (this === navigator.webdriver) {
-                    return 'function webdriver() { [native code] }';
-                }
-                return originalToString.apply(this, arguments);
-            };
         });
 
         this.page = await this.context.newPage();
-        
-        // CARREGAR COOKIES SALVOS (diminui detecção!)
-        await this.loadCookies();
         
         // Configurar timeouts otimizados
         this.page.setDefaultNavigationTimeout(45000);
         this.page.setDefaultTimeout(20000);
 
         // Otimização: Reduzir recursos carregados de forma mais seletiva
-        // await this.page.route('**/*', (route) => {
-        //     const resourceType = route.request().resourceType();
-        //     const url = route.request().url();
+        await this.page.route('**/*', (route) => {
+            const resourceType = route.request().resourceType();
+            const url = route.request().url();
             
-        //     // Bloquear apenas recursos realmente desnecessários
-        //     if (['image', 'media', 'websocket'].includes(resourceType) ||
-        //         url.includes('analytics') || url.includes('tracking') || 
-        //         url.includes('ads') || url.includes('facebook') || 
-        //         url.includes('google-analytics')) {
-        //         route.abort();
-        //     } else {
-        //         route.continue();
-        //     }
-        // });
+            // Bloquear apenas recursos realmente desnecessários
+            if (['image', 'media', 'websocket'].includes(resourceType) ||
+                url.includes('analytics') || url.includes('tracking') || 
+                url.includes('ads') || url.includes('facebook') || 
+                url.includes('google-analytics')) {
+                route.abort();
+            } else {
+                route.continue();
+            }
+        });
         
         console.log('✅ WebKit iniciado para consulta CPF!');
         return this.page;
@@ -309,7 +135,7 @@ class PlaywrightWebKitCPFConsultor {
         await this.page.waitForTimeout(3000);
         if (!cpf || !birthDate) {
             return {
-                error: true,
+                erro: true,
                 mensagem: !cpf ? 'CPF não informado' : 'Data de nascimento não informada'
             };
         }
@@ -325,32 +151,20 @@ class PlaywrightWebKitCPFConsultor {
                     birthDate = `${birthDate.substr(0, 2)}/${birthDate.substr(2, 2)}/${birthDate.substr(4, 4)}`;
                 } else {
                     return {
-                        error: true,
+                        erro: true,
                         mensagem: 'Formato de data inválido. Use o formato dd/mm/aaaa'
                     };
                 }
             } catch (e) {
                 return {
-                    error: true,
+                    erro: true,
                     mensagem: 'Formato de data inválido. Use o formato dd/mm/aaaa'
                 };
             }
         }
 
         try {
-            console.log('Acessando site da Receita Federal de forma HUMANA...');
-            
-            // TÉCNICA ANTI-BOT: Adicionar cookies e localStorage antes de acessar
-            // (simula que o navegador já foi usado)
-            await this.context.addCookies([
-                {
-                    name: 'visited',
-                    value: 'true',
-                    domain: '.receita.fazenda.gov.br',
-                    path: '/',
-                    expires: Date.now() / 1000 + 86400
-                }
-            ]);
+            console.log('Acessando site da Receita Federal...');
             
             // Tentar diferentes estratégias de carregamento
             let carregouSite = false;
@@ -377,78 +191,20 @@ class PlaywrightWebKitCPFConsultor {
             if (!carregouSite) {
                 throw new Error('Não foi possível carregar o site da Receita Federal');
             }
-            
-            // IMPORTANTE: Injetar scripts anti-detecção LOGO APÓS carregar página
-            await this.page.addInitScript(() => {
-                // Remover qualquer rastro de automação que possa ter sido adicionado
-                Object.defineProperty(document, 'hidden', {
-                    get: () => false
-                });
-                Object.defineProperty(document, 'visibilityState', {
-                    get: () => 'visible'
-                });
-            });
-            
-            // Aguardar um tempo humano antes de interagir (humanos olham a página)
-            await this.page.waitForTimeout(Math.random() * 2000 + 1500);
-            
-            // Simular scroll (humanos scrollam antes de preencher)
-            await this.page.mouse.wheel(0, Math.random() * 100 + 50);
-            await this.page.waitForTimeout(Math.random() * 500 + 300);
-            
             // Aguardar carregamento do formulário
             await this.page.waitForSelector('#txtCPF');
             await takeScreenshot(this.page, '01_inicial');
 
-            // Preenchimento com comportamento SUPER HUMANO
-            console.log('Preenchendo CPF de forma humana...');
-            
-            // Mover mouse aleatoriamente antes de clicar (comportamento humano)
-            await this.page.mouse.move(
-                Math.random() * 500 + 100, 
-                Math.random() * 300 + 100
-            );
-            await this.page.waitForTimeout(Math.random() * 500 + 300);
-            
-            // Clicar no campo CPF
-            await this.page.click('#txtCPF');
-            await this.page.waitForTimeout(Math.random() * 300 + 200);
-            
-            // Digitar CPF com delays variados (humanos não digitam uniformemente)
-            for (let i = 0; i < cpf.length; i++) {
-                await this.page.type('#txtCPF', cpf[i], { 
-                    delay: Math.random() * 150 + 50 // 50-200ms por tecla
-                });
-                // Pausas aleatórias ocasionais (humanos pausam ao digitar)
-                if (Math.random() > 0.7) {
-                    await this.page.waitForTimeout(Math.random() * 300 + 100);
-                }
-            }
-            
-            await this.page.waitForTimeout(Math.random() * 500 + 300);
-            
-            // Mover mouse novamente
-            await this.page.mouse.move(
-                Math.random() * 500 + 100, 
-                Math.random() * 400 + 150
-            );
-            await this.page.waitForTimeout(Math.random() * 400 + 200);
-            
-            // Clicar no campo data
-            await this.page.click('#txtDataNascimento');
-            await this.page.waitForTimeout(Math.random() * 300 + 200);
-            
-            // Digitar data com delays variados
-            for (let i = 0; i < birthDate.length; i++) {
-                await this.page.type('#txtDataNascimento', birthDate[i], { 
-                    delay: Math.random() * 150 + 50
-                });
-                if (Math.random() > 0.7) {
-                    await this.page.waitForTimeout(Math.random() * 300 + 100);
-                }
-            }
-            
-            await this.page.waitForTimeout(Math.random() * 800 + 500);
+            // Preenchimento otimizado (do scraper.js)
+            console.log('Preenchendo CPF...');
+            await this.page.evaluate((cpfValue) => {
+                document.querySelector('#txtCPF').value = cpfValue;
+            }, cpf);
+
+            console.log('Preenchendo data de nascimento...');
+            await this.page.evaluate((dateValue) => {
+                document.querySelector('#txtDataNascimento').value = dateValue;
+            }, birthDate);
             await takeScreenshot(this.page, '02_apos_preenchimento');
 
             // Aguardar carregamento do captcha
@@ -487,26 +243,9 @@ class PlaywrightWebKitCPFConsultor {
                 }
 
                 if (hcaptchaIframeHandle) {
-                    console.log('🎯 Tentando interagir com hCaptcha de forma HUMANA...');
+                    console.log('🎯 Tentando interagir com hCaptcha...');
                     
-                    // Aguardar um tempo aleatório (humanos não clicam imediatamente)
-                    await this.page.waitForTimeout(Math.random() * 2000 + 1500);
-                    
-                    // Simular movimento de mouse em direção ao iframe (SUPER IMPORTANTE!)
-                    const iframeBox = await hcaptchaIframeHandle.boundingBox();
-                    if (iframeBox) {
-                        // Mover mouse em trajetória curva (mais humano)
-                        const targetX = iframeBox.x + iframeBox.width / 2;
-                        const targetY = iframeBox.y + iframeBox.height / 2;
-                        
-                        // Movimento em 3 etapas (simula trajetória humana)
-                        await this.page.mouse.move(targetX - 100, targetY - 50, { steps: 10 });
-                        await this.page.waitForTimeout(Math.random() * 200 + 100);
-                        await this.page.mouse.move(targetX - 30, targetY - 10, { steps: 8 });
-                        await this.page.waitForTimeout(Math.random() * 150 + 50);
-                        await this.page.mouse.move(targetX, targetY, { steps: 5 });
-                        await this.page.waitForTimeout(Math.random() * 300 + 200);
-                    }
+                    await this.page.waitForTimeout(1000);
                     
                     try {
                         const frameHandle = await hcaptchaIframeHandle.contentFrame();
@@ -519,15 +258,10 @@ class PlaywrightWebKitCPFConsultor {
                             });
                             
                             if (!isChecked) {
-                                // Aguardar antes de clicar (humanos hesitam)
-                                await this.page.waitForTimeout(Math.random() * 800 + 500);
-                                
-                                // Clicar no checkbox
                                 await frameHandle.click('#checkbox');
-                                console.log('✅ Checkbox clicado de forma humana');
+                                console.log('✅ Checkbox clicado');
 
-                                // Aguardar tempo variável para o captcha processar
-                                await this.page.waitForTimeout(Math.random() * 2000 + 2000);
+                                await this.page.waitForTimeout(3000);
                             } else {
                                 console.log('✅ Checkbox já marcado');
                             }
@@ -546,11 +280,7 @@ class PlaywrightWebKitCPFConsultor {
                             while (!checkboxMarked && tentativas < maxTentativas) {
                                 console.log(`⏳ Aguardando checkbox ser marcado... (tentativa ${tentativas + 1}/${maxTentativas})`);
                                 await this.page.waitForTimeout(1000); // aguarda 1 segundo
-                                
-                                // Screenshot da tentativa
-                                console.log(`📸 Capturando screenshot da tentativa ${tentativas + 1}...`);
-                                await takeScreenshot(this.page, `04_tentativa_${tentativas + 1}_captcha`);
-                                
+                                await takeScreenshot(this.page, '04_depois_do_clique_captcha_tentativa');
                                 // Verifica novamente se o checkbox está marcado
                                 checkboxMarked = await frameHandle.evaluate(() => {
                                     const checkbox = document.querySelector('#checkbox');
@@ -572,17 +302,10 @@ class PlaywrightWebKitCPFConsultor {
                 } else {
                     console.log('⚠️ hCaptcha não encontrado');
                 }
-                
-                console.log('⏳ Aguardando estabilização após interação com hCaptcha...');
-                await this.page.waitForTimeout(1500);
-                
-                console.log('📸 Capturando screenshot após interação com hCaptcha...');
+                await this.page.waitForTimeout(500);
                 await takeScreenshot(this.page, '04_depois_do_clique_captcha');
             } catch (error) {
                 console.error('❌ Erro na detecção avançada do hCaptcha:', error);
-                console.error('   Detalhes do erro:', error.stack);
-                
-                console.log('📸 Capturando screenshot do erro...');
                 await takeScreenshot(this.page, '04_erro_deteccao_hcaptcha');
             }
 
@@ -795,9 +518,6 @@ class PlaywrightWebKitCPFConsultor {
             const resultadoPath = path.join(__dirname, 'screenshots', 'ultima_consulta', 'resultado.json');
             fs.writeFileSync(resultadoPath, JSON.stringify(resultadoCompleto, null, 2));
             
-            // SALVAR COOKIES para próxima execução (IMPORTANTE!)
-            await this.saveCookies();
-            
             return data;
 
         } catch (error) {
@@ -810,22 +530,15 @@ class PlaywrightWebKitCPFConsultor {
                 data_nascimento_consultada: birthDate,
                 timestamp: new Date().toISOString(),
                 sucesso: false,
-                error: true,
+                erro: true,
                 mensagem: `Erro ao consultar CPF: ${error.message}`
             };
             
             const resultadoPath = path.join(__dirname, 'screenshots', 'ultima_consulta', 'resultado.json');
             fs.writeFileSync(resultadoPath, JSON.stringify(resultadoErro, null, 2));
             
-            // Tentar salvar cookies mesmo em caso de erro
-            try {
-                await this.saveCookies();
-            } catch (e) {
-                console.log('⚠️ Não foi possível salvar cookies após erro');
-            }
-            
             return {
-                error: true,
+                erro: true,
                 mensagem: `Erro ao consultar CPF: ${error.message}`
             };
         }

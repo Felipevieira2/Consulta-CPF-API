@@ -114,6 +114,8 @@ class CpfController extends Controller
           
         }
 
+        
+
         $apiKey = ApiKey::where('key', $request->api_token)->first();
       
 

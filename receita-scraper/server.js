@@ -8,16 +8,16 @@ let consultarCPF;
 
 if (process.env.NODE_ENV === 'production' || process.env.USE_CHROMIUM === 'true') {
     console.log('🖥️ Usando Chromium para servidor...');
-    const { consultarCPF: consultarCPFChromium } = require('./scraper-servidor');
+    const { consultarCPF: consultarCPFChromium } = require('./scraper-servidor.js');
     consultarCPF = consultarCPFChromium;
 } else {
     console.log('🦊 Usando WebKit para desenvolvimento...');
     try {
-        const scraperWebkit = require('./scraper');
+        const scraperWebkit = require('./scraper.js');
         consultarCPF = scraperWebkit.consultarCPF;
     } catch (error) {
         console.log('⚠️ Fallback para Chromium devido a erro no WebKit:', error.message);
-        const { consultarCPF: consultarCPFChromium } = require('./scraper-servidor');
+        const { consultarCPF: consultarCPFChromium } = require('./scraper-servidor.js');
         consultarCPF = consultarCPFChromium;
     }
 }
