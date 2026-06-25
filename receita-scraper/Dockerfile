@@ -1,6 +1,6 @@
 FROM node:18-bullseye
 
-# Instalar dependências do sistema para Playwright
+# Instalar dependências do sistema para Playwright e XVFB (necessário para rodar extensões em headless no Linux/Docker)
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y \
     libxkbcommon0 \
     libpango-1.0-0 \
     libcairo2 \
+    xvfb \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -42,5 +43,5 @@ COPY . .
 
 EXPOSE 3000
 
-# Comando para desenvolvimento
-CMD ["npm", "run", "dev"]
+# Comando para desenvolvimento rodando sob o Xvfb virtual display
+CMD ["xvfb-run", "--server-args=-screen 0 1366x768x24", "npm", "run", "dev"]
