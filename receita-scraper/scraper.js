@@ -154,6 +154,7 @@ class PlaywrightWebKitCPFConsultor {
         this.page = null;
         this.screenshotDir = setupScreenshotDir();
         this.cookiesPath = path.join(__dirname, 'cookies_hcaptcha.json');
+        this.userDataDir = null;
     }
 
     // Método para resolver hCaptcha utilizando a API do CaptchaSonic
@@ -332,9 +333,18 @@ class PlaywrightWebKitCPFConsultor {
 
         // Se usar extensão, precisamos usar launchPersistentContext (pois o Playwright exige para carregar extensões)
         if (useExtension && browserTypeStr === 'chromium') {
-            const userDataDir = path.join(__dirname, 'screenshots', 'chrome-profile');
-            console.log(`📂 Utilizando perfil de usuário persistente em: ${userDataDir}`);
-
+            const userDataDir = path.join(__dirname, 'screenshots', `chrome-profile-${process.pid || 'default'}`);
+            this.userDataDir = userDataDir;
+            console.log(`📂 Utilizando perfil de usuário dinâmico em: ${userDataDir}`);
+ 
+            // Se a pasta já existir por algum motivo, remover travas antigas
+            if (fs.existsSync(userDataDir)) {
+                const lockPath = path.join(userDataDir, 'SingletonLock');
+                if (fs.existsSync(lockPath)) {
+                    try { fs.unlinkSync(lockPath); } catch (e) {}
+                }
+            }
+ 
             const rodarHeadlessComExtensao = !isVisual;
             if (rodarHeadlessComExtensao) {
                 console.log('👻 Modo HEADLESS ativo - Ocultando janela do Chromium movendo-a para fora da tela (--window-position=-2000,-2000) para evitar detecção...');
@@ -1093,10 +1103,32 @@ class PlaywrightWebKitCPFConsultor {
     }
 
     async close() {
-        if (this.browser) {
-            await this.browser.close();
-        } else if (this.context) {
-            await this.context.close();
+        try {
+            if (this.browser) {
+                await this.browser.close();
+            } else if (this.context) {
+                await this.context.close();
+            }
+        } catch (e) {
+            console.log('⚠️ Erro ao fechar contexto do navegador:', e.message);
+        }
+
+        // Limpeza síncrona/segura de travas e da pasta de perfil exclusiva após fechar o Chromium
+        if (this.userDataDir && fs.existsSync(this.userDataDir)) {
+            try {
+                // Tentar remover o SingletonLock explicitamente para evitar travas em futuras instâncias
+                const lockPath = path.join(this.userDataDir, 'SingletonLock');
+                if (fs.existsSync(lockPath)) {
+                    fs.unlinkSync(lockPath);
+                }
+                
+                // Opcional: Para evitar encher o disco no servidor, você pode apagar a pasta inteira.
+                // Como salvamos os cookies em cookies_hcaptcha.json, não há problema em limpar a pasta temporária do profile!
+                fs.rmSync(this.userDataDir, { recursive: true, force: true });
+                console.log(`🧹 Pasta de perfil temporário limpa com sucesso: ${this.userDataDir}`);
+            } catch (cleanupError) {
+                console.log(`⚠️ Falha ao limpar diretório temporário do profile: ${cleanupError.message}`);
+            }
         }
     }
 }
