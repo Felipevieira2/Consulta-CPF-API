@@ -540,6 +540,11 @@ function gerarHtmlUltimaConsulta(resultado, screenshots) {
   `;
 }
 
+// Função para finalizar recursos do servidor de forma limpa
+async function finalizarRecursos() {
+  console.log('Finalizando recursos pendentes do servidor...');
+}
+
 // Graceful shutdown
 process.on('SIGTERM', async () => {
   console.log('SIGTERM recebido, encerrando servidor...');

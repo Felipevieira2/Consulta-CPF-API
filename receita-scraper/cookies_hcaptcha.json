@@ -41,7 +41,7 @@
   },
   {
     "name": "ASPSESSIONIDAGTBDSBT",
-    "value": "FOHKJBKCIBEPPBFNENCDGGHL",
+    "value": "EHHPJBKCKPGMKLBAKFODJHHD",
     "domain": "servicos.receita.fazenda.gov.br",
     "path": "/",
     "expires": -1,
@@ -51,10 +51,10 @@
   },
   {
     "name": "__cf_bm",
-    "value": "Hbc6CZ.Pysx.uyaCEYGuVH2lNCzAoSSEtMTiSF8pHGc-1782429937.8877132-1.0.1.1-uRqAj3rQtcWtd7HC7yRdlA35TB4GoiYu_1wF43EbX7sbTAo8hz_IQK5ry3nPNihvBnKxwcwqOaqphe0RC.04V5Q.vlkkZ3CEoimWXVcf5aFCNavLoEP1qWIfEQeFu_LT",
+    "value": "Wxy68ihBsVKNVqiVE7ol0HJPJaLIv6BpcJP2TqPbjuA-1782431563.6824803-1.0.1.1-VL4THUiX3mDTJSx1TmIKaxYysQY.rJh1GePab9UBPdwjAQWq6duEB7ucUyHwC7xyWfiLqXEMMnVzawrdcdEwWP9lVgshoc_stGsS5A8iM41K1PTD_8KheFx_H6YfCNJc",
     "domain": ".hcaptcha.com",
     "path": "/",
-    "expires": 1782431730.723946,
+    "expires": 1782433356.508012,
     "httpOnly": true,
     "secure": true,
     "sameSite": "None"
