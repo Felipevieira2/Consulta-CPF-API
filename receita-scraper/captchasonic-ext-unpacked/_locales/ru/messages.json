@@ -1,0 +1,374 @@
+{
+  "CaptchaList": {
+    "message": "Продукты",
+    "title": "Продукты"
+  },
+  "Balance": {
+    "message": "Баланс",
+    "title": "Баланс"
+  },
+  "Enter_API_KEY": {
+    "message": "Введите ваш API-ключ здесь...",
+    "title": "Введите ваш API-ключ здесь..."
+  },
+  "Available_Balance": {
+    "message": "Доступный баланс",
+    "title": "Доступный баланс"
+  },
+  "Add_Balance": {
+    "message": "Пополнить баланс",
+    "title": "Пополнить баланс"
+  },
+  "Invalid_API": {
+    "message": "Неверный API-ключ",
+    "title": "Неверный API-ключ"
+  },
+  "Get_API_key": {
+    "message": "Получить API-ключ",
+    "title": "Получить API-ключ"
+  },
+  "Get_Your_API_Key": {
+    "message": "Получите ваш API-ключ",
+    "title": "Получите ваш API-ключ"
+  },
+  "Credits": {
+    "message": "Кредиты",
+    "title": "Кредиты"
+  },
+  "DailyUse": {
+    "message": "Дневной лимит",
+    "title": "Дневной лимит"
+  },
+  "Usage_Progress": {
+    "message": "Прогресс использования",
+    "title": "Прогресс использования"
+  },
+  "Add_BlackList_Url": {
+    "message": "Чёрный список",
+    "title": "Чёрный список"
+  },
+  "Add_URL": {
+    "message": "Заблокировать",
+    "title": "Заблокировать"
+  },
+  "Privacy": {
+    "message": "Конфиденциальность",
+    "title": "Конфиденциальность"
+  },
+  "Updating": {
+    "message": "Загрузка...",
+    "title": "Загрузка..."
+  },
+  "Remaining": {
+    "message": "осталось",
+    "title": "осталось"
+  },
+  "Subcription": {
+    "message": "Оформить подписку!",
+    "title": "Оформить подписку!"
+  },
+  "View_plan": {
+    "message": "посмотреть тариф",
+    "title": "посмотреть тариф"
+  },
+  "Upgrade_plan": {
+    "message": "улучшить",
+    "title": "улучшить"
+  },
+  "Auto_open": {
+    "message": "Автооткрытие",
+    "title": "Автооткрытие"
+  },
+  "Notification": {
+    "message": "Уведомления",
+    "title": "Уведомления"
+  },
+  "Expire": {
+    "message": "Истекает через",
+    "title": "Истекает через"
+  },
+  "Refil": {
+    "message": "Пополнение через",
+    "title": "Пополнение через"
+  },
+  "Limit_Min": {
+    "message": "Лимит/мин",
+    "title": "Лимит/мин"
+  },
+  "Limit_Cnt": {
+    "message": "Лимит/кол-во",
+    "title": "Лимит/кол-во"
+  },
+  "Check_Configuration": {
+    "message": "Проверьте конфигурацию",
+    "title": "Проверьте конфигурацию"
+  },
+  "No_Internet": {
+    "message": "Нет подключения к Интернету",
+    "title": "Нет подключения к Интернету"
+  },
+  "Expired": {
+    "message": "Истёк",
+    "title": "Истёк"
+  },
+  "On": {
+    "message": "ВКЛ",
+    "title": "ВКЛ"
+  },
+  "Off": {
+    "message": "ВЫКЛ",
+    "title": "ВЫКЛ"
+  },
+  "Active": {
+    "message": "Активен",
+    "title": "Активен"
+  },
+  "Inactive": {
+    "message": "Неактивен",
+    "title": "Неактивен"
+  },
+  "Loading": {
+    "message": "Загрузка...",
+    "title": "Загрузка..."
+  },
+  "Open_Dashboard": {
+    "message": "Открыть полную панель и аналитику",
+    "title": "Открыть полную панель и аналитику"
+  },
+  "Activate": {
+    "message": "Включить",
+    "title": "Включить"
+  },
+  "Deactivate": {
+    "message": "Отключить",
+    "title": "Отключить"
+  },
+  "Enter_Url_Placeholder": {
+    "message": "Введите URL-адрес...",
+    "title": "Введите URL-адрес..."
+  },
+  "Url_Added": {
+    "message": "URL добавлен!",
+    "title": "URL добавлен!"
+  },
+  "Url_Removed": {
+    "message": "URL удалён!",
+    "title": "URL удалён!"
+  },
+  "Copied": {
+    "message": "Скопировано",
+    "title": "Скопировано"
+  },
+  "Could_Not_Copy": {
+    "message": "Не удалось скопировать",
+    "title": "Не удалось скопировать"
+  },
+  "Pasted_From_Clipboard": {
+    "message": "Вставлено из буфера обмена",
+    "title": "Вставлено из буфера обмена"
+  },
+  "Could_Not_Paste": {
+    "message": "Не удалось вставить",
+    "title": "Не удалось вставить"
+  },
+  "Failed_To_Save_API_Key": {
+    "message": "Не удалось сохранить API-ключ.",
+    "title": "Не удалось сохранить API-ключ."
+  },
+  "Remove_API_Key": {
+    "message": "Удалить API-ключ",
+    "title": "Удалить API-ключ"
+  },
+  "Paste_API_Key": {
+    "message": "Вставить API-ключ",
+    "title": "Вставить API-ключ"
+  },
+  "Copy_API_Key": {
+    "message": "Скопировать API-ключ",
+    "title": "Скопировать API-ключ"
+  },
+  "Solution_Callback": {
+    "message": "Колбэк решения",
+    "title": "Колбэк решения"
+  },
+  "Enter_Callback_Command": {
+    "message": "Введите команду колбэка",
+    "title": "Введите команду колбэка"
+  },
+  "System_Active": {
+    "message": "Система активна",
+    "title": "Система активна"
+  },
+  "System_Paused": {
+    "message": "Система приостановлена",
+    "title": "Система приостановлена"
+  },
+  "Current_Balance": {
+    "message": "Текущий баланс",
+    "title": "Текущий баланс"
+  },
+  "Free_Plan": {
+    "message": "Бесплатный тариф",
+    "title": "Бесплатный тариф"
+  },
+  "Monthly_Usage": {
+    "message": "Месячное использование",
+    "title": "Месячное использование"
+  },
+  "API_Configuration": {
+    "message": "Конфигурация API",
+    "title": "Конфигурация API"
+  },
+  "Manage": {
+    "message": "Управление",
+    "title": "Управление"
+  },
+  "Enter_Api_Key_Placeholder": {
+    "message": "Введите ваш API-ключ",
+    "title": "Введите ваш API-ключ"
+  },
+  "Save": {
+    "message": "Сохранить",
+    "title": "Сохранить"
+  },
+  "Api_Key_Safety_Note": {
+    "message": "Этот ключ даёт доступ к вашему балансу. Храните его в безопасности.",
+    "title": "Этот ключ даёт доступ к вашему балансу. Храните его в безопасности."
+  },
+  "Automation_Preferences": {
+    "message": "Настройки автоматизации",
+    "title": "Настройки автоматизации"
+  },
+  "Callback_Function": {
+    "message": "Функция колбэка",
+    "title": "Функция колбэка"
+  },
+  "Callback_Example": {
+    "message": "напр. CaptchaVerifiedCallback",
+    "title": "напр. CaptchaVerifiedCallback"
+  },
+  "Callback_Description": {
+    "message": "Выполняется автоматически при решении задачи.",
+    "title": "Выполняется автоматически при решении задачи."
+  },
+  "Auto_Open_Widgets": {
+    "message": "Автооткрытие виджетов",
+    "title": "Автооткрытие виджетов"
+  },
+  "Auto_Open_Widgets_Desc": {
+    "message": "Автоматически открывать виджеты капчи",
+    "title": "Автоматически открывать виджеты капчи"
+  },
+  "Desktop_Notifications": {
+    "message": "Уведомления рабочего стола",
+    "title": "Уведомления рабочего стола"
+  },
+  "Desktop_Notifications_Desc": {
+    "message": "Показывать системное уведомление при решении",
+    "title": "Показывать системное уведомление при решении"
+  },
+  "Domain_Blacklist": {
+    "message": "Чёрный список доменов",
+    "title": "Чёрный список доменов"
+  },
+  "Blacklist_Disabled": {
+    "message": "Чёрный список отключён",
+    "title": "Чёрный список отключён"
+  },
+  "Blacklist_Disabled_Hint": {
+    "message": "Включите, чтобы блокировать определённые домены",
+    "title": "Включите, чтобы блокировать определённые домены"
+  },
+  "Blacklist_Domain_Placeholder": {
+    "message": "example.com",
+    "title": "example.com"
+  },
+  "No_Domains_Added": {
+    "message": "Домены не добавлены",
+    "title": "Домены не добавлены"
+  },
+  "URL_Added": {
+    "message": "URL добавлен",
+    "title": "URL добавлен"
+  },
+  "Performance_Overview": {
+    "message": "Обзор производительности",
+    "title": "Обзор производительности"
+  },
+  "Total_Solves": {
+    "message": "Всего решений",
+    "title": "Всего решений"
+  },
+  "This_Week": {
+    "message": "на этой неделе",
+    "title": "на этой неделе"
+  },
+  "Success_Rate": {
+    "message": "Успешность",
+    "title": "Успешность"
+  },
+  "Avg_Time": {
+    "message": "Среднее время",
+    "title": "Среднее время"
+  },
+  "Vs_Average": {
+    "message": "по сравнению со средним",
+    "title": "по сравнению со средним"
+  },
+  "Status": {
+    "message": "Статус",
+    "title": "Статус"
+  },
+  "Event": {
+    "message": "Событие",
+    "title": "Событие"
+  },
+  "Description": {
+    "message": "Описание",
+    "title": "Описание"
+  },
+  "Time": {
+    "message": "Время",
+    "title": "Время"
+  },
+  "Captcha_Providers": {
+    "message": "Провайдеры капчи",
+    "title": "Провайдеры капчи"
+  },
+  "Captcha_Providers_Desc": {
+    "message": "Настройте, какие капчи решать автоматически",
+    "title": "Настройте, какие капчи решать автоматически"
+  },
+  "System_Events": {
+    "message": "Системные события",
+    "title": "Системные события"
+  },
+  "Advanced_Configuration": {
+    "message": "Расширенная конфигурация",
+    "title": "Расширенная конфигурация"
+  },
+  "Solving_Captcha": {
+    "message": "Решение капчи",
+    "title": "Решение капчи"
+  },
+  "Captcha_Solved": {
+    "message": "Капча решена!",
+    "title": "Капча решена!"
+  },
+  "Error_Solving_Captcha": {
+    "message": "Ошибка при решении капчи",
+    "title": "Ошибка при решении капчи"
+  },
+  "Processing_Captcha": {
+    "message": "Обработка капчи...",
+    "title": "Обработка капчи..."
+  },
+  "Upgrade_Plan_Action": {
+    "message": "Улучшить тариф",
+    "title": "Улучшить тариф"
+  },
+  "Dismiss": {
+    "message": "Закрыть",
+    "title": "Закрыть"
+  }
+}

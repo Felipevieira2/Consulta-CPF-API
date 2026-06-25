@@ -1,5 +1,25 @@
 [
   {
+    "name": "visited",
+    "value": "true",
+    "domain": ".receita.fazenda.gov.br",
+    "path": "/",
+    "expires": 1782509067.718,
+    "httpOnly": false,
+    "secure": false,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "__cf_bm",
+    "value": "0hTKyHDJyppNKW5b.f.IiSpJpBAt1G4iHtGTiupOMx8-1782423688.9721467-1.0.1.1-S5IIy7yOS0kFy4.0jGcjxBN72j6qbpdSGybPWglP698LctrIKn7nnOJCTp5_n4s9IS_misYJgTLUWy2AUC99D6RIVfMqEgtb96.Hz3jd4ru6Mht2AXzFI9Nc5tTPk8du",
+    "domain": ".hcaptcha.com",
+    "path": "/",
+    "expires": 1782425481.797091,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None"
+  },
+  {
     "name": "ASPSESSIONIDCUDQDBST",
     "value": "LEEMCPCDJAINCEGPNHFHODCN",
     "domain": "servicos.receita.fazenda.gov.br",
@@ -30,22 +50,12 @@
     "sameSite": "None"
   },
   {
-    "name": "__cf_bm",
-    "value": "4LjtyyezcJT7d5AmBP4mkBzkKteBYEQlJzU0b5_M2xY-1768333782-1.0.1.1-BmMZGaXrzLxYF1Jwg6WVAD8aGRxJ_2ui_zm3U4bcT2mkSGxAh_W4L9JMnBeI07QPj4BIUihURSLf1qthv4TxPK1mnaw2nrL4Nsds4gPefbo",
-    "domain": ".w.hcaptcha.com",
+    "name": "ASPSESSIONIDAGTBDSBT",
+    "value": "KAMOHBKCCGBHOEGGIDLGFNLN",
+    "domain": "servicos.receita.fazenda.gov.br",
     "path": "/",
-    "expires": 1768335582,
-    "httpOnly": true,
-    "secure": true,
-    "sameSite": "None"
-  },
-  {
-    "name": "__cf_bm",
-    "value": "7ZiM03B8ctgWRpUbGiWa2JIZqNR6Rk3m.ijALwp6q2M-1768333838-1.0.1.1-bLCtzCFxcRcSQZsTJttqVRCwFZZSKVqCBhQJwC0yZVVM_4GhzUvg5npGu7.KJA2bjeEASwmL6yNgZSkOHfbs95EdELmTXQUIFzSLwlLu_WY",
-    "domain": ".hcaptcha.com",
-    "path": "/",
-    "expires": 1768335639.010303,
-    "httpOnly": true,
+    "expires": -1,
+    "httpOnly": false,
     "secure": true,
     "sameSite": "None"
   }

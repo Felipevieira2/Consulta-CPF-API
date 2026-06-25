@@ -1,0 +1,374 @@
+{
+  "CaptchaList": {
+    "message": "产品",
+    "title": "产品"
+  },
+  "Balance": {
+    "message": "余额",
+    "title": "余额"
+  },
+  "Enter_API_KEY": {
+    "message": "在此输入您的 API 密钥...",
+    "title": "在此输入您的 API 密钥..."
+  },
+  "Available_Balance": {
+    "message": "可用余额",
+    "title": "可用余额"
+  },
+  "Add_Balance": {
+    "message": "添加余额",
+    "title": "添加余额"
+  },
+  "Invalid_API": {
+    "message": "无效的 API 密钥",
+    "title": "无效的 API 密钥"
+  },
+  "Get_API_key": {
+    "message": "获取 API 密钥",
+    "title": "获取 API 密钥"
+  },
+  "Get_Your_API_Key": {
+    "message": "获取您的 API 密钥",
+    "title": "获取您的 API 密钥"
+  },
+  "Credits": {
+    "message": "积分",
+    "title": "积分"
+  },
+  "DailyUse": {
+    "message": "每日限制",
+    "title": "每日限制"
+  },
+  "Usage_Progress": {
+    "message": "使用进度",
+    "title": "使用进度"
+  },
+  "Add_BlackList_Url": {
+    "message": "黑名单",
+    "title": "黑名单"
+  },
+  "Add_URL": {
+    "message": "阻止",
+    "title": "阻止"
+  },
+  "Privacy": {
+    "message": "隐私",
+    "title": "隐私"
+  },
+  "Updating": {
+    "message": "加载中...",
+    "title": "加载中..."
+  },
+  "Remaining": {
+    "message": "剩余",
+    "title": "剩余"
+  },
+  "Subcription": {
+    "message": "购买订阅！",
+    "title": "购买订阅！"
+  },
+  "View_plan": {
+    "message": "查看计划",
+    "title": "查看计划"
+  },
+  "Upgrade_plan": {
+    "message": "升级",
+    "title": "升级"
+  },
+  "Auto_open": {
+    "message": "自动打开",
+    "title": "自动打开"
+  },
+  "Notification": {
+    "message": "通知",
+    "title": "通知"
+  },
+  "Expire": {
+    "message": "到期",
+    "title": "到期"
+  },
+  "Refil": {
+    "message": "补充",
+    "title": "补充"
+  },
+  "Limit_Min": {
+    "message": "每分钟限额",
+    "title": "每分钟限额"
+  },
+  "Limit_Cnt": {
+    "message": "次数限额",
+    "title": "次数限额"
+  },
+  "Check_Configuration": {
+    "message": "请检查您的配置",
+    "title": "请检查您的配置"
+  },
+  "No_Internet": {
+    "message": "无网络连接",
+    "title": "无网络连接"
+  },
+  "Expired": {
+    "message": "已过期",
+    "title": "已过期"
+  },
+  "On": {
+    "message": "开",
+    "title": "开"
+  },
+  "Off": {
+    "message": "关",
+    "title": "关"
+  },
+  "Active": {
+    "message": "已启用",
+    "title": "已启用"
+  },
+  "Inactive": {
+    "message": "未启用",
+    "title": "未启用"
+  },
+  "Loading": {
+    "message": "加载中...",
+    "title": "加载中..."
+  },
+  "Open_Dashboard": {
+    "message": "打开完整仪表板及分析",
+    "title": "打开完整仪表板及分析"
+  },
+  "Activate": {
+    "message": "启用",
+    "title": "启用"
+  },
+  "Deactivate": {
+    "message": "停用",
+    "title": "停用"
+  },
+  "Enter_Url_Placeholder": {
+    "message": "请输入网址...",
+    "title": "请输入网址..."
+  },
+  "Url_Added": {
+    "message": "已添加网址！",
+    "title": "已添加网址！"
+  },
+  "Url_Removed": {
+    "message": "已删除网址！",
+    "title": "已删除网址！"
+  },
+  "Copied": {
+    "message": "已复制",
+    "title": "已复制"
+  },
+  "Could_Not_Copy": {
+    "message": "无法复制",
+    "title": "无法复制"
+  },
+  "Pasted_From_Clipboard": {
+    "message": "已从剪贴板粘贴",
+    "title": "已从剪贴板粘贴"
+  },
+  "Could_Not_Paste": {
+    "message": "无法粘贴",
+    "title": "无法粘贴"
+  },
+  "Failed_To_Save_API_Key": {
+    "message": "保存 API 密钥失败。",
+    "title": "保存 API 密钥失败。"
+  },
+  "Remove_API_Key": {
+    "message": "移除 API 密钥",
+    "title": "移除 API 密钥"
+  },
+  "Paste_API_Key": {
+    "message": "粘贴 API 密钥",
+    "title": "粘贴 API 密钥"
+  },
+  "Copy_API_Key": {
+    "message": "复制 API 密钥",
+    "title": "复制 API 密钥"
+  },
+  "Solution_Callback": {
+    "message": "解题回调",
+    "title": "解题回调"
+  },
+  "Enter_Callback_Command": {
+    "message": "输入回调命令",
+    "title": "输入回调命令"
+  },
+  "System_Active": {
+    "message": "系统运行中",
+    "title": "系统运行中"
+  },
+  "System_Paused": {
+    "message": "系统已暂停",
+    "title": "系统已暂停"
+  },
+  "Current_Balance": {
+    "message": "当前余额",
+    "title": "当前余额"
+  },
+  "Free_Plan": {
+    "message": "免费套餐",
+    "title": "免费套餐"
+  },
+  "Monthly_Usage": {
+    "message": "本月用量",
+    "title": "本月用量"
+  },
+  "API_Configuration": {
+    "message": "API 配置",
+    "title": "API 配置"
+  },
+  "Manage": {
+    "message": "管理",
+    "title": "管理"
+  },
+  "Enter_Api_Key_Placeholder": {
+    "message": "请输入您的 API 密钥",
+    "title": "请输入您的 API 密钥"
+  },
+  "Save": {
+    "message": "保存",
+    "title": "保存"
+  },
+  "Api_Key_Safety_Note": {
+    "message": "您的密钥可访问您的余额，请妥善保管。",
+    "title": "您的密钥可访问您的余额，请妥善保管。"
+  },
+  "Automation_Preferences": {
+    "message": "自动化偏好设置",
+    "title": "自动化偏好设置"
+  },
+  "Callback_Function": {
+    "message": "回调函数",
+    "title": "回调函数"
+  },
+  "Callback_Example": {
+    "message": "例如：CaptchaVerifiedCallback",
+    "title": "例如：CaptchaVerifiedCallback"
+  },
+  "Callback_Description": {
+    "message": "在验证码解决后自动执行。",
+    "title": "在验证码解决后自动执行。"
+  },
+  "Auto_Open_Widgets": {
+    "message": "自动打开组件",
+    "title": "自动打开组件"
+  },
+  "Auto_Open_Widgets_Desc": {
+    "message": "自动打开验证码组件",
+    "title": "自动打开验证码组件"
+  },
+  "Desktop_Notifications": {
+    "message": "桌面通知",
+    "title": "桌面通知"
+  },
+  "Desktop_Notifications_Desc": {
+    "message": "解决时显示系统通知",
+    "title": "解决时显示系统通知"
+  },
+  "Domain_Blacklist": {
+    "message": "域名黑名单",
+    "title": "域名黑名单"
+  },
+  "Blacklist_Disabled": {
+    "message": "黑名单已禁用",
+    "title": "黑名单已禁用"
+  },
+  "Blacklist_Disabled_Hint": {
+    "message": "启用以屏蔽特定域名",
+    "title": "启用以屏蔽特定域名"
+  },
+  "Blacklist_Domain_Placeholder": {
+    "message": "example.com",
+    "title": "example.com"
+  },
+  "No_Domains_Added": {
+    "message": "尚未添加域名",
+    "title": "尚未添加域名"
+  },
+  "URL_Added": {
+    "message": "已添加网址",
+    "title": "已添加网址"
+  },
+  "Performance_Overview": {
+    "message": "性能概览",
+    "title": "性能概览"
+  },
+  "Total_Solves": {
+    "message": "总解题数",
+    "title": "总解题数"
+  },
+  "This_Week": {
+    "message": "本周",
+    "title": "本周"
+  },
+  "Success_Rate": {
+    "message": "成功率",
+    "title": "成功率"
+  },
+  "Avg_Time": {
+    "message": "平均耗时",
+    "title": "平均耗时"
+  },
+  "Vs_Average": {
+    "message": "对比平均值",
+    "title": "对比平均值"
+  },
+  "Status": {
+    "message": "状态",
+    "title": "状态"
+  },
+  "Event": {
+    "message": "事件",
+    "title": "事件"
+  },
+  "Description": {
+    "message": "描述",
+    "title": "描述"
+  },
+  "Time": {
+    "message": "时间",
+    "title": "时间"
+  },
+  "Captcha_Providers": {
+    "message": "验证码服务",
+    "title": "验证码服务"
+  },
+  "Captcha_Providers_Desc": {
+    "message": "配置要自动解决的验证码类型",
+    "title": "配置要自动解决的验证码类型"
+  },
+  "System_Events": {
+    "message": "系统事件",
+    "title": "系统事件"
+  },
+  "Advanced_Configuration": {
+    "message": "高级配置",
+    "title": "高级配置"
+  },
+  "Solving_Captcha": {
+    "message": "正在解决验证码",
+    "title": "正在解决验证码"
+  },
+  "Captcha_Solved": {
+    "message": "验证码已解决！",
+    "title": "验证码已解决！"
+  },
+  "Error_Solving_Captcha": {
+    "message": "解决验证码时出错",
+    "title": "解决验证码时出错"
+  },
+  "Processing_Captcha": {
+    "message": "正在处理验证码...",
+    "title": "正在处理验证码..."
+  },
+  "Upgrade_Plan_Action": {
+    "message": "升级套餐",
+    "title": "升级套餐"
+  },
+  "Dismiss": {
+    "message": "关闭",
+    "title": "关闭"
+  }
+}

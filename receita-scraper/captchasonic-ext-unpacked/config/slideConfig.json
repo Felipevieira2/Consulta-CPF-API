@@ -1,0 +1,35 @@
+[
+  {
+    "websiteUrl": "https://open-us.vnnox.com/",
+    "frameSelector": ".window-show",
+    "selectors": {
+      "bgImg": "#aliyunCaptcha-img",
+      "puzzleImg": "#aliyunCaptcha-puzzle",
+      "dragBtn": "#aliyunCaptcha-sliding-slider",
+      "refreshBtn": "#aliyunCaptcha-btn-refresh"
+    },
+    "question": "#aliyunCaptcha-title"
+  },
+  {
+    "websiteUrl": "https://app.ipfoxy.com",
+    "frameSelector": ".window-show",
+    "selectors": {
+      "bgImg": "#aliyunCaptcha-img",
+      "puzzleImg": "#aliyunCaptcha-puzzle",
+      "dragBtn": "#aliyunCaptcha-sliding-slider",
+      "refreshBtn": "#aliyunCaptcha-btn-refresh"
+    },
+    "question": "#aliyunCaptcha-title"
+  },
+  {
+    "websiteUrl": "https://kampungjudi33.com/login",
+    "frameSelector": ".window-show",
+    "selectors": {
+      "bgImg": "#aliyunCaptcha-img",
+      "puzzleImg": "#aliyunCaptcha-puzzle",
+      "dragBtn": "#aliyunCaptcha-sliding-slider",
+      "refreshBtn": "#aliyunCaptcha-btn-refresh"
+    },
+    "question": "#aliyunCaptcha-title"
+  }
+]

@@ -1,0 +1,140 @@
+{
+  "APIKEY": "sonic_l4uETG2ZCPNYbFtgeEITUmyF",
+  "ACTIVE": true,
+  "THEME": "light",
+  "TITLES": [
+    "POPULARCAPTCHA",
+    "RECAPTCHA2",
+    "AWSWAF",
+    "BLS",
+    "GEETEST",
+    "MTCAPTCHA",
+    "PROSOPO",
+    "TIKTOK",
+    "CAPTCHAFOX",
+    "BINANCE",
+    "TENCENT",
+    "SLIDE"
+  ],
+  "CAPTCHAS": [
+    "POPULARCAPTCHA",
+    "RECAPTCHA2",
+    "AWSWAF",
+    "BLS",
+    "GEETEST",
+    "MTCAPTCHA",
+    "PROSOPO",
+    "TIKTOK",
+    "CAPTCHAFOX",
+    "BINANCE",
+    "TENCENT",
+    "SLIDE"
+  ],
+  "BLACKLIST": [
+    "https://github.com"
+  ],
+  "BLACKLISTENABLED": false,
+  "AUTOOPENENABLED": true,
+  "LOGENABLED": true,
+  "Local_lang": "en",
+  "NOTIFICATION": false,
+  "GUIDE_PAGE": true,
+  "SolutionCallback": "TestCallback",
+  "OPTIONS": {
+    "POPULARCAPTCHA": {
+      "ENABLED": true,
+      "ALWAYSSOLVE": true,
+      "AUTOOPEN": true,
+      "AUTOSOLVE": true,
+      "ENGLISH": true
+    },
+    "RECAPTCHA2": {
+      "ENABLED": true,
+      "ALWAYSSOLVE": true,
+      "AUTOOPEN": true,
+      "AUTOSOLVE": true,
+      "METHOD": "RECOGNITION"
+    },
+    "AWSWAF": {
+      "ENABLED": true,
+      "AUTOOPEN": true,
+      "AUTOSOLVE": true
+    },
+    "BLS": {
+      "ENABLED": true,
+      "AUTOOPEN": false,
+      "AUTOSOLVE": true
+    },
+    "GEETEST": {
+      "ENABLED": true,
+      "AUTOOPEN": true,
+      "AUTOSOLVE": true
+    },
+    "MTCAPTCHA": {
+      "ENABLED": true,
+      "AUTOSOLVE": true,
+      "METHOD": "RECOGNITION"
+    },
+    "PROSOPO": {
+      "ENABLED": true,
+      "ALWAYSSOLVE": true,
+      "AUTOOPEN": true,
+      "AUTOSOLVE": true
+    },
+    "TIKTOK": {
+      "ENABLED": true,
+      "ALWAYSSOLVE": true,
+      "AUTOSOLVE": true
+    },
+    "CAPTCHAFOX": {
+      "ENABLED": true,
+      "AUTOOPEN": true,
+      "ALWAYSSOLVE": true,
+      "AUTOSOLVE": true
+    },
+    "BINANCE": {
+      "ENABLED": true,
+      "ALWAYSSOLVE": true,
+      "AUTOSOLVE": true
+    },
+    "SLIDE": {
+      "ENABLED": true,
+      "AUTOOPEN": true,
+      "ALWAYSSOLVE": true,
+      "AUTOSOLVE": true
+    },
+    "TENCENT": {
+      "ENABLED": true,
+      "AUTOOPEN": true,
+      "ALWAYSSOLVE": true,
+      "AUTOSOLVE": true
+    }
+  },
+  "site_configs": {
+    "last_updated": "2025-11-08",
+    "configs": [
+      {
+        "websiteUrl": "https://projudi.tjba.jus.br/projudi/",
+        "frameSelector": "#tcOperation",
+        "selectors": {
+          "bgImg": "#slideBg",
+          "puzzleImg": "#tcOperation > div:nth-child(8)",
+          "dragBtn": ".tc-slider-normal",
+          "refreshBtn": "#reload > img"
+        },
+        "question": "#instructionText"
+      },
+      {
+        "websiteUrl": "https://global.turing.captcha.gtimg.com/",
+        "frameSelector": "#tcOperation",
+        "selectors": {
+          "bgImg": "#slideBg",
+          "puzzleImg": "#tcOperation > div:nth-child(8)",
+          "dragBtn": ".tc-slider-normal",
+          "refreshBtn": "#reload > img"
+        },
+        "question": "#instructionText"
+      }
+    ]
+  }
+}

@@ -1,0 +1,374 @@
+{
+  "CaptchaList": {
+    "message": "Products",
+    "title": "Products"
+  },
+  "Balance": {
+    "message": "Balance",
+    "title": "Balance"
+  },
+  "Enter_API_KEY": {
+    "message": "Enter your API key here...",
+    "title": "Enter your API key here..."
+  },
+  "Available_Balance": {
+    "message": "BALANCE",
+    "title": "BALANCE"
+  },
+  "Add_Balance": {
+    "message": "Add Balance",
+    "title": "Add Balance"
+  },
+  "Invalid_API": {
+    "message": "Invalid API-KEY",
+    "title": "Invalid API-KEY"
+  },
+  "Get_API_key": {
+    "message": "Get API Key",
+    "title": "Get API Key"
+  },
+  "Get_Your_API_Key": {
+    "message": "Get Your API-KEY",
+    "title": "Get Your API-KEY"
+  },
+  "Credits": {
+    "message": "Credits",
+    "title": "Credits"
+  },
+  "DailyUse": {
+    "message": "Daily Limit",
+    "title": "Daily Limit"
+  },
+  "Usage_Progress": {
+    "message": "Usage Progress",
+    "title": "Usage Progress"
+  },
+  "Add_BlackList_Url": {
+    "message": "BLACKLIST",
+    "title": "BLACKLIST"
+  },
+  "Add_URL": {
+    "message": "Block",
+    "title": "Block"
+  },
+  "Privacy": {
+    "message": "Privacy",
+    "title": "Privacy"
+  },
+  "Updating": {
+    "message": "Loading...",
+    "title": "Loading..."
+  },
+  "Remaining": {
+    "message": "remaining",
+    "title": "remaining"
+  },
+  "Subcription": {
+    "message": "Buy Subscription!",
+    "title": "Buy a Subscription!"
+  },
+  "View_plan": {
+    "message": "view plan",
+    "title": "view plan"
+  },
+  "Upgrade_plan": {
+    "message": "upgrade",
+    "title": "upgrade"
+  },
+  "Auto_open": {
+    "message": "Auto Open",
+    "title": "Auto Open"
+  },
+  "Notification": {
+    "message": "Notification",
+    "title": "Notification"
+  },
+  "Expire": {
+    "message": "Expire in",
+    "title": "Expire in"
+  },
+  "Refil": {
+    "message": "Refill in",
+    "title": "Refill in"
+  },
+  "Limit_Min": {
+    "message": "Limit/Min",
+    "title": "Limit/Min"
+  },
+  "Limit_Cnt": {
+    "message": "Limit/Cnt",
+    "title": "Limit/Cnt"
+  },
+  "Check_Configuration": {
+    "message": "Check your configuration",
+    "title": "Check your configuration"
+  },
+  "No_Internet": {
+    "message": "No Internet Connection",
+    "title": "No Internet Connection"
+  },
+  "Expired": {
+    "message": "Expired",
+    "title": "Expired"
+  },
+  "On": {
+    "message": "ON",
+    "title": "ON"
+  },
+  "Off": {
+    "message": "OFF",
+    "title": "OFF"
+  },
+  "Active": {
+    "message": "Active",
+    "title": "Active"
+  },
+  "Inactive": {
+    "message": "Inactive",
+    "title": "Inactive"
+  },
+  "Loading": {
+    "message": "Loading...",
+    "title": "Loading..."
+  },
+  "Open_Dashboard": {
+    "message": "Open Full Dashboard & Analytics",
+    "title": "Open Full Dashboard & Analytics"
+  },
+  "Activate": {
+    "message": "Activate",
+    "title": "Activate"
+  },
+  "Deactivate": {
+    "message": "Deactivate",
+    "title": "Deactivate"
+  },
+  "Enter_Url_Placeholder": {
+    "message": "Enter your URL...",
+    "title": "Enter your URL..."
+  },
+  "Url_Added": {
+    "message": "URL added!",
+    "title": "URL added!"
+  },
+  "Url_Removed": {
+    "message": "URL removed!",
+    "title": "URL removed!"
+  },
+  "Copied": {
+    "message": "Copied",
+    "title": "Copied"
+  },
+  "Could_Not_Copy": {
+    "message": "Could not copy",
+    "title": "Could not copy"
+  },
+  "Pasted_From_Clipboard": {
+    "message": "Pasted from clipboard",
+    "title": "Pasted from clipboard"
+  },
+  "Could_Not_Paste": {
+    "message": "Could not paste",
+    "title": "Could not paste"
+  },
+  "Failed_To_Save_API_Key": {
+    "message": "Failed to save API Key.",
+    "title": "Failed to save API Key."
+  },
+  "Remove_API_Key": {
+    "message": "Remove API Key",
+    "title": "Remove API Key"
+  },
+  "Paste_API_Key": {
+    "message": "Paste API Key",
+    "title": "Paste API Key"
+  },
+  "Copy_API_Key": {
+    "message": "Copy API Key",
+    "title": "Copy API Key"
+  },
+  "Solution_Callback": {
+    "message": "Solution Callback",
+    "title": "Solution Callback"
+  },
+  "Enter_Callback_Command": {
+    "message": "Enter callback command",
+    "title": "Enter callback command"
+  },
+  "System_Active": {
+    "message": "System Active",
+    "title": "System Active"
+  },
+  "System_Paused": {
+    "message": "System Paused",
+    "title": "System Paused"
+  },
+  "Current_Balance": {
+    "message": "Current Balance",
+    "title": "Current Balance"
+  },
+  "Free_Plan": {
+    "message": "Free Plan",
+    "title": "Free Plan"
+  },
+  "Monthly_Usage": {
+    "message": "Monthly Usage",
+    "title": "Monthly Usage"
+  },
+  "API_Configuration": {
+    "message": "API Configuration",
+    "title": "API Configuration"
+  },
+  "Manage": {
+    "message": "Manage",
+    "title": "Manage"
+  },
+  "Enter_Api_Key_Placeholder": {
+    "message": "Enter your API Key",
+    "title": "Enter your API Key"
+  },
+  "Save": {
+    "message": "Save",
+    "title": "Save"
+  },
+  "Api_Key_Safety_Note": {
+    "message": "Your key grants access to your balance. Keep it safe.",
+    "title": "Your key grants access to your balance. Keep it safe."
+  },
+  "Automation_Preferences": {
+    "message": "Automation Preferences",
+    "title": "Automation Preferences"
+  },
+  "Callback_Function": {
+    "message": "Callback Function",
+    "title": "Callback Function"
+  },
+  "Callback_Example": {
+    "message": "e.g. CaptchaVerifiedCallback",
+    "title": "e.g. CaptchaVerifiedCallback"
+  },
+  "Callback_Description": {
+    "message": "Executes automatically when a challenge is solved.",
+    "title": "Executes automatically when a challenge is solved."
+  },
+  "Auto_Open_Widgets": {
+    "message": "Auto Open Widgets",
+    "title": "Auto Open Widgets"
+  },
+  "Auto_Open_Widgets_Desc": {
+    "message": "Automatically open captcha widgets",
+    "title": "Automatically open captcha widgets"
+  },
+  "Desktop_Notifications": {
+    "message": "Desktop Notifications",
+    "title": "Desktop Notifications"
+  },
+  "Desktop_Notifications_Desc": {
+    "message": "Show native notification on solve",
+    "title": "Show native notification on solve"
+  },
+  "Domain_Blacklist": {
+    "message": "Domain Blacklist",
+    "title": "Domain Blacklist"
+  },
+  "Blacklist_Disabled": {
+    "message": "Blacklist is disabled",
+    "title": "Blacklist is disabled"
+  },
+  "Blacklist_Disabled_Hint": {
+    "message": "Enable to block specific domains",
+    "title": "Enable to block specific domains"
+  },
+  "Blacklist_Domain_Placeholder": {
+    "message": "example.com",
+    "title": "example.com"
+  },
+  "No_Domains_Added": {
+    "message": "No domains added",
+    "title": "No domains added"
+  },
+  "URL_Added": {
+    "message": "URL added",
+    "title": "URL added"
+  },
+  "Performance_Overview": {
+    "message": "Performance Overview",
+    "title": "Performance Overview"
+  },
+  "Total_Solves": {
+    "message": "Total Solves",
+    "title": "Total Solves"
+  },
+  "This_Week": {
+    "message": "this week",
+    "title": "this week"
+  },
+  "Success_Rate": {
+    "message": "Success Rate",
+    "title": "Success Rate"
+  },
+  "Avg_Time": {
+    "message": "Avg. Time",
+    "title": "Avg. Time"
+  },
+  "Vs_Average": {
+    "message": "vs average",
+    "title": "vs average"
+  },
+  "Status": {
+    "message": "Status",
+    "title": "Status"
+  },
+  "Event": {
+    "message": "Event",
+    "title": "Event"
+  },
+  "Description": {
+    "message": "Description",
+    "title": "Description"
+  },
+  "Time": {
+    "message": "Time",
+    "title": "Time"
+  },
+  "Captcha_Providers": {
+    "message": "Captcha Providers",
+    "title": "Captcha Providers"
+  },
+  "Captcha_Providers_Desc": {
+    "message": "Configure which captchas to solve automatically",
+    "title": "Configure which captchas to solve automatically"
+  },
+  "System_Events": {
+    "message": "System Events",
+    "title": "System Events"
+  },
+  "Advanced_Configuration": {
+    "message": "Advanced Configuration",
+    "title": "Advanced Configuration"
+  },
+  "Solving_Captcha": {
+    "message": "Solving captcha",
+    "title": "Solving captcha"
+  },
+  "Captcha_Solved": {
+    "message": "Captcha solved!",
+    "title": "Captcha solved!"
+  },
+  "Error_Solving_Captcha": {
+    "message": "Error solving captcha",
+    "title": "Error solving captcha"
+  },
+  "Processing_Captcha": {
+    "message": "Processing captcha...",
+    "title": "Processing captcha..."
+  },
+  "Upgrade_Plan_Action": {
+    "message": "Upgrade Plan",
+    "title": "Upgrade Plan"
+  },
+  "Dismiss": {
+    "message": "Dismiss",
+    "title": "Dismiss"
+  }
+}
