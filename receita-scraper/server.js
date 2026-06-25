@@ -6,21 +6,10 @@ const path = require('path');
 // Detectar ambiente e usar scraper apropriado
 let consultarCPF;
 
-if (process.env.NODE_ENV === 'production' || process.env.USE_CHROMIUM === 'true') {
-    console.log('🖥️ Usando Chromium para servidor...');
-    const { consultarCPF: consultarCPFChromium } = require('./scraper-servidor.js');
-    consultarCPF = consultarCPFChromium;
-} else {
-    console.log('🦊 Usando WebKit para desenvolvimento...');
-    try {
-        const scraperWebkit = require('./scraper.js');
-        consultarCPF = scraperWebkit.consultarCPF;
-    } catch (error) {
-        console.log('⚠️ Fallback para Chromium devido a erro no WebKit:', error.message);
-        const { consultarCPF: consultarCPFChromium } = require('./scraper-servidor.js');
-        consultarCPF = consultarCPFChromium;
-    }
-}
+// Forçar o uso do scraper.js que utiliza a lógica correta do Chromium e extensão do CaptchaSonic no Docker
+console.log('🖥️ Usando Chromium do scraper.js...');
+const scraperWebkit = require('./scraper.js');
+consultarCPF = scraperWebkit.consultarCPF;
 
 const app = express();
 const PORT = process.env.PORT || 3000;

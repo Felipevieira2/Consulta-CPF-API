@@ -10,16 +10,6 @@
     "sameSite": "Lax"
   },
   {
-    "name": "__cf_bm",
-    "value": "Ja5ODPYaKU8KjMyuhrQJMiYFuCO8TabQT.gelXLIsIA-1782427843.0358903-1.0.1.1-KCKPW9uRv9odMABMKH4kfou3tcirGco4datZtpWS_uzRFbKwqlaZb2t94Y4HdK9.7IQCbWFyLjD1NZSuN510vKBKksf6mc7vO07lZPDSY6r.0SjigkCSBU_hHyvgnq.V",
-    "domain": ".hcaptcha.com",
-    "path": "/",
-    "expires": 1782429635.875,
-    "httpOnly": true,
-    "secure": true,
-    "sameSite": "None"
-  },
-  {
     "name": "ASPSESSIONIDCUDQDBST",
     "value": "LEEMCPCDJAINCEGPNHFHODCN",
     "domain": "servicos.receita.fazenda.gov.br",
@@ -51,11 +41,21 @@
   },
   {
     "name": "ASPSESSIONIDAGTBDSBT",
-    "value": "KAMOHBKCCGBHOEGGIDLGFNLN",
+    "value": "FOHKJBKCIBEPPBFNENCDGGHL",
     "domain": "servicos.receita.fazenda.gov.br",
     "path": "/",
     "expires": -1,
     "httpOnly": false,
+    "secure": true,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "__cf_bm",
+    "value": "Hbc6CZ.Pysx.uyaCEYGuVH2lNCzAoSSEtMTiSF8pHGc-1782429937.8877132-1.0.1.1-uRqAj3rQtcWtd7HC7yRdlA35TB4GoiYu_1wF43EbX7sbTAo8hz_IQK5ry3nPNihvBnKxwcwqOaqphe0RC.04V5Q.vlkkZ3CEoimWXVcf5aFCNavLoEP1qWIfEQeFu_LT",
+    "domain": ".hcaptcha.com",
+    "path": "/",
+    "expires": 1782431730.723946,
+    "httpOnly": true,
     "secure": true,
     "sameSite": "None"
   }
