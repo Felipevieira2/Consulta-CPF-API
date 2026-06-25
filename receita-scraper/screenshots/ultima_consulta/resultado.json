@@ -5,11 +5,11 @@
   "situacao_cadastral": "REGULAR",
   "data_inscricao": "31/01/2012",
   "digito_verificador": "00",
-  "hora_emissao": "18:42:30",
+  "hora_emissao": "20:02:37",
   "data_emissao": "25/06/2026",
-  "codigo_controle": "5C0F.65A8.E2C6.455A",
+  "codigo_controle": "36F4.3BEE.BBFB.8B43",
   "cpf_consultado": "45083784807",
   "data_nascimento_consultada": "29/03/1995",
-  "timestamp": "2026-06-25T21:42:25.391Z",
+  "timestamp": "2026-06-25T23:02:31.992Z",
   "sucesso": true
 }

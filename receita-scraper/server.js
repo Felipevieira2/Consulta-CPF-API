@@ -47,6 +47,11 @@ app.use('/screenshots', express.static(path.join(__dirname, 'screenshots')));
 app.use('/static', express.static(path.join(__dirname, 'public')));
 
 
+// Rota padrão para redirecionar para a última consulta e evitar 404
+app.get('/', (req, res) => {
+  res.redirect('/ultima-consulta');
+});
+
 // Rota para verificar se o servidor está online
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });

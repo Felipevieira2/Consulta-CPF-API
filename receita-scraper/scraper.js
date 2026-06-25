@@ -335,8 +335,14 @@ class PlaywrightWebKitCPFConsultor {
             const userDataDir = path.join(__dirname, 'screenshots', 'chrome-profile');
             console.log(`📂 Utilizando perfil de usuário persistente em: ${userDataDir}`);
 
+            const rodarHeadlessComExtensao = !isVisual;
+            if (rodarHeadlessComExtensao) {
+                console.log('👻 Modo HEADLESS ativo - Ocultando janela do Chromium movendo-a para fora da tela (--window-position=-2000,-2000) para evitar detecção...');
+                launchArgs.push('--window-position=-2000,-2000');
+            }
+
             this.context = await chromium.launchPersistentContext(userDataDir, {
-                headless: !isVisual,
+                headless: false,
                 slowMo: isVisual ? 50 : 0,
                 args: launchArgs,
                 viewport: {
@@ -533,32 +539,64 @@ class PlaywrightWebKitCPFConsultor {
 
             // Aguardar carregamento do captcha
             console.log('Aguardando carregamento do captcha...');
-            await this.page.waitForSelector('iframe[title="Widget contendo caixa de seleção para desafio de segurança hCaptcha"]');
+            // Tentar esperar pelo container oficial do h-captcha ou pelo iframe contendo hcaptcha.com
+            await Promise.any([
+                this.page.waitForSelector('.h-captcha iframe', { timeout: 25000 }),
+                this.page.waitForSelector('iframe[src*="hcaptcha.com"]', { timeout: 25000 }),
+                this.page.waitForSelector('iframe[title*="hCaptcha"]', { timeout: 25000 })
+            ]).catch(() => {
+                console.log('⚠️ Aviso: Seletor específico do iframe do hCaptcha não apareceu, prosseguindo com a verificação de token.');
+            });
             await takeScreenshot(this.page, '03_antes_captcha');
-
+ 
             // Lógica simplificada de detecção e resolução do hCaptcha pela extensão CaptchaSonic
             console.log('🔍 Aguardando a resolução do hCaptcha pela extensão CaptchaSonic...');
             try {
                 let resolvido = false;
                 const maxEsperaSegundos = 45;
-
+ 
                 for (let sec = 0; sec < maxEsperaSegundos; sec++) {
                     await this.page.waitForTimeout(1000);
-
+ 
                     // Verificar se o token de resposta foi preenchido na página principal pela extensão
                     const tokenPreenchido = await this.page.evaluate(() => {
                         const t1 = document.querySelector('[name="h-captcha-response"]')?.value;
                         const t2 = document.querySelector('[name="g-recaptcha-response"]')?.value;
-                        return (t1 && t1.length > 50) || (t2 && t2.length > 50);
+                        return (t1 && t1.length > 50) ? t1 : ((t2 && t2.length > 50) ? t2 : null);
                     });
-
+ 
                     if (tokenPreenchido) {
-                        console.log('✅ hCaptcha resolvido com sucesso pela extensão CaptchaSonic!');
+                        console.log('✅ hCaptcha resolvido com sucesso pela extensão CaptchaSonic! Executando callback da página...');
                         resolvido = true;
+                        
+                        // Executar o callback da própria biblioteca do hCaptcha configurado na página
+                        await this.page.evaluate((tokenSol) => {
+                            const t1 = document.querySelector('[name="h-captcha-response"]');
+                            if (t1) {
+                                t1.value = tokenSol;
+                                t1.dispatchEvent(new Event('input', { bubbles: true }));
+                                t1.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+                            const t2 = document.querySelector('[name="g-recaptcha-response"]');
+                            if (t2) {
+                                t2.value = tokenSol;
+                                t2.dispatchEvent(new Event('input', { bubbles: true }));
+                                t2.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+
+                            const el = document.querySelector('.h-captcha');
+                            if (el) {
+                                const callbackName = el.getAttribute('data-callback');
+                                if (callbackName && typeof window[callbackName] === 'function') {
+                                    console.log('Executando callback do hCaptcha via extensão:', callbackName);
+                                    window[callbackName](tokenSol);
+                                }
+                            }
+                        }, tokenPreenchido);
                         break;
                     }
                 }
-
+ 
                 if (!resolvido) {
                     throw new Error('Tempo limite excedido aguardando a resolução do hCaptcha.');
                 }
