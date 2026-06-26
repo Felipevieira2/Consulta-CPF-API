@@ -39,8 +39,8 @@ class Semaphore {
   }
 }
 
-// Limitar por padrão a 1 consulta por vez para taxa de sucesso máxima e baixo uso de recursos no container
-const MAX_CONCURRENT_SCRAPES = parseInt(process.env.MAX_CONCURRENT_SCRAPES || '1');
+// Limitar por padrão a 2 consultas simultâneas por vez para equilibrar a taxa de sucesso e evitar timeouts de conexões (504 Gateway Timeout)
+const MAX_CONCURRENT_SCRAPES = parseInt(process.env.MAX_CONCURRENT_SCRAPES || '3');
 const scraperSemaphore = new Semaphore(MAX_CONCURRENT_SCRAPES);
 console.log(`🔒 Controle de concorrência ativo: Máximo de ${MAX_CONCURRENT_SCRAPES} consulta(s) simultânea(s).`);
 
@@ -49,13 +49,13 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware para habilitar CORS
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
-    }
-    next();
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
 });
 
 // Middleware
@@ -83,19 +83,19 @@ app.get('/health', (req, res) => {
 app.post('/consultar-cpf', async (req, res) => {
   try {
     const { cpf, birthDate } = req.body;
-    
+
     if (!cpf || !birthDate) {
       return res.status(400).json({
         erro: true,
         mensagem: 'CPF e data de nascimento são obrigatórios'
       });
     }
-    
+
     console.log(`Recebida requisição para consultar CPF: ${cpf}. Aguardando slot na fila...`);
-    
+
     // Adquirir slot de execução (entra na fila se houver outras em andamento)
     await scraperSemaphore.acquire();
-    
+
     try {
       console.log(`🚀 Iniciando execução da consulta no navegador para o CPF: ${cpf}`);
       const resultado = await consultarCPF(cpf, birthDate);
@@ -120,17 +120,17 @@ app.post('/consultar-cpf', async (req, res) => {
 app.get('/screenshots-list', (req, res) => {
   try {
     const screenshotsDir = path.join(__dirname, 'screenshots');
-    
+
     if (!fs.existsSync(screenshotsDir)) {
       return res.json({ pastas: [], total: 0 });
     }
-    
+
     const pastas = fs.readdirSync(screenshotsDir, { withFileTypes: true })
       .filter(dirent => dirent.isDirectory())
       .map(dirent => {
         const pastaPath = path.join(screenshotsDir, dirent.name);
         const arquivos = fs.readdirSync(pastaPath).filter(file => file.endsWith('.png'));
-        
+
         return {
           nome: dirent.name,
           url: `/screenshots/${dirent.name}/`,
@@ -142,12 +142,12 @@ app.get('/screenshots-list', (req, res) => {
         };
       })
       .sort((a, b) => b.nome.localeCompare(a.nome)); // Mais recentes primeiro
-    
+
     return res.json({
       pastas: pastas,
       total: pastas.length
     });
-    
+
   } catch (error) {
     console.error('❌ Erro ao listar screenshots:', error);
     return res.status(500).json({
@@ -162,16 +162,16 @@ app.get('/ultima-consulta', (req, res) => {
   try {
     const resultadoPath = path.join(__dirname, 'screenshots', 'ultima_consulta', 'resultado.json');
     const screenshotsDir = path.join(__dirname, 'screenshots', 'ultima_consulta');
-    
+
     let resultado = null;
     let screenshots = [];
-    
+
     // Ler resultado se existir
     if (fs.existsSync(resultadoPath)) {
       const data = fs.readFileSync(resultadoPath, 'utf8');
       resultado = JSON.parse(data);
     }
-    
+
     // Listar screenshots se existir
     if (fs.existsSync(screenshotsDir)) {
       const files = fs.readdirSync(screenshotsDir);
@@ -184,13 +184,13 @@ app.get('/ultima-consulta', (req, res) => {
           titulo: getTituloScreenshot(file)
         }));
     }
-    
+
     // Gerar HTML
     const html = gerarHtmlUltimaConsulta(resultado, screenshots);
-    
+
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(html);
-    
+
   } catch (error) {
     console.error('❌ Erro ao exibir última consulta:', error);
     res.status(500).send(`
@@ -217,14 +217,14 @@ function getTituloScreenshot(filename) {
     '06_final_sucesso.png': '6. Consulta Finalizada com Sucesso',
     '07_erro.png': '7. Erro na Consulta'
   };
-  
+
   return titulos[filename] || filename.replace('.png', '').replace(/_/g, ' ');
 }
 
 // Função para gerar HTML da última consulta
 function gerarHtmlUltimaConsulta(resultado, screenshots) {
   const timestamp = resultado ? new Date(resultado.timestamp).toLocaleString('pt-BR') : 'N/A';
-  
+
   return `
 <!DOCTYPE html>
 <html lang="pt-BR">
