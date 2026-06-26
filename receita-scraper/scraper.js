@@ -16,7 +16,7 @@ const carregarEnv = () => {
                     const key = parts[0].trim();
                     let value = parts.slice(1).join('=').trim();
                     // Remover aspas simples ou duplas
-                    if ((value.startsWith('"') && value.endsWith('"')) || 
+                    if ((value.startsWith('"') && value.endsWith('"')) ||
                         (value.startsWith("'") && value.endsWith("'"))) {
                         value = value.slice(1, -1);
                     }
@@ -256,64 +256,10 @@ class PlaywrightWebKitCPFConsultor {
         }
     }
 
-    // Helper para esperar com variação aleatória
-    async waitRandom(min, max) {
-        const ms = min + Math.floor(Math.random() * (max - min));
-        await this.page.waitForTimeout(ms);
-    }
-
-    // Digitar como humano com atraso aleatório entre as teclas e ritmo variável
-    async typeLikeHuman(selector, text) {
-        console.log(`✍️ Digitando de forma humana no campo ${selector}...`);
-        const element = await this.page.waitForSelector(selector);
-        await element.focus();
-        
-        // Selecionar tudo e apagar qualquer valor prévio de forma realista
-        await this.page.press(selector, 'Control+A');
-        await this.page.waitForTimeout(80 + Math.floor(Math.random() * 120));
-        await this.page.press(selector, 'Backspace');
-        await this.page.waitForTimeout(100 + Math.floor(Math.random() * 150));
-
-        for (const char of text) {
-            // Atraso realista e variável entre 40ms e 160ms por caractere
-            const delay = 40 + Math.floor(Math.random() * 120);
-            await this.page.keyboard.type(char, { delay });
-        }
-    }
-
-    // Clicar como humano com um leve deslocamento (offset) do centro exato do botão e movimentos suaves do mouse
-    async clickLikeHuman(selector) {
-        console.log(`🖱️ Clicando de forma humana no botão ${selector}...`);
-        const element = await this.page.waitForSelector(selector);
-        const box = await element.boundingBox();
-        
-        if (box) {
-            // Deslocamento aleatório de +-6px do centro matemático
-            const offsetX = (box.width / 2) + (Math.random() * 12 - 6);
-            const offsetY = (box.height / 2) + (Math.random() * 12 - 6);
-            
-            // Mover o mouse de forma suave e gradual até as coordenadas
-            await this.page.mouse.move(box.x + offsetX, box.y + offsetY, {
-                steps: 5 + Math.floor(Math.random() * 7)
-            });
-            
-            // Breve tempo de reação humana antes do clique físico
-            await this.page.waitForTimeout(150 + Math.floor(Math.random() * 200));
-            
-            // Pressionar e soltar o botão do mouse
-            await this.page.mouse.down();
-            await this.page.waitForTimeout(60 + Math.floor(Math.random() * 90));
-            await this.page.mouse.up();
-        } else {
-            // Fallback seguro caso o boundingBox falhe
-            await element.click();
-        }
-    }
-
     async launch() {
         let browserTypeStr = process.env.PLAYWRIGHT_BROWSER || 'chromium';
         const isVisual = process.env.VISUAL_MODE === 'true' || process.argv.includes('--visual');
-        
+
         // Caminho da extensão descompactada do CaptchaSonic
         const extensionPath = path.join(__dirname, 'captchasonic-ext-unpacked');
         const useExtension = fs.existsSync(extensionPath);
@@ -392,7 +338,7 @@ class PlaywrightWebKitCPFConsultor {
             const userDataDir = path.join(__dirname, 'screenshots', `chrome-profile-${uniqueProfileId}`);
             this.userDataDir = userDataDir;
             console.log(`📂 Utilizando perfil de usuário dinâmico e exclusivo em: ${userDataDir}`);
- 
+
             // Limpeza preventiva de travas (removendo diretamente para evitar problemas com links simbólicos quebrados no Linux)
             const lockPath = path.join(userDataDir, 'SingletonLock');
             try {
@@ -400,7 +346,7 @@ class PlaywrightWebKitCPFConsultor {
             } catch (e) {
                 // Silencioso caso a trava não exista
             }
- 
+
             const rodarHeadlessComExtensao = !isVisual;
             if (rodarHeadlessComExtensao) {
                 console.log('👻 Modo HEADLESS ativo - Ocultando janela do Chromium movendo-a para fora da tela (--window-position=-2000,-2000) para evitar detecção...');
@@ -486,7 +432,7 @@ class PlaywrightWebKitCPFConsultor {
         console.log(`🔍 Iniciando consulta para CPF: ${cpf}`);
         // Aguardar um pouco antes de acessar para evitar rate limiting
         console.log('⏳ Aguardando 500ms para estabilização...');
-        await this.page.waitForTimeout(500);
+        await this.page.waitForTimeout(300);
         if (!cpf || !birthDate) {
             return {
                 error: true,
@@ -521,7 +467,7 @@ class PlaywrightWebKitCPFConsultor {
         const dialogListener = async (dialog) => {
             alertMessage = dialog.message();
             console.log(`🔔 Alerta do navegador detectado: "${alertMessage}"`);
-            await dialog.dismiss().catch(() => {});
+            await dialog.dismiss().catch(() => { });
         };
 
         try {
@@ -592,22 +538,14 @@ class PlaywrightWebKitCPFConsultor {
             await this.page.waitForSelector('#txtCPF');
             await takeScreenshot(this.page, '01_inicial');
 
-            // Preenchimento simulando comportamento humano detalhado
-            console.log('Preenchendo formulário de consulta de forma humana...');
-            
-            // Focar e digitar o CPF de forma cadenciada
-            await this.typeLikeHuman('#txtCPF', cpf);
+            // Preenchimento rápido e direto do formulário
+            console.log('Preenchendo formulário de consulta...');
+            await this.page.fill('#txtCPF', cpf);
             await this.page.dispatchEvent('#txtCPF', 'change');
-            
-            // Pausa de hesitação humana entre campos (300ms a 700ms)
-            await this.waitRandom(300, 700);
 
-            // Focar e digitar a Data de Nascimento
-            await this.typeLikeHuman('#txtDataNascimento', birthDate);
+            await this.page.fill('#txtDataNascimento', birthDate);
             await this.page.dispatchEvent('#txtDataNascimento', 'change');
-            
-            // Disparar blur de forma realista
-            await this.page.dispatchEvent('#txtDataNascimento', 'blur');
+            await this.page.dispatchEvent('#txtDataNascimento', 'blur'); // Dispara a formatação e máscara no site
 
             await takeScreenshot(this.page, '02_apos_preenchimento');
 
@@ -622,27 +560,27 @@ class PlaywrightWebKitCPFConsultor {
                 console.log('⚠️ Aviso: Seletor específico do iframe do hCaptcha não apareceu, prosseguindo com a verificação de token.');
             });
             await takeScreenshot(this.page, '03_antes_captcha');
- 
+
             // Lógica simplificada de detecção e resolução do hCaptcha pela extensão CaptchaSonic
             console.log('🔍 Aguardando a resolução do hCaptcha pela extensão CaptchaSonic...');
             try {
                 let resolvido = false;
                 const maxEsperaSegundos = 45;
- 
+
                 for (let sec = 0; sec < maxEsperaSegundos; sec++) {
-                    await this.page.waitForTimeout(1000);
- 
+                    await this.page.waitForTimeout(500);
+
                     // Verificar se o token de resposta foi preenchido na página principal pela extensão
                     const tokenPreenchido = await this.page.evaluate(() => {
                         const t1 = document.querySelector('[name="h-captcha-response"]')?.value;
                         const t2 = document.querySelector('[name="g-recaptcha-response"]')?.value;
                         return (t1 && t1.length > 50) ? t1 : ((t2 && t2.length > 50) ? t2 : null);
                     });
- 
+
                     if (tokenPreenchido) {
                         console.log('✅ hCaptcha resolvido com sucesso pela extensão CaptchaSonic! Executando callback da página...');
                         resolvido = true;
-                        
+
                         // Executar o callback da própria biblioteca do hCaptcha configurado na página
                         await this.page.evaluate((tokenSol) => {
                             const t1 = document.querySelector('[name="h-captcha-response"]');
@@ -670,7 +608,7 @@ class PlaywrightWebKitCPFConsultor {
                         break;
                     }
                 }
- 
+
                 if (!resolvido) {
                     throw new Error('Tempo limite excedido aguardando a resolução do hCaptcha.');
                 }
@@ -695,9 +633,9 @@ class PlaywrightWebKitCPFConsultor {
             console.log('Clicando em Consultar...');
 
             try {
-                // Clicar simulando mouse físico e coordenadas com offset realista
-                await this.clickLikeHuman('input[value="Consultar"]');
-                console.log('✅ Clique humano realizado com sucesso');
+                // Tentar clique natural primeiro (mais humano e seguro)
+                await this.page.click('input[value="Consultar"]');
+                console.log('✅ Clique natural realizado com sucesso');
 
                 // Aguardar navegação ou mudança na página
                 console.log('Aguardando resposta da consulta...');
@@ -1185,7 +1123,7 @@ class PlaywrightWebKitCPFConsultor {
                 if (fs.existsSync(lockPath)) {
                     fs.unlinkSync(lockPath);
                 }
-                
+
                 // Opcional: Para evitar encher o disco no servidor, você pode apagar a pasta inteira.
                 // Como salvamos os cookies em cookies_hcaptcha.json, não há problema em limpar a pasta temporária do profile!
                 fs.rmSync(this.userDataDir, { recursive: true, force: true });
