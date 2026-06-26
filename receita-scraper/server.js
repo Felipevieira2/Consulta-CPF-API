@@ -11,6 +11,39 @@ console.log('🖥️ Usando Chromium do scraper.js...');
 const scraperWebkit = require('./scraper.js');
 consultarCPF = scraperWebkit.consultarCPF;
 
+// Classe Semáforo simples para controle de concorrência nativo no Express
+class Semaphore {
+  constructor(maxConcurrency) {
+    this.maxConcurrency = maxConcurrency;
+    this.currentConcurrency = 0;
+    this.queue = [];
+  }
+
+  async acquire() {
+    if (this.currentConcurrency < this.maxConcurrency) {
+      this.currentConcurrency++;
+      return;
+    }
+    return new Promise(resolve => {
+      this.queue.push(resolve);
+    });
+  }
+
+  release() {
+    this.currentConcurrency--;
+    if (this.queue.length > 0) {
+      this.currentConcurrency++;
+      const nextResolve = this.queue.shift();
+      nextResolve();
+    }
+  }
+}
+
+// Limitar por padrão a 1 consulta por vez para taxa de sucesso máxima e baixo uso de recursos no container
+const MAX_CONCURRENT_SCRAPES = parseInt(process.env.MAX_CONCURRENT_SCRAPES || '1');
+const scraperSemaphore = new Semaphore(MAX_CONCURRENT_SCRAPES);
+console.log(`🔒 Controle de concorrência ativo: Máximo de ${MAX_CONCURRENT_SCRAPES} consulta(s) simultânea(s).`);
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -46,7 +79,7 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-// Rota para consulta de CPF
+// Rota para consulta de CPF com fila de concorrência para alta estabilidade
 app.post('/consultar-cpf', async (req, res) => {
   try {
     const { cpf, birthDate } = req.body;
@@ -58,10 +91,20 @@ app.post('/consultar-cpf', async (req, res) => {
       });
     }
     
-    console.log(`Recebida requisição para consultar CPF: ${cpf}`);
-    const resultado = await consultarCPF(cpf, birthDate);
+    console.log(`Recebida requisição para consultar CPF: ${cpf}. Aguardando slot na fila...`);
     
-    return res.json(resultado);
+    // Adquirir slot de execução (entra na fila se houver outras em andamento)
+    await scraperSemaphore.acquire();
+    
+    try {
+      console.log(`🚀 Iniciando execução da consulta no navegador para o CPF: ${cpf}`);
+      const resultado = await consultarCPF(cpf, birthDate);
+      return res.json(resultado);
+    } finally {
+      // Sempre liberar o slot no final
+      scraperSemaphore.release();
+      console.log(`🔓 Consulta concluída para o CPF: ${cpf}. Slot de concorrência liberado.`);
+    }
   } catch (error) {
     console.error('Erro na API:', error);
     return res.status(500).json({
