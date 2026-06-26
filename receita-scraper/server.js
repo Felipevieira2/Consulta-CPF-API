@@ -40,7 +40,7 @@ class Semaphore {
 }
 
 // Limitar por padrão a 2 consultas simultâneas por vez para equilibrar a taxa de sucesso e evitar timeouts de conexões (504 Gateway Timeout)
-const MAX_CONCURRENT_SCRAPES = parseInt(process.env.MAX_CONCURRENT_SCRAPES || '2');
+const MAX_CONCURRENT_SCRAPES = parseInt(process.env.MAX_CONCURRENT_SCRAPES || '1');
 const scraperSemaphore = new Semaphore(MAX_CONCURRENT_SCRAPES);
 console.log(`🔒 Controle de concorrência ativo: Máximo de ${MAX_CONCURRENT_SCRAPES} consulta(s) simultânea(s).`);
 
