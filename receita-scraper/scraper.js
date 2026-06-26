@@ -333,16 +333,18 @@ class PlaywrightWebKitCPFConsultor {
 
         // Se usar extensão, precisamos usar launchPersistentContext (pois o Playwright exige para carregar extensões)
         if (useExtension && browserTypeStr === 'chromium') {
-            const userDataDir = path.join(__dirname, 'screenshots', `chrome-profile-${process.pid || 'default'}`);
+            // Gerar um ID de perfil exclusivo por consulta para evitar conflitos (SingletonLock) em execuções rápidas ou simultâneas
+            const uniqueProfileId = `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
+            const userDataDir = path.join(__dirname, 'screenshots', `chrome-profile-${uniqueProfileId}`);
             this.userDataDir = userDataDir;
-            console.log(`📂 Utilizando perfil de usuário dinâmico em: ${userDataDir}`);
+            console.log(`📂 Utilizando perfil de usuário dinâmico e exclusivo em: ${userDataDir}`);
  
-            // Se a pasta já existir por algum motivo, remover travas antigas
-            if (fs.existsSync(userDataDir)) {
-                const lockPath = path.join(userDataDir, 'SingletonLock');
-                if (fs.existsSync(lockPath)) {
-                    try { fs.unlinkSync(lockPath); } catch (e) {}
-                }
+            // Limpeza preventiva de travas (removendo diretamente para evitar problemas com links simbólicos quebrados no Linux)
+            const lockPath = path.join(userDataDir, 'SingletonLock');
+            try {
+                fs.unlinkSync(lockPath);
+            } catch (e) {
+                // Silencioso caso a trava não exista
             }
  
             const rodarHeadlessComExtensao = !isVisual;
