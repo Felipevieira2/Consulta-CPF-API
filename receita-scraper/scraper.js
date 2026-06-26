@@ -816,7 +816,7 @@ class PlaywrightWebKitCPFConsultor {
                 console.log(`❌ Consulta abortada: Alerta detectado no portal: "${alertMessage}"`);
                 return {
                     error: true,
-                    mensagem: `Erro reportado pelo portal da Receita: ${alertMessage}`,
+                    message: `Erro reportado pelo portal da Receita: ${alertMessage}`,
                     type: 'portal_alert',
                     alert_message: alertMessage
                 };

@@ -39,10 +39,23 @@ class ReceitaFederalService
                 ];
             }
 
-            if(isset($responseData['error'])){
+            if (isset($responseData['error']) || isset($responseData['erro'])) {
+                // Determinar a mensagem de erro de forma robusta
+                $errorMessage = 'Erro desconhecido ao consultar Receita Federal';
+                
+                if (isset($responseData['message']) && is_string($responseData['message'])) {
+                    $errorMessage = $responseData['message'];
+                } elseif (isset($responseData['mensagem']) && is_string($responseData['mensagem'])) {
+                    $errorMessage = $responseData['mensagem'];
+                } elseif (isset($responseData['error']) && is_string($responseData['error'])) {
+                    $errorMessage = $responseData['error'];
+                } elseif (isset($responseData['erro']) && is_string($responseData['erro'])) {
+                    $errorMessage = $responseData['erro'];
+                }
+                
                 return [
-                    'error' => $responseData["message"],
-                    'type' => $responseData["type"]
+                    'error' => $errorMessage,
+                    'type' => $responseData['type'] ?? $responseData['tipo'] ?? 'default'
                 ];
             }
             
