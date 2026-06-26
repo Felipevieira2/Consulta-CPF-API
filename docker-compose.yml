@@ -49,15 +49,18 @@ services:
     networks:
       - consultacpf-network
   receita-scraper:
-    #image: buildkite/puppeteer:latest
-    image: node:18-bullseye
+    build:
+      context: ./receita-scraper
+      dockerfile: Dockerfile
+    container_name: consulta-cpf-api-receita-scraper-1
     ports:
       - "3435:3000"
     volumes:
       - ./receita-scraper:/app
+      # Evitar que o node_modules local sobrescreva o node_modules otimizado e com dependências instaladas do container
+      - /app/node_modules
     working_dir: /app
-    # command: sh -c "npm install && node server.js" #prod
-    command: sh -c "npm install && npm run dev" # Alterado para usar npm run dev
+    restart: unless-stopped
     networks:
       - consultacpf-network
 networks:
