@@ -8,7 +8,7 @@
         "start:otimizado": "node server-otimizado.js",
         "start:stealth": "node server-stealth.js",
         "start:ip-rotation": "node server-ip-rotation.js",
-        "dev": "nodemon server.js --legacy-watch",
+        "dev": "nodemon --ignore screenshots/ server.js",
         "dev:otimizado": "nodemon server-otimizado.js --legacy-watch",
         "dev:stealth": "nodemon server-stealth.js --legacy-watch",
         "dev:ip-rotation": "nodemon server-ip-rotation.js --legacy-watch",

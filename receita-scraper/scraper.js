@@ -1114,6 +1114,8 @@ class PlaywrightWebKitCPFConsultor {
         } catch (e) {
             console.log('⚠️ Erro ao fechar contexto do navegador:', e.message);
         }
+        // NOVO: Dá tempo para o processo do SO encerrar e liberar os arquivos
+        await new Promise(resolve => setTimeout(resolve, 1500));
 
         // Limpeza síncrona/segura de travas e da pasta de perfil exclusiva após fechar o Chromium
         if (this.userDataDir && fs.existsSync(this.userDataDir)) {

@@ -45,4 +45,4 @@ COPY . .
 EXPOSE 3000
 
 # Comando para desenvolvimento rodando sob o Xvfb virtual display de forma direta e robusta (usando -noreset para evitar que o Xvfb morra ao fechar o navegador)
-CMD ["sh", "-c", "Xvfb :99 -ac -screen 0 1366x768x24 -noreset > /dev/null 2>&1 & export DISPLAY=:99 && sleep 2 && npm run dev"]
+CMD ["sh", "-c", "Xvfb :99 -ac -screen 0 1366x768x24 -noreset > /dev/null 2>&1 & export DISPLAY=:99 && sleep 2 && npm run start"]
