@@ -1,60 +1,10 @@
 [
   {
-    "name": "visited",
-    "value": "true",
-    "domain": ".receita.fazenda.gov.br",
-    "path": "/",
-    "expires": 1782509067.718,
-    "httpOnly": false,
-    "secure": false,
-    "sameSite": "Lax"
-  },
-  {
-    "name": "ASPSESSIONIDCUDQDBST",
-    "value": "LEEMCPCDJAINCEGPNHFHODCN",
-    "domain": "servicos.receita.fazenda.gov.br",
-    "path": "/",
-    "expires": -1,
-    "httpOnly": false,
-    "secure": true,
-    "sameSite": "None"
-  },
-  {
-    "name": "BIGipServer~WEBREC~POOL_SERVICOS_REC_443",
-    "value": "rd1o00000000000000000000ffffa194e741o443",
-    "domain": "servicos.receita.fazenda.gov.br",
-    "path": "/",
-    "expires": -1,
-    "httpOnly": true,
-    "secure": true,
-    "sameSite": "None"
-  },
-  {
-    "name": "BIGipServer~WEBREC~POOL_RECEITA_443",
-    "value": "rd1o00000000000000000000ffffa194e720o443",
-    "domain": "www.receita.fazenda.gov.br",
-    "path": "/",
-    "expires": -1,
-    "httpOnly": true,
-    "secure": true,
-    "sameSite": "None"
-  },
-  {
-    "name": "ASPSESSIONIDAGTBDSBT",
-    "value": "EHHPJBKCKPGMKLBAKFODJHHD",
-    "domain": "servicos.receita.fazenda.gov.br",
-    "path": "/",
-    "expires": -1,
-    "httpOnly": false,
-    "secure": true,
-    "sameSite": "Lax"
-  },
-  {
     "name": "__cf_bm",
-    "value": "Wxy68ihBsVKNVqiVE7ol0HJPJaLIv6BpcJP2TqPbjuA-1782431563.6824803-1.0.1.1-VL4THUiX3mDTJSx1TmIKaxYysQY.rJh1GePab9UBPdwjAQWq6duEB7ucUyHwC7xyWfiLqXEMMnVzawrdcdEwWP9lVgshoc_stGsS5A8iM41K1PTD_8KheFx_H6YfCNJc",
+    "value": "_yPkrI4efjRoz3S.hnKeQWrr0woPzb75zzHwQhhIX9E-1786728495.146982-1.0.1.1-5kOjt2QRR5gziB1QUnlNok8yWaxqCXCzqpPbAPcsUEXM10TdYA.R_ba8dbQ1KHsCxB1qkUHVEhdZc0b4gHUqyOFVvoaWzamhNSd_YXXqur38EQxds3TALPHFJuf6mUXS",
     "domain": ".hcaptcha.com",
     "path": "/",
-    "expires": 1782433356.508012,
+    "expires": 1786730295.162776,
     "httpOnly": true,
     "secure": true,
     "sameSite": "None"

@@ -1,15 +1,8 @@
 {
-  "cpf": "450.837.848-07",
-  "nome": "FELIPE ERIVALDO VIEIRA BARROS",
-  "data_nascimento": "29/03/1995",
-  "situacao_cadastral": "REGULAR",
-  "data_inscricao": "31/01/2012",
-  "digito_verificador": "00",
-  "hora_emissao": "20:53:15",
-  "data_emissao": "25/06/2026",
-  "codigo_controle": "94C9.A7EF.F872.CE14",
   "cpf_consultado": "45083784807",
   "data_nascimento_consultada": "29/03/1995",
-  "timestamp": "2026-06-25T23:53:20.675Z",
-  "sucesso": true
+  "timestamp": "2026-08-14T17:32:17.657Z",
+  "sucesso": false,
+  "error": true,
+  "mensagem": "Erro ao consultar CPF: page.evaluate: Target page, context or browser has been closed"
 }

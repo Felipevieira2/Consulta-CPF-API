@@ -267,6 +267,24 @@ class PlaywrightWebKitCPFConsultor {
         if (useExtension) {
             console.log('🔌 Extensão do CaptchaSonic detectada! Forçando uso do CHROMIUM para suporte a extensões...');
             browserTypeStr = 'chromium';
+
+            // Garantir que a API Key do .env esteja sincronizada na configuração padrão da extensão
+            const apiKey = process.env.CAPTCHASONIC_KEY;
+            if (apiKey) {
+                const configPath = path.join(extensionPath, 'config', 'defaultConfig.json');
+                if (fs.existsSync(configPath)) {
+                    try {
+                        const defaultConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+                        if (defaultConfig.APIKEY !== apiKey) {
+                            defaultConfig.APIKEY = apiKey;
+                            fs.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2));
+                            console.log('🔑 API Key do CaptchaSonic sincronizada na extensão!');
+                        }
+                    } catch (err) {
+                        console.log('⚠️ Aviso ao sincronizar API Key na extensão:', err.message);
+                    }
+                }
+            }
         }
 
         console.log(`🚀 Iniciando Playwright com ${browserTypeStr.toUpperCase()} para consulta CPF...`);
@@ -372,6 +390,31 @@ class PlaywrightWebKitCPFConsultor {
             const pages = this.context.pages();
             this.page = pages.length > 0 ? pages[0] : await this.context.newPage();
             this.browser = null; // Sem objeto browser em contexto persistente
+
+            // Assegurar que a APIKey do .env é gravada no chrome.storage.local do contexto ativo da extensão
+            const apiKey = process.env.CAPTCHASONIC_KEY;
+            if (apiKey) {
+                try {
+                    let sw = (this.context.serviceWorkers && this.context.serviceWorkers()[0]);
+                    if (!sw && this.context.waitForEvent) {
+                        sw = await this.context.waitForEvent('serviceworker', { timeout: 3000 }).catch(() => null);
+                    }
+                    if (sw) {
+                        await sw.evaluate((key) => {
+                            if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+                                chrome.storage.local.get('settings', (data) => {
+                                    const settings = data.settings || {};
+                                    settings.APIKEY = key;
+                                    settings.ACTIVE = true;
+                                    chrome.storage.local.set({ settings });
+                                });
+                            }
+                        }, apiKey).catch(() => {});
+                    }
+                } catch (swErr) {
+                    // Silencioso se o worker não estiver pronto
+                }
+            }
         } else {
             // Inicialização normal (sem extensão ou navegador diferente do Chromium)
             this.browser = await browserEngine.launch({
@@ -565,7 +608,7 @@ class PlaywrightWebKitCPFConsultor {
             console.log('🔍 Aguardando a resolução do hCaptcha pela extensão CaptchaSonic...');
             try {
                 let resolvido = false;
-                const maxEsperaSegundos = 45;
+                const maxEsperaSegundos = 20;
 
                 for (let sec = 0; sec < maxEsperaSegundos; sec++) {
                     await this.page.waitForTimeout(500);
@@ -610,10 +653,50 @@ class PlaywrightWebKitCPFConsultor {
                 }
 
                 if (!resolvido) {
-                    throw new Error('Tempo limite excedido aguardando a resolução do hCaptcha.');
+                    console.log('⚠️ Extensão não preencheu o captcha a tempo. Acionando fallback via API direta do CaptchaSonic...');
+                    
+                    // Extrair sitekey da página
+                    const sitekey = await this.page.evaluate(() => {
+                        const el = document.querySelector('.h-captcha[data-sitekey]');
+                        if (el && el.getAttribute('data-sitekey')) return el.getAttribute('data-sitekey');
+                        const iframe = document.querySelector('iframe[src*="sitekey="]');
+                        if (iframe) {
+                            const match = iframe.src.match(/sitekey=([^&]+)/);
+                            if (match) return match[1];
+                        }
+                        return 'c94f5859-994c-473d-9d41-3b7c8ea3948e';
+                    });
+
+                    const tokenSol = await this.resolverHCaptchaCaptchaSonic(sitekey);
+                    if (tokenSol) {
+                        console.log('✅ Token obtido via API do CaptchaSonic! Aplicando na página...');
+                        await this.page.evaluate((token) => {
+                            const t1 = document.querySelector('[name="h-captcha-response"]');
+                            if (t1) {
+                                t1.value = token;
+                                t1.dispatchEvent(new Event('input', { bubbles: true }));
+                                t1.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+                            const t2 = document.querySelector('[name="g-recaptcha-response"]');
+                            if (t2) {
+                                t2.value = token;
+                                t2.dispatchEvent(new Event('input', { bubbles: true }));
+                                t2.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+
+                            const el = document.querySelector('.h-captcha');
+                            if (el) {
+                                const callbackName = el.getAttribute('data-callback');
+                                if (callbackName && typeof window[callbackName] === 'function') {
+                                    window[callbackName](token);
+                                }
+                            }
+                        }, tokenSol);
+                        resolvido = true;
+                    }
                 }
             } catch (error) {
-                console.error('❌ Erro no monitoramento do hCaptcha:', error.message);
+                console.error('❌ Erro no monitoramento/resolução do hCaptcha:', error.message);
                 throw error;
             }
 
