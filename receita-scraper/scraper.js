@@ -367,8 +367,8 @@ class PlaywrightWebKitCPFConsultor {
 
             const rodarHeadlessComExtensao = !isVisual;
             if (rodarHeadlessComExtensao) {
-                console.log('👻 Modo HEADLESS ativo - Ocultando janela do Chromium movendo-a para fora da tela (--window-position=-2000,-2000) para evitar detecção...');
-                launchArgs.push('--window-position=-2000,-2000');
+                console.log('👻 Modo HEADLESS ativo com suporte a extensões (--headless=new)...');
+                launchArgs.push('--headless=new', '--window-position=-2000,-2000');
             }
 
             this.context = await chromium.launchPersistentContext(userDataDir, {
